@@ -1,0 +1,135 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// --- Módulo de Usuarios y Seguridad ---
+
+model Role {
+  id       String    @id @default(uuid())
+  nombre   String    @unique
+  permisos Json?
+  usuarios Usuario[]
+}
+
+model Usuario {
+  id            String    @id @default(uuid())
+  nombre        String
+  email         String    @unique
+  password_hash String
+  telefono      String?
+  rol_id        String
+  rol           Role      @relation(fields: [rol_id], references: [id])
+  mascotas      Mascota[]
+  atenciones    Atencion[]
+  tickets       TicketCaja[]
+  created_at    DateTime  @default(now())
+}
+
+model Mascota {
+  id               String     @id @default(uuid())
+  nombre           String
+  especie          String
+  raza             String?
+  fecha_nacimiento DateTime?
+  sexo             String     @db.Char(1)
+  peso_actual      Decimal?
+  alergias         String?
+  propietario_id   String
+  propietario      Usuario    @relation(fields: [propietario_id], references: [id])
+  atenciones       Atencion[]
+}
+
+enum ConsultorioEstado {
+  LIBRE
+  OCUPADO
+  LIMPIEZA
+}
+
+model Consultorio {
+  id         String            @id @default(uuid())
+  nombre     String
+  estado     ConsultorioEstado @default(LIBRE)
+  atenciones Atencion[]
+}
+
+model Atencion {
+  id             String      @id @default(uuid())
+  mascota_id     String
+  mascota        Mascota     @relation(fields: [mascota_id], references: [id])
+  doctor_id      String
+  doctor         Usuario     @relation(fields: [doctor_id], references: [id])
+  consultorio_id String
+  consultorio    Consultorio @relation(fields: [consultorio_id], references: [id])
+  fecha_hora     DateTime    @default(now())
+  motive         String
+  diagnostico    String?
+  tratamiento    String?
+  estado_pago    EstadoPago  @default(PENDIENTE)
+  
+  consumos       ConsumoAtencion[]
+  ordenes_lab    OrdenLaboratorio[]
+  ticket         TicketCaja?
+}
+
+enum EstadoPago {
+  PENDIENTE
+  PAGADO
+  EXENTO
+}
+
+model Producto {
+  id           String            @id @default(uuid())
+  nombre       String
+  descripcion  String?
+  precio_venta Decimal
+  stock_actual Int
+  stock_minimo Int               @default(5)
+  consumos     ConsumoAtencion[]
+}
+
+model ConsumoAtencion {
+  id          String   @id @default(uuid())
+  atencion_id String
+  atencion    Atencion @relation(fields: [atencion_id], references: [id])
+  producto_id String
+  producto    Producto @relation(fields: [producto_id], references: [id])
+  cantidad    Int
+}
+
+model TicketCaja {
+  id                String       @id @default(uuid())
+  atencion_id       String       @unique
+  atencion          Atencion     @relation(fields: [atencion_id], references: [id])
+  cajero_id         String
+  cajero            Usuario      @relation(fields: [cajero_id], references: [id])
+  total             Decimal
+  fecha_pago        DateTime?
+  estado_ticket     EstadoTicket @default(EMITIDO)
+  motivo_anulacion  String?
+}
+
+enum EstadoTicket {
+  EMITIDO
+  PAGADO
+  ANULADO
+}
+
+model OrdenLaboratorio {
+  id            String          @id @default(uuid())
+  atencion_id   String
+  atencion      Atencion        @relation(fields: [atencion_id], references: [id])
+  tipo_examen   String
+  estado_examen EstadoExamen    @default(SOLICITADO)
+  resultados    Json?
+  precio        Decimal
+}
+
+enum EstadoExamen {
+  SOLICITADO
+  EN_PROCESO
+  FINALIZADO
+}
