@@ -4,9 +4,10 @@ import { generateToken } from '../helpers/jwt';
 
 export const registerUser = async (data: any) => {
     const { nombre, email, password, telefono, rol_id } = data;
+    const normalizedEmail = String(email).trim().toLowerCase();
 
     const existingUser = await prisma.usuario.findUnique({
-        where: { email }
+        where: { email: normalizedEmail }
     });
 
     if (existingUser) {
@@ -19,7 +20,7 @@ export const registerUser = async (data: any) => {
     const user = await prisma.usuario.create({
         data: {
             nombre,
-            email,
+            email: normalizedEmail,
             password_hash,
             telefono,
             rol_id
@@ -35,9 +36,11 @@ export const registerUser = async (data: any) => {
 
 export const loginUser = async (data: any) => {
     const { email, password } = data;
+    const normalizedEmail = String(email).trim().toLowerCase();
 
     const user = await prisma.usuario.findUnique({
-        where: { email }
+        where: { email: normalizedEmail },
+        include: { rol: { select: { nombre: true } } }
     });
 
     if (!user) {

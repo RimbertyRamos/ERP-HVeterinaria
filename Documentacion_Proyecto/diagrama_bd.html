@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Modelo de Base de Datos - VetCare UAGRM</title>
+  <style>
+    :root {
+      --bg: #111827;
+      --bg2: #1f2937;
+      --text: #f9fafb;
+      --text2: #9ca3af;
+      --accent: #3b82f6;
+    }
+    body {
+      margin: 0;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      background: var(--bg2);
+      border-radius: 12px;
+      padding: 32px;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+    }
+    h1 {
+      margin-top: 0;
+      font-size: 28px;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+    p {
+      color: var(--text2);
+      line-height: 1.6;
+      margin-bottom: 32px;
+      font-size: 15px;
+    }
+    .mermaid {
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 32px;
+      overflow-x: auto;
+      box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05);
+      display: flex;
+      justify-content: center;
+    }
+  </style>
+  <!-- Importamos Mermaid JS -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1 style="margin-bottom:0">Arquitectura de Base de Datos (UML 2.5)</h1>
+    <h3 style="color:var(--text2); margin-top:4px; margin-bottom:24px; font-weight:400">VetCare UAGRM: Sistema Modular 3NF</h3>
+    
+    <div style="background:rgba(59,130,246,0.1); border-left:4px solid var(--accent); padding:20px; border-radius:8px; margin-bottom:32px; font-size:15px; color:var(--text); line-height:1.7">
+      <div style="margin-bottom:12px">
+        <strong style="color:var(--accent); display:block; margin-bottom:4px">Estructura del Proyecto:</strong>
+        Este modelo representa el diseño lógico del sistema <strong>VetCare UAGRM</strong> en su versión optimizada. Se basa en una arquitectura de base de datos relacional normalizada (3NF), diseñada para gestionar de forma eficiente el ciclo de vida del paciente veterinario, desde su registro inicial hasta la facturación final.
+      </div>
+      <div style="margin-bottom:12px">
+        <strong style="color:var(--accent); display:block; margin-bottom:4px">Módulos Operativos:</strong>
+        El esquema integra cinco pilares fundamentales: <strong>Recepción y Turnos</strong> (Fichaje), <strong>Gestión Clínica</strong> (Historia Clínica y Registro SOAP), <strong>Farmacia Integral</strong> (Control de Stock, Kardex y Compras a Proveedores), <strong>Laboratorio Clínico</strong> (Órdenes y Resultados) y <strong>Punto de Venta (POS)</strong> para el cobro centralizado de servicios y productos.
+      </div>
+      <div>
+        <strong style="color:var(--accent); display:block; margin-bottom:4px">Gestión y Control:</strong>
+        El sistema está diseñado bajo un modelo de <strong>Control de Acceso (RBAC)</strong>, donde el perfil <strong>ADMIN</strong> ejerce una supervisión transversal, garantizando la integridad de los datos en todos los niveles operativos y financieros del hospital veterinario.
+      </div>
+    </div>
+    
+    <div class="mermaid">
+      classDiagram
+        direction TB
+
+        %% ------ MÓDULO PERSONAL / ADMIN ------
+        class Usuario {
+            +int id_usuario
+            +string ci
+            +string nombre_completo
+            +string correo
+            +string contrasena_hash
+            +enum rol [VETERINARIO, RECEPCIONISTA, CAJERO, ADMIN, FARMACEUTICO, LABORATORISTA]
+        }
+        note for Usuario "El rol ADMIN posee privilegios de gestión total\nsobre todos los módulos del sistema."
+
+        %% ------ MÓDULO CLIENTES / PACIENTES (NORMALIZADO 3NF) ------
+        class Propietario {
+            +int id_propietario
+            +string ci
+            +string nombre_completo
+            +string telefono
+            +string direccion
+            +string correo
+            +datetime fecha_registro
+        }
+
+        class Especie {
+            +int id_especie
+            +string nombre_especie
+        }
+
+        class Raza {
+            +int id_raza
+            +int id_especie
+            +string nombre_raza
+        }
+
+        class ColorMascota {
+            +int id_color
+            +string descripcion_color
+        }
+
+        class Paciente {
+            +int id_paciente
+            +int id_propietario
+            +int id_raza
+            +int id_color
+            +string nombre
+            +string sexo
+            +date fecha_nacimiento
+            +float peso_actual
+            +boolean esta_esterilizado
+        }
+
+        class Alergia {
+            +int id_alergia
+            +string nombre_alergia
+            +string descripcion
+        }
+
+        class PacienteAlergia {
+            +int id_paciente
+            +int id_alergia
+            +string severidad
+            +date fecha_deteccion
+        }
+
+        %% ------ MÓDULO ORGANIZACIÓN E INFRAESTRUCTURA ------
+        class EspecialidadMedica {
+            +int id_especialidad
+            +string nombre_especialidad
+        }
+
+        class Consultorio {
+            +int id_consultorio
+            +string nombre_sala
+            +int id_especialidad
+            +boolean estado_activo
+        }
+
+        class AsignacionHorario {
+            +int id_asignacion
+            +int id_usuario
+            +int id_consultorio
+            +time hora_inicio
+            +time hora_fin
+        }
+
+        class DiaSemana {
+            +int id_dia
+            +string nombre_dia
+        }
+
+        class HorarioDia {
+            +int id_horario_dia
+            +int id_asignacion
+            +int id_dia
+        }
+
+        %% ------ MÓDULO GESTIÓN DE TURNOS Y SERVICIOS (3NF) ------
+        class FichaAtencion {
+            +int id_ficha
+            +int id_servicio
+            +int id_paciente
+            +int id_asignacion_horario
+            +datetime fecha_hora_turno
+            +enum canal [PRESENCIAL, VIRTUAL]
+            +enum prioridad [NORMAL, URGENTE, EMERGENCIA]
+            +enum estado [ESPERA, EN_CURSO, COMPLETADA, CANCELADA]
+            +string motivo_resumen
+            +float costo_servicio
+        }
+        
+        class CatalogoServicio {
+            +int id_servicio
+            +string nombre_servicio
+            +string descripcion
+            +float precio_base
+        }
+
+
+        %% ------ MÓDULO HISTORIA CLÍNICA & SOAP ------
+        class HistoriaClinica {
+            +int id_historia
+            +int id_paciente
+            +datetime fecha_apertura
+            +text antecedentes_base
+        }
+
+        class RegistroSOAP {
+            +int id_registro_soap
+            +int id_historia
+            +int id_ficha
+            +int id_veterinario
+            +datetime fecha_registro
+            +text subjetivo_anamnesis
+            +float obj_temperatura
+            +int obj_fc
+            +int obj_fr
+            +int obj_condicion_corporal
+            +text obj_examen_fisico
+            +text analisis_diagnostico
+            +text plan_tratamiento
+        }
+
+        %% ------ MÓDULO FARMACIA, KARDEX Y COMPRAS ------
+        class CategoriaProducto {
+            +int id_categoria
+            +string nombre_categoria
+            +enum tipo_item [MEDICAMENTO, INSUMO_MEDICO, BIOLOGICO, ACCESORIO]
+            +string descripcion
+        }
+
+        class ProductoFarmacia {
+            +int id_producto
+            +int id_categoria
+            +string nombre_presentacion
+            +string codigo_sku
+            +int stock_unidades
+            +int stock_minimo
+            +float precio_unitario
+            +date fecha_caducidad
+        }
+
+        class Proveedor {
+            +int id_proveedor
+            +string nombre_empresa
+            +string nit
+            +string telefono
+            +string direccion
+            +string contacto_nombre
+        }
+
+        class CompraProveedor {
+            +int id_compra
+            +int id_proveedor
+            +int id_usuario
+            +datetime fecha_emision
+            +datetime fecha_recepcion_esperada
+            +float monto_total
+            +enum estado [PENDIENTE, EN_TRANSITO, COMPLETADA]
+        }
+
+        class DetalleCompra {
+            +int id_detalle
+            +int id_compra
+            +int id_producto
+            +int cantidad
+            +float costo_unitario
+            +string lote_codigo
+            +date fecha_vencimiento
+        }
+
+        class KardexMovimiento {
+            +int id_kardex
+            +int id_producto
+            +int id_usuario
+            +enum tipo [INGRESO, SALIDA, AJUSTE]
+            +string doc_referencia
+            +int cantidad
+            +int saldo_final
+            +datetime fecha_movimiento
+        }
+
+        class RecetaMedica {
+            +int id_receta
+            +int id_registro_soap
+            +text indicaciones_cuidado_fisico
+            +datetime fecha_emision
+        }
+
+        class DetalleReceta {
+            +int id_detalle
+            +int id_receta
+            +int id_producto_farmacia
+            +int cantidad_despachar
+            +string posologia_instruccion
+        }
+
+
+        %% ------ MÓDULO LABORATORIO (3NF) ------
+        class CatalogoExamen {
+            +int id_examen_catalogo
+            +string nombre_examen
+            +string tipo_muestra_requerida
+        }
+
+        class LaboratorioOrden {
+            +int id_orden
+            +string cod_orden
+            +int id_paciente
+            +int id_veterinario
+            +string estudios_solicitados
+            +string muestras
+            +enum prioridad [NORMAL, URGENTE]
+            +text observaciones
+            +datetime fecha_solicitud
+        }
+
+        class LaboratorioResultado {
+            +int id_resultado
+            +int id_orden
+            +int id_usuario_procesador
+            +text hallazgos
+            +text valores_referencia
+            +string url_archivo_adjunto
+            +datetime fecha_procesado
+        }
+
+        %% ------ MÓDULO CAJA Y FACTURACIÓN (3NF) ------
+        class PuntoCaja {
+            +int id_punto_caja
+            +string nombre_terminal
+            +string ubicacion_area
+        }
+
+        class ReciboCaja {
+            +int id_recibo
+            +int id_punto_caja
+            +int id_propietario
+            +int id_cajero
+            +datetime fecha_pago
+            +float monto_total
+            +enum metodo_pago [EFECTIVO, QR, TARJETA]
+            +float monto_recibido
+            +float cambio_devuelto
+            +string numero_factura_referencia
+        }
+
+        class DetalleCobro {
+            +int id_detalle_cobro
+            +int id_recibo
+            +int id_ficha_referencia
+            +int id_producto_referencia
+            +int id_examen_referencia
+            +int id_servicio_referencia
+            +string descripcion_concepto
+            +int cantidad
+            +float precio_unitario
+            +float subtotal
+        }
+
+        %% ------ RELACIONES (UML 2.5) ------
+        
+        Propietario "1" -- "0..*" Paciente : posee
+        Especie "1" -- "0..*" Raza : clasifica
+        Raza "1" -- "0..*" Paciente : pertenece_a
+        ColorMascota "1" -- "0..*" Paciente : define_color
+        
+        Paciente "1" -- "0..*" PacienteAlergia : padece
+        Alergia "1" -- "0..*" PacienteAlergia : registrada_en
+        
+        Paciente "1" -- "1" HistoriaClinica : titular de
+        FichaAtencion "0..*" -- "1" Paciente : atencion sobre
+        
+        Usuario "1" -- "0..*" AsignacionHorario : imparte turno en
+        EspecialidadMedica "1" -- "0..*" Consultorio : enfoque_de
+        Consultorio "1" -- "0..*" AsignacionHorario : alojado_en
+        
+        AsignacionHorario "1" -- "1..*" HorarioDia : aplica_en
+        DiaSemana "1" -- "0..*" HorarioDia : corresponde_a
+        AsignacionHorario "1" -- "0..*" FichaAtencion : provee disponibilidad (Reserva)
+        
+        CatalogoServicio "1" -- "0..*" FichaAtencion : tipo_de_atencion
+        
+        RegistroSOAP "0..*" -- "1" HistoriaClinica : conforma historial de
+        RegistroSOAP "1" -- "1" FichaAtencion : resuelve la
+        Usuario "1" -- "0..*" RegistroSOAP : redacta (Veterinario)
+        
+        RecetaMedica "1" -- "1" RegistroSOAP : originada_por
+        RecetaMedica "1" -- "1..*" DetalleReceta : se compone de
+        CategoriaProducto "1" -- "0..*" ProductoFarmacia : categoriza
+        DetalleReceta "0..*" --> "0..1" ProductoFarmacia : referencia
+        
+        Proveedor "1" -- "0..*" CompraProveedor : suministra
+        CompraProveedor "1" -- "1..*" DetalleCompra : contiene
+        ProductoFarmacia "1" -- "0..*" DetalleCompra : comprado_en
+        ProductoFarmacia "1" -- "0..*" KardexMovimiento : rastreado_en
+        
+        CatalogoExamen "1" -- "0..*" LaboratorioOrden : define_examen
+        LaboratorioOrden "0..*" -- "1" Paciente : extraida de
+        LaboratorioOrden "0..*" -- "1" Usuario : solicitada por
+        LaboratorioResultado "0..1" -- "1" LaboratorioOrden : responde a
+        
+        PuntoCaja "1" -- "0..*" ReciboCaja : recauda
+        Propietario "1" -- "0..*" ReciboCaja : realiza_pagos
+        Usuario "1" -- "0..*" ReciboCaja : cobra (Cajero/Farmaceutico)
+        ReciboCaja "1" -- "1..*" DetalleCobro : contiene
+        FichaAtencion "0..1" <-- "0..*" DetalleCobro : cobra_servicio
+        ProductoFarmacia "0..1" <-- "0..*" DetalleCobro : cobra_insumo
+        LaboratorioOrden "0..1" <-- "0..*" DetalleCobro : cobra_estudio
+    </div>
+    
+    <script>
+      // Inicializar el render de Mermaid JS
+      mermaid.initialize({ startOnLoad: true, theme: 'default' });
+    </script>
+  </div>
+</body>
+</html>
