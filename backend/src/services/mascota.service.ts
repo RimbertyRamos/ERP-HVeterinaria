@@ -1,5 +1,6 @@
 import prisma from '../config/db';
 import bcrypt from 'bcryptjs';
+import { validatePassword } from '../helpers/password';
 
 const mascotaInclude = {
   especie: true,
@@ -78,7 +79,18 @@ export const createMascotaConPropietario = async (data: {
 
     propietario = await prisma.usuario.findUnique({ where: { email: normalizedEmail } });
     if (!propietario) {
-      const rawPassword = data.propietario.password ?? data.propietario.ci ?? 'cliente123';
+      const provided = data.propietario.password;
+      let rawPassword: string;
+      let debeCambiar: boolean;
+      if (provided && provided.trim().length > 0) {
+        validatePassword(provided);
+        rawPassword = provided;
+        debeCambiar = false;
+      } else {
+        // NUNCA usar el CI (es semi-público). Default genérico + obligar cambio.
+        rawPassword = 'cliente123';
+        debeCambiar = true;
+      }
       const hash = await bcrypt.hash(rawPassword, 10);
       propietario = await prisma.usuario.create({
         data: {
@@ -88,6 +100,7 @@ export const createMascotaConPropietario = async (data: {
           telefono: data.propietario.telefono,
           ci: data.propietario.ci,
           rol_id: rolCliente.id,
+          debe_cambiar_password: debeCambiar,
         },
       });
     }

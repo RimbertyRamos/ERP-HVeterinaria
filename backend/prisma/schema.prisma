@@ -29,6 +29,9 @@ model Usuario {
   rol           Role     @relation(fields: [rol_id], references: [id])
   created_at    DateTime @default(now())
 
+  debe_cambiar_password Boolean @default(false)
+  activo                Boolean @default(true)
+
   mascotas           Mascota[]
   fichas_como_doctor FichaAtencion[] @relation("FichaDoctorRelation")
   fichas_creadas     FichaAtencion[] @relation("FichaCreadorRelation")

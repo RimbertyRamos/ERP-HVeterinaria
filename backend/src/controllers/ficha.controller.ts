@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import * as svc from '../services/ficha.service';
+import { getUserId } from '../middlewares/auth.middleware';
 
 const id = (req: Request) => req.params['id'] as string;
 
@@ -16,14 +17,16 @@ export const getFichaById = async (req: Request, res: Response) => {
 
 export const createFicha = async (req: Request, res: Response) => {
   try {
-    res.status(201).json(await svc.createFicha(req.body));
+    // creado_por_id SIEMPRE desde el token: el actor que crea la ficha
+    res.status(201).json(await svc.createFicha({ ...req.body, creado_por_id: getUserId(req) }));
   } catch (err: unknown) {
     res.status(400).json({ error: err instanceof Error ? err.message : 'Error' });
   }
 };
 
 export const iniciarFicha = async (req: Request, res: Response) => {
-  try { res.json(await svc.iniciarFicha(id(req), req.body)); }
+  // doctor_id del body = asignación deliberada; si no viene, cae al actor del token
+  try { res.json(await svc.iniciarFicha(id(req), req.body, getUserId(req))); }
   catch { res.status(400).json({ error: 'Error al iniciar ficha' }); }
 };
 

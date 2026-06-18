@@ -1,10 +1,12 @@
 import { Router } from 'express';
 import * as ctrl from '../controllers/ficha.controller';
+import { requireRole } from '../middlewares/role.middleware';
 
 const router = Router();
 
 router.get('/', ctrl.getFichas);
-router.post('/', ctrl.createFicha);
+// Crear ficha: solo personal que registra pacientes (resto del flujo clínico queda solo con authenticate)
+router.post('/', requireRole('Recepcionista', 'Admin', 'Veterinario'), ctrl.createFicha);
 router.get('/:id', ctrl.getFichaById);
 router.put('/:id', ctrl.updateFicha);
 router.put('/:id/iniciar', ctrl.iniciarFicha);

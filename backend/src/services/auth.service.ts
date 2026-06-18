@@ -1,10 +1,13 @@
 import bcrypt from 'bcryptjs';
 import prisma from '../config/db';
 import { generateToken } from '../helpers/jwt';
+import { validatePassword } from '../helpers/password';
 
 export const registerUser = async (data: any) => {
     const { nombre, email, password, telefono, rol_id } = data;
     const normalizedEmail = String(email).trim().toLowerCase();
+
+    validatePassword(password);
 
     const existingUser = await prisma.usuario.findUnique({
         where: { email: normalizedEmail }
@@ -53,6 +56,12 @@ export const loginUser = async (data: any) => {
         throw new Error('Invalid email or password');
     }
 
+    // Login único (no se filtra por rol), pero las cuentas desactivadas no entran.
+    if (!user.activo) {
+        throw new Error('Cuenta desactivada');
+    }
+
+    // userWithoutPassword incluye debe_cambiar_password y activo para que el frontend reaccione.
     const { password_hash: _, ...userWithoutPassword } = user;
 
     const token = generateToken({ id: user.id, rol_id: user.rol_id });

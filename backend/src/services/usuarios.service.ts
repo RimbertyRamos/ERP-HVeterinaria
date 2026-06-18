@@ -1,5 +1,6 @@
 import prisma from '../config/db';
 import bcrypt from 'bcryptjs';
+import { validatePassword } from '../helpers/password';
 
 const usuarioSelect = {
   id: true, nombre: true, email: true, telefono: true, ci: true,
@@ -32,8 +33,23 @@ export const createUsuario = async (data: {
 }) => {
   const { password, ...rest } = data;
   const normalizedEmail = data.email.trim().toLowerCase();
-  const hash = await bcrypt.hash(password ?? 'cambiar123', 10);
-  return prisma.usuario.create({ data: { ...rest, email: normalizedEmail, password_hash: hash }, select: usuarioSelect });
+
+  let rawPassword: string;
+  let debeCambiar: boolean;
+  if (password && password.trim().length > 0) {
+    validatePassword(password);
+    rawPassword = password;
+    debeCambiar = false;
+  } else {
+    // Default temporal para personal: el ERP es crítico, forzar cambio en el 1er ingreso.
+    rawPassword = 'cambiar123';
+    debeCambiar = true;
+  }
+  const hash = await bcrypt.hash(rawPassword, 10);
+  return prisma.usuario.create({
+    data: { ...rest, email: normalizedEmail, password_hash: hash, debe_cambiar_password: debeCambiar },
+    select: usuarioSelect,
+  });
 };
 
 export const updateUsuario = (id: string, data: Partial<{

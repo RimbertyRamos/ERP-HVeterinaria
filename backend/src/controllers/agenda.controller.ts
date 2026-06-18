@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import * as svc from '../services/agenda.service';
+import { getUserId } from '../middlewares/auth.middleware';
 
 export const getCitas = async (req: Request, res: Response) => {
   try {
@@ -34,7 +35,7 @@ export const deleteCita = async (req: Request, res: Response) => {
 
 export const checkIn = async (req: Request, res: Response) => {
   try {
-    const user = (req as any).user;
-    res.status(201).json(await svc.checkInCita(req.params.id as string, user?.id));
+    // creado_por_id desde el token: el actor que hace el check-in
+    res.status(201).json(await svc.checkInCita(req.params.id as string, getUserId(req)));
   } catch (e: any) { res.status(400).json({ error: e.message ?? 'Error en check-in' }); }
 };

@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import * as svc from '../services/caja.service';
+import { getUserId } from '../middlewares/auth.middleware';
 
 const id = (req: Request) => req.params['id'] as string;
 
@@ -19,7 +20,8 @@ export const getReciboById = async (req: Request, res: Response) => {
 
 export const cobrarFicha = async (req: Request, res: Response) => {
   try {
-    res.status(201).json(await svc.cobrarFicha(req.body));
+    // cajero_id SIEMPRE desde el token, nunca del body (trazabilidad)
+    res.status(201).json(await svc.cobrarFicha({ ...req.body, cajero_id: getUserId(req) }));
   } catch (err: unknown) {
     res.status(400).json({ error: err instanceof Error ? err.message : 'Error al cobrar' });
   }
@@ -27,7 +29,8 @@ export const cobrarFicha = async (req: Request, res: Response) => {
 
 export const ventaDirecta = async (req: Request, res: Response) => {
   try {
-    res.status(201).json(await svc.ventaDirecta(req.body));
+    // cajero_id SIEMPRE desde el token, nunca del body (trazabilidad)
+    res.status(201).json(await svc.ventaDirecta({ ...req.body, cajero_id: getUserId(req) }));
   } catch (err: unknown) {
     res.status(400).json({ error: err instanceof Error ? err.message : 'Error al procesar venta directa' });
   }

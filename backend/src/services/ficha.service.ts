@@ -92,12 +92,13 @@ export const createFicha = async (data: {
   });
 };
 
-export const iniciarFicha = (id: string, data: { doctor_id: string; consultorio_id: string }) =>
+export const iniciarFicha = (id: string, data: { doctor_id?: string; consultorio_id: string }, actorId: string) =>
   prisma.$transaction(async (tx) => {
     await tx.consultorio.update({ where: { id: data.consultorio_id }, data: { estado: 'OCUPADO' } });
     return tx.fichaAtencion.update({
       where: { id },
-      data: { doctor_id: data.doctor_id, consultorio_id: data.consultorio_id, estado: 'EN_CURSO' },
+      // asignación deliberada (body) si viene; si no, el actor que inicia la atención
+      data: { doctor_id: data.doctor_id ?? actorId, consultorio_id: data.consultorio_id, estado: 'EN_CURSO' },
       include: fichaInclude,
     });
   });
