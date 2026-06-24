@@ -1,15 +1,16 @@
-import { Router } from 'express';
-import * as ctrl from '../controllers/catalogo.controller';
+import { Router } from "express";
+import { catalogoController } from "../container";
 
 const router = Router();
 
-router.get('/especies', ctrl.getEspecies);
-router.get('/razas', ctrl.getRazas);
-router.get('/colores', ctrl.getColores);
-router.get('/alergias', ctrl.getAlergias);
-router.get('/servicios', ctrl.getServicios);
-router.get('/examenes', ctrl.getExamenes);
-router.get('/categorias', ctrl.getCategorias);
-router.get('/roles', ctrl.getRoles);
+router.get("/especies", catalogoController.getEspecies);
+router.get("/razas", catalogoController.getRazas);
+router.get("/colores", catalogoController.getColores);
+router.get("/alergias", catalogoController.getAlergias);
+router.get("/servicios", catalogoController.getServicios);
+router.get("/categorias", catalogoController.getCategorias);
+router.get("/roles", catalogoController.getRoles);
+router.get("/veterinarios", catalogoController.getVeterinarios);
+router.get("/propietarios", catalogoController.getPropietarios);
 
 export default router;

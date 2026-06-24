@@ -3,13 +3,27 @@
 /* Allow manual dark mode toggle using .dark class on html/body */
 @custom-variant dark (&:is(.dark *));
 @theme {
-  --color-primary: #FACC15; /* Yellow-400 */
-  --color-primary-dark: #EAB308; /* Yellow-500 */
-  
+  --color-primary: #facc15; /* Yellow-400 */
+  --color-primary-dark: #eab308; /* Yellow-500 */
+
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
 }
 
 @layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  /* Declaramos explícitamente el esquema de color según el tema activo.
+     Así los navegadores con "modo oscuro forzado" (Brave, Comet, etc.)
+     respetan el tema de la app en vez de oscurecerla por su cuenta. */
+  html {
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
   body {
     @apply text-slate-900 bg-slate-50 antialiased;
   }

@@ -1,61 +1,221 @@
-import prisma from '../config/db';
-import bcrypt from 'bcryptjs';
-import { validatePassword } from '../helpers/password';
+import { PrismaClient } from "@prisma/client";
+import { PasswordService } from "./password.service";
+import {
+  CreateUsuarioDto,
+  UpdateUsuarioDto,
+  CreatePropietarioDto,
+} from "../types";
 
 const usuarioSelect = {
-  id: true, nombre: true, email: true, telefono: true, ci: true,
-  rol: true, created_at: true,
+  id: true,
+  nombre: true,
+  email: true,
+  telefono: true,
+  ci: true,
+  rol: true,
+  created_at: true,
   _count: { select: { mascotas: true } },
 };
 
-export const getUsuarios = (rol?: string, search?: string) =>
-  prisma.usuario.findMany({
-    where: {
-      ...(rol ? { rol: { nombre: rol } } : {}),
-      ...(search ? {
-        OR: [
-          { nombre: { contains: search, mode: 'insensitive' } },
-          { email: { contains: search, mode: 'insensitive' } },
-          { ci: { contains: search, mode: 'insensitive' } },
-        ],
-      } : {}),
-    },
-    select: usuarioSelect,
-    orderBy: { nombre: 'asc' },
-  });
+export class UsuariosService {
+  constructor(
+    private readonly prisma: PrismaClient,
+    private readonly passwordService: PasswordService,
+  ) {}
 
-export const getUsuarioById = (id: string) =>
-  prisma.usuario.findUnique({ where: { id }, select: usuarioSelect });
-
-export const createUsuario = async (data: {
-  nombre: string; email: string; password?: string;
-  telefono?: string; ci?: string; rol_id: string;
-}) => {
-  const { password, ...rest } = data;
-  const normalizedEmail = data.email.trim().toLowerCase();
-
-  let rawPassword: string;
-  let debeCambiar: boolean;
-  if (password && password.trim().length > 0) {
-    validatePassword(password);
-    rawPassword = password;
-    debeCambiar = false;
-  } else {
-    // Default temporal para personal: el ERP es crítico, forzar cambio en el 1er ingreso.
-    rawPassword = 'cambiar123';
-    debeCambiar = true;
+  async getUsuarios(rol?: string, search?: string) {
+    try {
+      return await this.prisma.usuario.findMany({
+        where: {
+          ...(rol ? { rol: { nombre: rol } } : {}),
+          ...(search
+            ? {
+                OR: [
+                  { nombre: { contains: search, mode: "insensitive" } },
+                  { email: { contains: search, mode: "insensitive" } },
+                  { ci: { contains: search, mode: "insensitive" } },
+                ],
+              }
+            : {}),
+        },
+        select: usuarioSelect,
+        orderBy: { nombre: "asc" },
+      });
+    } catch (err) {
+      throw { status: 500, message: "Error al obtener los usuarios" };
+    }
   }
-  const hash = await bcrypt.hash(rawPassword, 10);
-  return prisma.usuario.create({
-    data: { ...rest, email: normalizedEmail, password_hash: hash, debe_cambiar_password: debeCambiar },
-    select: usuarioSelect,
-  });
-};
 
-export const updateUsuario = (id: string, data: Partial<{
-  nombre: string; email: string; telefono: string; ci: string; rol_id: string;
-}>) =>
-  prisma.usuario.update({ where: { id }, data, select: usuarioSelect });
+  async getUsuarioById(id: string) {
+    try {
+      return await this.prisma.usuario.findUnique({
+        where: { id },
+        select: usuarioSelect,
+      });
+    } catch (err) {
+      throw { status: 500, message: "Error al obtener el usuario" };
+    }
+  }
 
-export const deleteUsuario = (id: string) =>
-  prisma.usuario.delete({ where: { id } });
+  async createUsuario(data: CreateUsuarioDto) {
+    try {
+      const { password, ...rest } = data;
+      const normalizedEmail = data.email.trim().toLowerCase();
+
+      let rawPassword: string;
+      let debeCambiar: boolean;
+      if (password && password.trim().length > 0) {
+        this.passwordService.validate(password);
+        rawPassword = password;
+        debeCambiar = false;
+      } else {
+        // Default temporal para personal: el ERP es crítico, forzar cambio en el 1er ingreso.
+        rawPassword = "cambiar123";
+        debeCambiar = true;
+      }
+      const hash = await this.passwordService.hash(rawPassword);
+      return await this.prisma.usuario.create({
+        data: {
+          ...rest,
+          email: normalizedEmail,
+          password_hash: hash,
+          debe_cambiar_password: debeCambiar,
+        },
+        select: usuarioSelect,
+      });
+    } catch (err: any) {
+      throw {
+        status: err?.status || 500,
+        message: err?.message || "Error al crear el usuario",
+      };
+    }
+  }
+
+  async updateUsuario(id: string, data: UpdateUsuarioDto) {
+    try {
+      return await this.prisma.usuario.update({
+        where: { id },
+        data,
+        select: usuarioSelect,
+      });
+    } catch (err) {
+      throw { status: 500, message: "Error al actualizar el usuario" };
+    }
+  }
+
+  async deleteUsuario(id: string) {
+    try {
+      return await this.prisma.usuario.delete({ where: { id } });
+    } catch (err) {
+      throw { status: 500, message: "Error al eliminar el usuario" };
+    }
+  }
+
+  /**
+   * Cambia la contraseña del PROPIO usuario autenticado.
+   * Verifica la contraseña actual, exige que la nueva cumpla la política
+   * reforzada y que sea distinta de la actual. Limpia debe_cambiar_password.
+   */
+  async changeOwnPassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ) {
+    const user = await this.prisma.usuario.findUnique({
+      where: { id: userId },
+    });
+    if (!user) throw { status: 404, message: "Usuario no encontrado" };
+
+    const actualOk = await this.passwordService.compare(
+      currentPassword || "",
+      user.password_hash,
+    );
+    if (!actualOk) {
+      throw { status: 400, message: "La contraseña actual es incorrecta" };
+    }
+
+    try {
+      this.passwordService.validateStrong(newPassword);
+    } catch (e: any) {
+      throw { status: 400, message: e?.message || "Contraseña no válida" };
+    }
+
+    const esIgual = await this.passwordService.compare(
+      newPassword,
+      user.password_hash,
+    );
+    if (esIgual) {
+      throw {
+        status: 400,
+        message: "La nueva contraseña debe ser diferente de la actual",
+      };
+    }
+
+    const password_hash = await this.passwordService.hash(newPassword);
+    await this.prisma.usuario.update({
+      where: { id: userId },
+      data: { password_hash, debe_cambiar_password: false },
+    });
+    return { ok: true };
+  }
+
+  /**
+   * Busca un propietario (cliente) por email o lo crea si no existe.
+   * ÚNICA fuente de verdad para la creación de usuarios con rol CLIENTE.
+   * Utilizado por mascotaService para evitar duplicar lógica de creación de usuarios.
+   */
+  async findOrCreateCliente(
+    data: CreatePropietarioDto,
+  ): Promise<{ id: string }> {
+    try {
+      const normalizedEmail = data.email.trim().toLowerCase();
+
+      // Si ya existe, simplemente retornamos — no creamos duplicados
+      const existing = await this.prisma.usuario.findUnique({
+        where: { email: normalizedEmail },
+      });
+      if (existing) return existing;
+
+      const rolCliente = await this.prisma.role.findFirst({
+        where: { nombre: "CLIENTE" },
+      });
+      if (!rolCliente) {
+        throw {
+          status: 500,
+          message: "Rol CLIENTE no encontrado en la base de datos",
+        };
+      }
+
+      let rawPassword: string;
+      let debeCambiar: boolean;
+      if (data.password && data.password.trim().length > 0) {
+        this.passwordService.validate(data.password);
+        rawPassword = data.password;
+        debeCambiar = false;
+      } else {
+        // NUNCA usar el CI (es semi-público). Default simple para el primer
+        // ingreso + obligar cambio desde el perfil.
+        rawPassword = "123456";
+        debeCambiar = true;
+      }
+      const hash = await this.passwordService.hash(rawPassword);
+
+      return await this.prisma.usuario.create({
+        data: {
+          nombre: data.nombre,
+          email: normalizedEmail,
+          password_hash: hash,
+          telefono: data.telefono,
+          ci: data.ci,
+          rol_id: rolCliente.id,
+          debe_cambiar_password: debeCambiar,
+        },
+      });
+    } catch (err: any) {
+      throw {
+        status: err?.status || 500,
+        message: err?.message || "Error al crear el propietario",
+      };
+    }
+  }
+}

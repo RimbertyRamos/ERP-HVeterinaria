@@ -1,36 +1,87 @@
-import { Request, Response } from 'express';
-import * as svc from '../services/usuarios.service';
+import { Request, Response } from "express";
+import { UsuariosService } from "../services/usuarios.service";
+import { ErrorHandler } from "../middlewares/error.middleware";
+import { getUserId } from "../middlewares/auth.middleware";
 
-const id = (req: Request) => req.params['id'] as string;
+export class UsuariosController {
+  constructor(
+    private readonly usuariosService: UsuariosService,
+    private readonly errors: ErrorHandler,
+  ) {}
 
-export const getUsuarios = async (req: Request, res: Response) => {
-  const { rol, search } = req.query as { rol?: string; search?: string };
-  res.json(await svc.getUsuarios(rol, search));
-};
+  getUsuarios = async (req: Request, res: Response) => {
+    try {
+      const { rol, search } = req.query as { rol?: string; search?: string };
+      const usuarios = await this.usuariosService.getUsuarios(rol, search);
+      res.json(usuarios);
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
 
-export const getUsuarioById = async (req: Request, res: Response) => {
-  const u = await svc.getUsuarioById(id(req));
-  if (!u) return res.status(404).json({ error: 'Usuario no encontrado' });
-  res.json(u);
-};
+  getUsuarioById = async (req: Request, res: Response) => {
+    try {
+      const usuario = await this.usuariosService.getUsuarioById(
+        req.params.id as string,
+      );
+      if (!usuario) return this.errors.e404(req, res);
+      res.json(usuario);
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
 
-export const createUsuario = async (req: Request, res: Response) => {
-  try {
-    res.status(201).json(await svc.createUsuario(req.body));
-  } catch (err: unknown) {
-    res.status(400).json({ error: err instanceof Error ? err.message : 'Error' });
-  }
-};
+  createUsuario = async (req: Request, res: Response) => {
+    try {
+      const usuario = await this.usuariosService.createUsuario(req.body);
+      res.status(201).json(usuario);
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
 
-export const updateUsuario = async (req: Request, res: Response) => {
-  try {
-    res.json(await svc.updateUsuario(id(req), req.body));
-  } catch {
-    res.status(400).json({ error: 'Error al actualizar usuario' });
-  }
-};
+  updateUsuario = async (req: Request, res: Response) => {
+    try {
+      const usuario = await this.usuariosService.updateUsuario(
+        req.params.id as string,
+        req.body,
+      );
+      res.json(usuario);
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
 
-export const deleteUsuario = async (req: Request, res: Response) => {
-  await svc.deleteUsuario(id(req));
-  res.json({ ok: true });
-};
+  deleteUsuario = async (req: Request, res: Response) => {
+    try {
+      await this.usuariosService.deleteUsuario(req.params.id as string);
+      res.json({ ok: true });
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
+
+  /** Cambia la contraseña del usuario autenticado (cualquier rol). */
+  changeMyPassword = async (req: Request, res: Response) => {
+    try {
+      const userId = getUserId(req);
+      const { currentPassword, newPassword } = req.body as {
+        currentPassword?: string;
+        newPassword?: string;
+      };
+      if (!currentPassword || !newPassword) {
+        return res
+          .status(400)
+          .json({ message: "Debes indicar la contraseña actual y la nueva" });
+      }
+      const result = await this.usuariosService.changeOwnPassword(
+        userId,
+        currentPassword,
+        newPassword,
+      );
+      res.json(result);
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
+}

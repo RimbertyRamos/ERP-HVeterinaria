@@ -1,26 +1,38 @@
-import { Request, Response, NextFunction } from 'express';
-import prisma from '../config/db';
+import { Request, Response, NextFunction } from "express";
 
-export const requireRole = (...rolesPermitidos: string[]) => {
-    return async (req: Request, res: Response, next: NextFunction) => {
-        if (!req.user) {
-            return res.status(401).json({ error: 'Token no proporcionado' });
-        }
+/**
+ * Middleware de autorización basado en roles.
+ *
+ * Lee el rol directamente desde req.user.rol (extraído del JWT por AuthMiddleware),
+ * eliminando la consulta a la base de datos que existía en la versión anterior.
+ *
+ * Antes era una función factory suelta (requireRole); ahora es una clase para
+ * mantener la coherencia con el resto de la infraestructura inyectable. El
+ * composition root la instancia y las rutas usan `roleMiddleware.require('Admin')`.
+ *
+ * REQUISITO: `require()` DEBE ir después de `authMiddleware.authenticate` en la
+ * cadena de middlewares. El rol se embebe en el JWT durante el login — ver
+ * auth.service.ts y services/token.service.ts.
+ */
+export class RoleMiddleware {
+  require = (...rolesPermitidos: string[]) => {
+    return (req: Request, res: Response, next: NextFunction) => {
+      if (!req.user) {
+        return res.status(401).json({ error: "Token no proporcionado" });
+      }
 
-        const rol = await prisma.role.findUnique({
-            where: { id: req.user.rol_id },
-            select: { nombre: true }
-        });
+      // Comparación case-insensitive: la BD guarda los roles en MAYÚSCULAS
+      // (ADMIN, CAJERO…) pero require() se invoca con 'Admin', 'Cajero'…
+      const permitidos = rolesPermitidos.map((r) => r.toUpperCase().trim());
+      const rolNormalizado = req.user.rol?.toUpperCase().trim();
 
-        // Comparación case-insensitive: la BD guarda los roles en MAYÚSCULAS
-        // (ADMIN, CAJERO…) pero requireRole se invoca con 'Admin', 'Cajero'…
-        const permitidos = rolesPermitidos.map((r) => r.toUpperCase().trim());
-        const rolNormalizado = rol?.nombre.toUpperCase().trim();
+      if (!rolNormalizado || !permitidos.includes(rolNormalizado)) {
+        return res
+          .status(403)
+          .json({ error: "No autorizado para esta acción" });
+      }
 
-        if (!rolNormalizado || !permitidos.includes(rolNormalizado)) {
-            return res.status(403).json({ error: 'No autorizado para esta acción' });
-        }
-
-        next();
+      next();
     };
-};
+  };
+}

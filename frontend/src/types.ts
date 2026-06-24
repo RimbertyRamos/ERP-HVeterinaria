@@ -1,16 +1,61 @@
-export type ViewType = 'dashboard' | 'clinical' | 'agenda' | 'inventory' | 'pos' | 'laboratory' | 'consultorios' | 'financial' | 'settings' | 'waiting-room' | 'users' | 'consultation' | 'farmacia';
+export type ViewType =
+  | "dashboard"
+  | "clinical"
+  | "agenda"
+  | "inventory"
+  | "pos"
+  | "consultorios"
+  | "financial"
+  | "settings"
+  | "waiting-room"
+  | "users"
+  | "servicios"
+  | "consultation"
+  | "solicitudes";
 
 // ── Catálogos ────────────────────────────────────────────────────────
-export interface Especie { id: string; nombre: string; razas: Raza[] }
-export interface Raza { id: string; nombre: string; especie_id: string }
-export interface ColorMascota { id: string; nombre: string }
-export interface Alergia { id: string; nombre: string; descripcion?: string }
-export interface CatalogoServicio { id: string; nombre: string; precio_base: string | number; duracion_min: number; descripcion?: string }
-export interface CatalogoExamen { id: string; nombre: string; precio: string | number; descripcion?: string; tipo_muestra?: string }
-export interface CategoriaProducto { id: string; nombre: string; descripcion?: string; tipo_item?: string }
+export interface Especie {
+  id: string;
+  nombre: string;
+  razas: Raza[];
+}
+export interface Raza {
+  id: string;
+  nombre: string;
+  especie_id: string;
+}
+export interface ColorMascota {
+  id: string;
+  nombre: string;
+}
+export interface Alergia {
+  id: string;
+  nombre: string;
+  descripcion?: string;
+}
+export interface CatalogoServicio {
+  id: string;
+  nombre: string;
+  precio_base: string | number;
+  duracion_min?: number;
+  descripcion?: string;
+  activo?: boolean;
+}
+export interface CategoriaProducto {
+  id: string;
+  nombre: string;
+  descripcion?: string;
+  tipo_item?: string;
+}
 
 // ── Usuarios ─────────────────────────────────────────────────────────
-export interface UsuarioResumen { id: string; nombre: string; email: string; ci?: string; telefono?: string }
+export interface UsuarioResumen {
+  id: string;
+  nombre: string;
+  email: string;
+  ci?: string;
+  telefono?: string;
+}
 
 // ── Mascota ──────────────────────────────────────────────────────────
 export interface Mascota {
@@ -20,20 +65,25 @@ export interface Mascota {
   raza?: Raza;
   color?: ColorMascota;
   fecha_nacimiento?: string;
-  sexo: 'MACHO' | 'HEMBRA';
+  sexo: "MACHO" | "HEMBRA";
   propietario: UsuarioResumen;
   alergias: { alergia: Alergia }[];
 }
 
 // ── Consultorio ──────────────────────────────────────────────────────
-export type TipoSala = 'CONSULTORIO' | 'LABORATORIO' | 'QUIROFANO' | 'SALA_ESPERA' | 'OTRO';
+export type TipoSala =
+  | "CONSULTORIO"
+  | "LABORATORIO"
+  | "QUIROFANO"
+  | "SALA_ESPERA"
+  | "OTRO";
 
 export interface Consultorio {
   id: string;
   nombre: string;
   especialidad?: string;
   tipo: TipoSala;
-  estado: 'LIBRE' | 'OCUPADO' | 'MANTENIMIENTO';
+  estado: "LIBRE" | "OCUPADO" | "LIMPIEZA";
   responsable_id?: string;
   responsable?: UsuarioResumen;
 }
@@ -43,18 +93,96 @@ export interface FichaAtencion {
   id: string;
   cod_ficha: string;
   fecha_hora: string;
-  estado: 'ESPERA' | 'EN_CURSO' | 'COMPLETADA' | 'CANCELADA';
-  estado_cobro: 'PENDIENTE' | 'PAGADO' | 'EXENTO';
-  prioridad: 'NORMAL' | 'URGENTE';
+  estado: "ESPERA" | "EN_CURSO" | "COMPLETADA" | "CANCELADA";
+  estado_cobro: "PENDIENTE" | "PAGADO" | "EXENTO";
+  prioridad: "NORMAL" | "URGENTE";
   motivo?: string;
   mascota: Mascota;
   servicio: CatalogoServicio;
   doctor?: UsuarioResumen;
   consultorio?: Consultorio;
   soap?: RegistroSOAP;
-  ordenes_lab: LaboratorioOrden[];
   recibo?: ReciboCaja;
   consumos?: ConsumoConsulta[];
+  servicios_realizados?: FichaServicio[];
+}
+
+// ── Servicios realizados en la consulta ──────────────────────────────
+export interface FichaServicio {
+  id: string;
+  servicio_id: string;
+  servicio: CatalogoServicio;
+  precio: string | number;
+  cantidad: number;
+}
+
+// ── Historia Clínica (ficha de consulta externa) ─────────────────────
+export type EstadoHistoria = "BORRADOR" | "FINALIZADA";
+
+export interface EvolucionTratamiento {
+  id?: string;
+  fecha?: string;
+  descripcion: string;
+}
+
+export interface HistoriaResumen {
+  id: string;
+  folio: number;
+  fecha: string;
+  motivo_consulta?: string | null;
+  diagnostico_presuntivo?: string | null;
+  diagnostico_confirmativo?: string | null;
+  estado: EstadoHistoria;
+  atendido_por?: { nombre: string } | null;
+}
+
+export interface HistoriaClinica {
+  id: string;
+  folio: number;
+  fecha: string;
+  mascota_id: string;
+  ficha_id?: string | null;
+  estado: EstadoHistoria;
+
+  propietario_nombre?: string | null;
+  domicilio?: string | null;
+  telefono?: string | null;
+  celular?: string | null;
+  edad?: string | null;
+  peso?: string | number | null;
+
+  motivo_consulta?: string | null;
+  vacunas?: string[];
+  vacunas_otras?: string | null;
+  desparasitacion?: boolean;
+  desparasitacion_cuando?: string | null;
+  enfermedades_previas?: string | null;
+  intervenciones_previas?: string | null;
+
+  estado_general?: string | null;
+  apetito?: string | null;
+  hidratacion?: string | null;
+  mucosa?: string | null;
+  ap_digestivo?: string | null;
+  ap_genitourinario?: string | null;
+  ap_respiratorio?: string | null;
+  temperatura?: string | number | null;
+  fc?: number | null;
+  fr?: number | null;
+  observacion_clinica?: string | null;
+  pruebas_complementarias?: string | null;
+  diagnostico_presuntivo?: string | null;
+  diagnostico_confirmativo?: string | null;
+  pronostico?: string | null;
+  tratamiento?: string | null;
+
+  evoluciones?: EvolucionTratamiento[];
+  mascota?: Mascota;
+  atendido_por?: { id: string; nombre: string } | null;
+  created_by?: { id: string; nombre: string } | null;
+  finalized_by?: { id: string; nombre: string } | null;
+  created_at?: string;
+  finalized_at?: string | null;
 }
 
 // ── Consumos ──────────────────────────────────────────────────────────
@@ -79,23 +207,7 @@ export interface RegistroSOAP {
   fr?: number;
   diagnostico?: string;
   tratamiento?: string;
-  receta?: RecetaMedica;
   consumos?: ConsumoConsulta[];
-}
-
-export interface RecetaMedica {
-  id: string;
-  indicaciones?: string;
-  estado_entrega?: 'PENDIENTE' | 'ENTREGADO' | 'PARCIAL';
-  detalles: DetalleReceta[];
-}
-
-export interface DetalleReceta {
-  id: string;
-  producto_id: string;
-  producto: Producto;
-  cantidad: number;
-  instrucciones?: string;
 }
 
 // ── Producto ─────────────────────────────────────────────────────────
@@ -110,21 +222,6 @@ export interface Producto {
   stock_minimo: number;
 }
 
-// ── Laboratorio ──────────────────────────────────────────────────────
-export interface LaboratorioOrden {
-  id: string;
-  cod_orden: string;
-  ficha_id: string;
-  examen: CatalogoExamen;
-  prioridad: 'URGENTE' | 'NORMAL';
-  estado: 'SOLICITADO' | 'EN_PROCESO' | 'FINALIZADO';
-  resultado?: { id: string; hallazgos?: string; observaciones?: string; archivo_url?: string };
-  ficha: {
-    mascota: { nombre: string; propietario: { id: string; nombre: string } };
-    doctor?: { id: string; nombre: string } | null;
-  };
-}
-
 // ── Caja / Recibos ───────────────────────────────────────────────────
 export interface ReciboCaja {
   id: string;
@@ -133,17 +230,20 @@ export interface ReciboCaja {
   total: string | number;
   monto_recibido: string | number;
   cambio_devuelto: string | number;
-  metodo_pago: 'EFECTIVO' | 'TARJETA' | 'QR';
-  estado: 'PAGADO' | 'ANULADO';
+  metodo_pago: "EFECTIVO" | "TARJETA" | "QR";
+  estado: "PAGADO" | "ANULADO";
   nombre_cliente?: string;
-  ficha?: Pick<FichaAtencion, 'id' | 'cod_ficha'> & { mascota: Pick<Mascota, 'nombre' | 'propietario'>; servicio: CatalogoServicio };
+  ficha?: Pick<FichaAtencion, "id" | "cod_ficha"> & {
+    mascota: Pick<Mascota, "nombre" | "propietario">;
+    servicio: CatalogoServicio;
+  };
   cajero: UsuarioResumen;
   detalles: DetalleCobro[];
 }
 
 export interface DetalleCobro {
   id: string;
-  tipo: 'SERVICIO' | 'LABORATORIO' | 'FARMACIA' | 'SUMINISTRO';
+  tipo: "SERVICIO" | "FARMACIA" | "SUMINISTRO";
   descripcion: string;
   precio_unit: string | number;
   cantidad: number;
@@ -156,11 +256,21 @@ export interface FichaPendiente {
   cod_ficha: string;
   fecha_hora: string;
   motivo?: string;
-  mascota: { id: string; nombre: string; propietario: { id: string; nombre: string } };
+  mascota: {
+    id: string;
+    nombre: string;
+    propietario: { id: string; nombre: string };
+  };
   servicio: CatalogoServicio;
-  soap?: { receta?: { detalles: { producto: { nombre: string; precio_venta: string | number }; cantidad: number }[] } };
-  ordenes_lab: { examen: CatalogoExamen }[];
-  consumos?: { producto: { nombre: string; precio_venta: string | number }; cantidad: number }[];
+  servicios_realizados?: {
+    servicio: { nombre: string };
+    precio: string | number;
+    cantidad: number;
+  }[];
+  consumos?: {
+    producto: { nombre: string; precio_venta: string | number };
+    cantidad: number;
+  }[];
 }
 
 // ── Dashboard KPIs ───────────────────────────────────────────────────
@@ -178,7 +288,21 @@ export interface DashboardKpis {
 }
 
 // ── Agenda ───────────────────────────────────────────────────────────
-export type EstadoCita = 'PROGRAMADA' | 'CONFIRMADA' | 'COMPLETADA' | 'CANCELADA' | 'NO_ASISTIO';
+export type EstadoCita =
+  | "SOLICITADA"
+  | "PROGRAMADA"
+  | "CONFIRMADA"
+  | "COMPLETADA"
+  | "CANCELADA"
+  | "NO_ASISTIO";
+
+export type TipoCita =
+  | "CONSULTA"
+  | "CONTROL"
+  | "VACUNACION"
+  | "CIRUGIA"
+  | "PELUQUERIA"
+  | "OTRO";
 
 export interface Cita {
   id: string;
@@ -186,7 +310,10 @@ export interface Cita {
   mascota: Mascota;
   doctor_id?: string;
   doctor?: UsuarioResumen;
+  consultorio_id?: string;
   fecha_hora: string;
+  duracion_min?: number;
+  tipo?: TipoCita;
   motivo: string;
   notas?: string;
   estado: EstadoCita;

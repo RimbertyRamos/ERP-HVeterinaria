@@ -1,45 +1,80 @@
-import { Request, Response } from 'express';
-import * as svc from '../services/producto.service';
+import { Request, Response } from "express";
+import { ProductoService } from "../services/producto.service";
+import { ErrorHandler } from "../middlewares/error.middleware";
 
-const id = (req: Request) => req.params['id'] as string;
+export class ProductoController {
+  constructor(
+    private readonly productoService: ProductoService,
+    private readonly errors: ErrorHandler,
+  ) {}
 
-export const getProductos = async (req: Request, res: Response) => {
-  const { search, categoria_id } = req.query as Record<string, string>;
-  res.json(await svc.getProductos(search, categoria_id));
-};
+  getProductos = async (req: Request, res: Response) => {
+    try {
+      const { search, categoria_id } = req.query as Record<string, string>;
+      const productos = await this.productoService.getProductos(
+        search,
+        categoria_id,
+      );
+      res.json(productos);
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
 
-export const getProductoById = async (req: Request, res: Response) => {
-  const p = await svc.getProductoById(id(req));
-  if (!p) return res.status(404).json({ error: 'Producto no encontrado' });
-  res.json(p);
-};
+  getProductoById = async (req: Request, res: Response) => {
+    try {
+      const producto = await this.productoService.getProductoById(
+        req.params.id as string,
+      );
+      if (!producto) return this.errors.e404(req, res);
+      res.json(producto);
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
 
-export const createProducto = async (req: Request, res: Response) => {
-  try {
-    res.status(201).json(await svc.createProducto(req.body));
-  } catch (err: unknown) {
-    res.status(400).json({ error: err instanceof Error ? err.message : 'Error' });
-  }
-};
+  createProducto = async (req: Request, res: Response) => {
+    try {
+      const producto = await this.productoService.createProducto(req.body);
+      res.status(201).json(producto);
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
 
-export const updateProducto = async (req: Request, res: Response) => {
-  try {
-    res.json(await svc.updateProducto(id(req), req.body));
-  } catch {
-    res.status(400).json({ error: 'Error al actualizar producto' });
-  }
-};
+  updateProducto = async (req: Request, res: Response) => {
+    try {
+      const producto = await this.productoService.updateProducto(
+        req.params.id as string,
+        req.body,
+      );
+      res.json(producto);
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
 
-export const deleteProducto = async (req: Request, res: Response) => {
-  await svc.deleteProducto(id(req));
-  res.json({ ok: true });
-};
+  deleteProducto = async (req: Request, res: Response) => {
+    try {
+      await this.productoService.deleteProducto(req.params.id as string);
+      res.json({ ok: true });
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
 
-export const ajustarStock = async (req: Request, res: Response) => {
-  try {
-    const { cantidad, tipo, motivo } = req.body;
-    res.json(await svc.ajustarStock(id(req), cantidad, tipo, motivo));
-  } catch (err: unknown) {
-    res.status(400).json({ error: err instanceof Error ? err.message : 'Error' });
-  }
-};
+  ajustarStock = async (req: Request, res: Response) => {
+    try {
+      const { cantidad, tipo, motivo } = req.body;
+      const producto = await this.productoService.ajustarStock(
+        req.params.id as string,
+        cantidad,
+        tipo,
+        motivo,
+      );
+      res.json(producto);
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
+}

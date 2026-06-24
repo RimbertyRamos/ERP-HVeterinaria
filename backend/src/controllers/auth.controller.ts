@@ -1,20 +1,28 @@
-import { Request, Response } from 'express';
-import { registerUser, loginUser } from '../services/auth.service';
+import { Request, Response } from "express";
+import { AuthService } from "../services/auth.service";
+import { ErrorHandler } from "../middlewares/error.middleware";
 
-export const register = async (req: Request, res: Response): Promise<void> => {
-    try {
-        const result = await registerUser(req.body);
-        res.status(201).json(result);
-    } catch (error: any) {
-        res.status(400).json({ error: error.message });
-    }
-};
+export class AuthController {
+  constructor(
+    private readonly authService: AuthService,
+    private readonly errors: ErrorHandler,
+  ) {}
 
-export const login = async (req: Request, res: Response): Promise<void> => {
+  register = async (req: Request, res: Response) => {
     try {
-        const result = await loginUser(req.body);
-        res.status(200).json(result);
-    } catch (error: any) {
-        res.status(401).json({ error: error.message });
+      const result = await this.authService.register(req.body);
+      res.status(201).json(result);
+    } catch (err) {
+      this.errors.e500(req, res, err);
     }
-};
+  };
+
+  login = async (req: Request, res: Response) => {
+    try {
+      const result = await this.authService.login(req.body);
+      res.status(200).json(result);
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
+}

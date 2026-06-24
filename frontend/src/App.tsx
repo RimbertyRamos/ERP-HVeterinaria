@@ -1,28 +1,42 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Sidebar } from './components/Sidebar';
-import { Dashboard } from './views/Dashboard';
-import { Patients } from './views/Patients';
-import { Inventory } from './views/Inventory';
-import { POS } from './views/POS';
-import { Consultorios } from './views/Consultorios';
-import { Laboratory } from './views/Laboratory';
-import { Financial } from './views/Financial';
-import { WaitingRoom } from './views/WaitingRoom';
-import { Agenda } from './views/Agenda';
-import { Users } from './views/Users';
-import Consultation from './views/Consultation';
-import { ChatAssistant } from './components/ChatAssistant';
-import { ViewType } from './types';
-import { Icons } from './constants';
-import { Toaster } from 'sonner';
-import { api } from './utils/api';
+import React, { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import { Sidebar } from "./components/Sidebar";
+import { Dashboard } from "./views/Dashboard";
+import { Patients } from "./views/Patients";
+import { Inventory } from "./views/Inventory";
+import { POS } from "./views/POS";
+import { Consultorios } from "./views/Consultorios";
+import { Services } from "./views/Services";
+import { Financial } from "./views/Financial";
+import { WaitingRoom } from "./views/WaitingRoom";
+import { Agenda } from "./views/Agenda";
+import { MiAgenda } from "./views/MiAgenda";
+import { Users } from "./views/Users";
+import Consultation from "./views/Consultation";
+import { ChatAssistant } from "./components/ChatAssistant";
+import { ViewType } from "./types";
+import { Icons } from "./constants";
+import { Toaster } from "sonner";
+import { api } from "./utils/api";
 
-import { Login } from './views/Login';
+import { Login } from "./views/Login";
+import { Landing } from "./views/Landing";
+import { Solicitudes } from "./views/Solicitudes";
 
 // ── Panel de Notificaciones ─────────────────────────────────────────────
-interface FichaEspera { id: string; cod_ficha: string; fecha_hora: string; mascota: { nombre: string }; servicio: { nombre: string } }
-interface ProductoBajo { id: string; nombre: string; stock_actual: number; stock_minimo: number }
+interface FichaEspera {
+  id: string;
+  cod_ficha: string;
+  fecha_hora: string;
+  mascota: { nombre: string };
+  servicio: { nombre: string };
+}
+interface ProductoBajo {
+  id: string;
+  nombre: string;
+  stock_actual: number;
+  stock_minimo: number;
+}
 
 const NotificationsPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const [fichas, setFichas] = useState<FichaEspera[]>([]);
@@ -31,25 +45,37 @@ const NotificationsPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    Promise.all([
-      api.getFichas({ estado: 'ESPERA' }),
-      api.getProductos(),
-    ]).then(([f, p]) => {
-      const now = Date.now();
-      const esperaFiltradas = (f as FichaEspera[])
-        .filter(fi => Math.round((now - new Date(fi.fecha_hora).getTime()) / 60000) >= 10)
-        .sort((a, b) => new Date(a.fecha_hora).getTime() - new Date(b.fecha_hora).getTime());
-      setFichas(esperaFiltradas);
-      setStockBajo((p as ProductoBajo[]).filter(pr => Number(pr.stock_actual) <= Number(pr.stock_minimo)));
-    }).catch(console.error).finally(() => setLoading(false));
+    Promise.all([api.getFichas({ estado: "ESPERA" }), api.getProductos()])
+      .then(([f, p]) => {
+        const now = Date.now();
+        const esperaFiltradas = (f as FichaEspera[])
+          .filter(
+            (fi) =>
+              Math.round((now - new Date(fi.fecha_hora).getTime()) / 60000) >=
+              10,
+          )
+          .sort(
+            (a, b) =>
+              new Date(a.fecha_hora).getTime() -
+              new Date(b.fecha_hora).getTime(),
+          );
+        setFichas(esperaFiltradas);
+        setStockBajo(
+          (p as ProductoBajo[]).filter(
+            (pr) => Number(pr.stock_actual) <= Number(pr.stock_minimo),
+          ),
+        );
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) onClose();
     };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
   }, [onClose]);
 
   const total = fichas.length + stockBajo.length;
@@ -63,14 +89,20 @@ const NotificationsPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       className="absolute right-0 top-full mt-2 w-80 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 z-50 overflow-hidden"
     >
       <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-        <h3 className="font-black text-sm uppercase tracking-widest">Alertas del Sistema</h3>
+        <h3 className="font-black text-sm uppercase tracking-widest">
+          Alertas del Sistema
+        </h3>
         {total > 0 && (
-          <span className="bg-red-500 text-white text-xs font-black px-2 py-0.5 rounded-full">{total}</span>
+          <span className="bg-red-500 text-white text-xs font-black px-2 py-0.5 rounded-full">
+            {total}
+          </span>
         )}
       </div>
 
       {loading ? (
-        <div className="p-8 text-center text-slate-400 text-sm">Cargando alertas...</div>
+        <div className="p-8 text-center text-slate-400 text-sm">
+          Cargando alertas...
+        </div>
       ) : total === 0 ? (
         <div className="p-8 text-center opacity-40 space-y-2">
           <Icons.Check size={32} className="mx-auto text-emerald-500" />
@@ -78,24 +110,44 @@ const NotificationsPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         </div>
       ) : (
         <div className="max-h-80 overflow-y-auto divide-y divide-slate-50 dark:divide-slate-800">
-          {fichas.map(f => {
-            const min = Math.round((Date.now() - new Date(f.fecha_hora).getTime()) / 60000);
+          {fichas.map((f) => {
+            const min = Math.round(
+              (Date.now() - new Date(f.fecha_hora).getTime()) / 60000,
+            );
             return (
-              <div key={f.id} className="p-4 flex items-start gap-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                <Icons.Clock size={16} className="text-amber-500 mt-0.5 flex-shrink-0" />
+              <div
+                key={f.id}
+                className="p-4 flex items-start gap-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+              >
+                <Icons.Clock
+                  size={16}
+                  className="text-amber-500 mt-0.5 flex-shrink-0"
+                />
                 <div className="min-w-0">
-                  <p className="text-sm font-bold truncate">{f.mascota.nombre} · {f.cod_ficha}</p>
-                  <p className="text-xs text-slate-500">{min} min esperando · {f.servicio.nombre}</p>
+                  <p className="text-sm font-bold truncate">
+                    {f.mascota.nombre} · {f.cod_ficha}
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    {min} min esperando · {f.servicio.nombre}
+                  </p>
                 </div>
               </div>
             );
           })}
-          {stockBajo.map(p => (
-            <div key={p.id} className="p-4 flex items-start gap-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-              <Icons.AlertTriangle size={16} className="text-red-500 mt-0.5 flex-shrink-0" />
+          {stockBajo.map((p) => (
+            <div
+              key={p.id}
+              className="p-4 flex items-start gap-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+            >
+              <Icons.AlertTriangle
+                size={16}
+                className="text-red-500 mt-0.5 flex-shrink-0"
+              />
               <div className="min-w-0">
                 <p className="text-sm font-bold truncate">{p.nombre}</p>
-                <p className="text-xs text-slate-500">Stock: {p.stock_actual} / Mínimo: {p.stock_minimo}</p>
+                <p className="text-xs text-slate-500">
+                  Stock: {p.stock_actual} / Mínimo: {p.stock_minimo}
+                </p>
               </div>
             </div>
           ))}
@@ -108,12 +160,13 @@ const NotificationsPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 // Componente para la gestión del modo Kiosk público
 const KioskManager: React.FC = () => {
   const [isAuthorized, setIsAuthorized] = useState(false);
-  const [password, setPassword] = useState('');
+  const [password, setPassword] = useState("");
   const [error, setError] = useState(false);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === 'vet123') { // Contraseña simple para el Kiosk
+    if (password === "vet123") {
+      // Contraseña simple para el Kiosk
       setIsAuthorized(true);
     } else {
       setError(true);
@@ -132,8 +185,12 @@ const KioskManager: React.FC = () => {
           <Icons.Patients size={48} />
         </div>
         <div>
-          <h1 className="text-3xl font-black tracking-tighter uppercase">Modo Kiosk Display</h1>
-          <p className="mt-2 text-slate-400 font-bold uppercase tracking-widest text-xs">Acceso restringido a Pantalla de Espera</p>
+          <h1 className="text-3xl font-black tracking-tighter uppercase">
+            Modo Kiosk Display
+          </h1>
+          <p className="mt-2 text-slate-400 font-bold uppercase tracking-widest text-xs">
+            Acceso restringido a Pantalla de Espera
+          </p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-4">
@@ -143,11 +200,13 @@ const KioskManager: React.FC = () => {
               placeholder="Contraseña del sistema"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className={`w-full rounded-xl bg-white/5 border-2 ${error ? 'border-red-500' : 'border-white/10'} p-4 text-center text-xl font-bold tracking-widest outline-none transition-all focus:border-primary/50`}
+              className={`w-full rounded-xl bg-white/5 border-2 ${error ? "border-red-500" : "border-white/10"} p-4 text-center text-xl font-bold tracking-widest outline-none transition-all focus:border-primary/50`}
               autoFocus
             />
             {error && (
-              <p className="absolute -bottom-6 left-0 right-0 text-xs font-bold text-red-500 uppercase tracking-widest">Contraseña incorrecta</p>
+              <p className="absolute -bottom-6 left-0 right-0 text-xs font-bold text-red-500 uppercase tracking-widest">
+                Contraseña incorrecta
+              </p>
             )}
           </div>
           <button
@@ -157,7 +216,7 @@ const KioskManager: React.FC = () => {
             Activar Visualización
           </button>
         </form>
-        
+
         <p className="text-[10px] text-slate-600 font-bold uppercase tracking-widest pt-8">
           VET-ERP • Sistema Integral de Gestión Veterinaria
         </p>
@@ -167,58 +226,121 @@ const KioskManager: React.FC = () => {
 };
 
 const App: React.FC = () => {
-  const [isKiosk, setIsKiosk] = useState(() => window.location.pathname === '/kiosk');
-  const [isAuthenticated, setIsAuthenticated] = useState(() => !!localStorage.getItem('token'));
-  const [currentView, setCurrentView] = useState<ViewType>('dashboard');
-  const [isDarkMode, setIsDarkMode] = useState(() => document.documentElement.classList.contains('dark'));
-  const [showNotifications, setShowNotifications] = useState(false);
+  const [isKiosk, setIsKiosk] = useState(
+    () => window.location.pathname === "/kiosk",
+  );
+  const [isLanding, setIsLanding] = useState(
+    () =>
+      window.location.pathname === "/landing" ||
+      window.location.pathname === "/",
+  );
+  const [showLogin, setShowLogin] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(
+    () => !!localStorage.getItem("token"),
+  );
+  const [currentView, setCurrentView] = useState<ViewType>("dashboard");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Escuchar cambios en la URL (para el modo Kiosk)
+  // Al cambiar de vista (incluido el menú móvil) cerramos el cajón lateral.
+  const handleViewChange = (view: ViewType) => {
+    setCurrentView(view);
+    setMobileMenuOpen(false);
+  };
+  const [isDarkMode, setIsDarkMode] = useState(() =>
+    document.documentElement.classList.contains("dark"),
+  );
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifCount, setNotifCount] = useState(0);
+
+  // Cuenta de alertas REALES (fichas esperando >10 min + productos con stock
+  // bajo) para mostrar el punto rojo solo cuando hay algo. Personal nada más;
+  // se refresca cada minuto.
+  useEffect(() => {
+    const rol = JSON.parse(localStorage.getItem("user") || "{}")?.rol?.nombre;
+    if (rol === "CLIENTE") {
+      setNotifCount(0);
+      return;
+    }
+    let activo = true;
+    const cargarAlertas = () => {
+      Promise.all([api.getFichas({ estado: "ESPERA" }), api.getProductos()])
+        .then(([f, p]) => {
+          if (!activo) return;
+          const now = Date.now();
+          const esperando = (f as FichaEspera[]).filter(
+            (fi) =>
+              Math.round((now - new Date(fi.fecha_hora).getTime()) / 60000) >=
+              10,
+          ).length;
+          const bajo = (p as ProductoBajo[]).filter(
+            (pr) => Number(pr.stock_actual) <= Number(pr.stock_minimo),
+          ).length;
+          setNotifCount(esperando + bajo);
+        })
+        .catch(() => {});
+    };
+    cargarAlertas();
+    const id = setInterval(cargarAlertas, 60000);
+    return () => {
+      activo = false;
+      clearInterval(id);
+    };
+  }, []);
+
+  // Escuchar cambios en la URL (para el modo Kiosk y Landing)
   useEffect(() => {
     const handleLocationChange = () => {
-      setIsKiosk(window.location.pathname === '/kiosk');
+      setIsKiosk(window.location.pathname === "/kiosk");
+      setIsLanding(
+        window.location.pathname === "/landing" ||
+          window.location.pathname === "/",
+      );
     };
-    window.addEventListener('popstate', handleLocationChange);
-    return () => window.removeEventListener('popstate', handleLocationChange);
+    window.addEventListener("popstate", handleLocationChange);
+    return () => window.removeEventListener("popstate", handleLocationChange);
   }, []);
 
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode);
-    document.documentElement.classList.toggle('dark');
+    document.documentElement.classList.toggle("dark");
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
+    localStorage.removeItem("token");
     setIsAuthenticated(false);
   };
 
   const renderView = () => {
     switch (currentView) {
-      case 'dashboard':
+      case "dashboard":
         return <Dashboard />;
-      case 'clinical':
+      case "clinical":
         return <Patients />;
-      case 'inventory':
+      case "inventory":
         return <Inventory />;
-      case 'farmacia':
-        return <Inventory />;
-      case 'pos':
+      case "pos":
         return <POS />;
-      case 'consultorios':
+      case "consultorios":
         return <Consultorios />;
-      case 'laboratory':
-        return <Laboratory />;
-      case 'financial':
+      case "servicios":
+        return <Services />;
+      case "financial":
         return <Financial />;
-      case 'agenda':
-        return <Agenda />;
-      case 'users':
+      case "agenda": {
+        // El propietario (CLIENTE) ve su propia agenda de autoservicio.
+        const rolActual = JSON.parse(localStorage.getItem("user") || "{}")?.rol
+          ?.nombre;
+        return rolActual === "CLIENTE" ? <MiAgenda /> : <Agenda />;
+      }
+      case "users":
         return <Users />;
-      case 'waiting-room':
-        return <WaitingRoom onClose={() => setCurrentView('dashboard')} />;
-      case 'consultation':
+      case "solicitudes":
+        return <Solicitudes />;
+      case "waiting-room":
+        return <WaitingRoom onClose={() => setCurrentView("dashboard")} />;
+      case "consultation":
         return <Consultation />;
-      case 'settings':
+      case "settings":
         return (
           <div className="flex h-full items-center justify-center text-slate-500">
             <div className="text-center space-y-4">
@@ -238,30 +360,60 @@ const App: React.FC = () => {
     return <KioskManager />;
   }
 
+  // Landing page pública
+  if (!isAuthenticated && isLanding && !showLogin) {
+    return <Landing onGoToLogin={() => setShowLogin(true)} />;
+  }
+
   if (!isAuthenticated) {
-    return <Login onLogin={() => setIsAuthenticated(true)} />;
+    return (
+      <Login
+        onLogin={() => {
+          setIsAuthenticated(true);
+          setShowLogin(false);
+          setIsLanding(false);
+        }}
+      />
+    );
   }
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
-      <Toaster position="top-right" richColors closeButton theme={isDarkMode ? 'dark' : 'light'} />
-      <Sidebar currentView={currentView} onViewChange={setCurrentView} />
-      
+      <Toaster
+        position="top-right"
+        richColors
+        closeButton
+        theme={isDarkMode ? "dark" : "light"}
+      />
+      <Sidebar
+        currentView={currentView}
+        onViewChange={handleViewChange}
+        mobileOpen={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+      />
+
       <main className="flex flex-1 flex-col overflow-hidden">
-        <header className="flex h-16 items-center justify-between border-b border-slate-200 bg-white px-8 dark:border-slate-800 dark:bg-slate-900 transition-colors duration-300">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 rounded-lg bg-slate-100 px-3 py-1.5 dark:bg-slate-800">
+        <header className="flex h-16 items-center justify-between border-b border-slate-200 bg-white px-4 lg:px-8 dark:border-slate-800 dark:bg-slate-900 transition-colors duration-300">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              title="Abrir menú"
+              className="flex lg:hidden h-10 w-10 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            >
+              <Icons.Menu size={22} />
+            </button>
+            <div className="hidden md:flex items-center gap-2 rounded-lg bg-slate-100 px-3 py-1.5 dark:bg-slate-800">
               <Icons.Search size={18} className="text-slate-400" />
-              <input 
-                type="text" 
-                placeholder="Buscar en el sistema..." 
-                className="bg-transparent text-sm outline-none text-slate-900 dark:text-slate-100 w-64"
+              <input
+                type="text"
+                placeholder="Buscar en el sistema..."
+                className="bg-transparent text-sm outline-none text-slate-900 dark:text-slate-100 w-40 lg:w-64"
               />
             </div>
           </div>
-          
+
           <div className="flex items-center gap-4">
-            <button 
+            <button
               onClick={toggleDarkMode}
               className="flex h-10 w-10 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             >
@@ -269,25 +421,34 @@ const App: React.FC = () => {
             </button>
             <div className="relative">
               <button
-                onClick={() => setShowNotifications(v => !v)}
+                onClick={() => setShowNotifications((v) => !v)}
                 className="relative flex h-10 w-10 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               >
                 <Icons.Bell size={20} />
-                <span className="absolute right-2 top-2 flex h-2 w-2 rounded-full bg-red-500"></span>
+                {notifCount > 0 && (
+                  <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-black text-white">
+                    {notifCount > 9 ? "9+" : notifCount}
+                  </span>
+                )}
               </button>
               <AnimatePresence>
                 {showNotifications && (
-                  <NotificationsPanel onClose={() => setShowNotifications(false)} />
+                  <NotificationsPanel
+                    onClose={() => setShowNotifications(false)}
+                  />
                 )}
               </AnimatePresence>
             </div>
-            <div className="h-8 w-px bg-slate-200 dark:bg-slate-800"></div>
-            <div className="flex items-center gap-3 pl-2">
-              <div className="flex flex-col items-end">
+            <div className="hidden sm:block h-8 w-px bg-slate-200 dark:bg-slate-800"></div>
+            <div className="flex items-center gap-3 pl-0 sm:pl-2">
+              <div className="hidden sm:flex flex-col items-end">
                 <p className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                  {JSON.parse(localStorage.getItem('user') || '{}').nombre ?? 'Usuario'}
+                  {JSON.parse(localStorage.getItem("user") || "{}").nombre ??
+                    "Usuario"}
                 </p>
-                <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Sistema</p>
+                <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">
+                  Sistema
+                </p>
               </div>
               <button
                 onClick={handleLogout}
@@ -299,12 +460,14 @@ const App: React.FC = () => {
             </div>
           </div>
         </header>
-        
-        <div className="flex-1 overflow-y-auto">
-          {renderView()}
-        </div>
+
+        {currentView === "waiting-room" ? (
+          <div className="flex-1 min-h-0 bg-slate-950">{renderView()}</div>
+        ) : (
+          <div className="flex-1 overflow-y-auto">{renderView()}</div>
+        )}
       </main>
-      
+
       {/* Botón flotante de IA de Emergencias */}
       <ChatAssistant />
     </div>

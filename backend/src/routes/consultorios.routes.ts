@@ -1,20 +1,34 @@
-import { Router } from 'express';
-import * as ctrl from '../controllers/consultorio.controller';
-import { authenticate } from '../middlewares/auth.middleware';
-import { requireRole } from '../middlewares/role.middleware';
+import { Router } from "express";
+import {
+  consultorioController,
+  authMiddleware,
+  roleMiddleware,
+} from "../container";
 
 const router = Router();
 
 // Todas las rutas requieren sesión válida
-router.use(authenticate);
+router.use(authMiddleware.authenticate);
 
 // Lectura y cambio de estado operativo: cualquier usuario logueado
-router.get('/', ctrl.getConsultorios);
-router.put('/:id/estado', ctrl.updateEstado);
+router.get("/", consultorioController.getConsultorios);
+router.put("/:id/estado", consultorioController.updateEstado);
 
 // Gestión del catálogo de salas (crear/editar/borrar): solo Administrador
-router.post('/', requireRole('Admin'), ctrl.createConsultorio);
-router.put('/:id', requireRole('Admin'), ctrl.updateConsultorio);
-router.delete('/:id', requireRole('Admin'), ctrl.deleteConsultorio);
+router.post(
+  "/",
+  roleMiddleware.require("Admin"),
+  consultorioController.createConsultorio,
+);
+router.put(
+  "/:id",
+  roleMiddleware.require("Admin"),
+  consultorioController.updateConsultorio,
+);
+router.delete(
+  "/:id",
+  roleMiddleware.require("Admin"),
+  consultorioController.deleteConsultorio,
+);
 
 export default router;

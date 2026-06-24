@@ -1,36 +1,68 @@
-import { Request, Response } from 'express';
-import * as svc from '../services/mascota.service';
+import { Request, Response } from "express";
+import { MascotaService } from "../services/mascota.service";
+import { ErrorHandler } from "../middlewares/error.middleware";
 
-export const getMascotas = async (req: Request, res: Response) => {
-  const search = req.query.search as string | undefined;
-  const propietario_id = req.query.propietario_id as string | undefined;
-  res.json(await svc.getMascotas(search, propietario_id));
-};
+export class MascotaController {
+  constructor(
+    private readonly mascotaService: MascotaService,
+    private readonly errors: ErrorHandler,
+  ) {}
 
-export const getMascotaById = async (req: Request, res: Response) => {
-  const mascota = await svc.getMascotaById(req.params['id'] as string);
-  if (!mascota) return res.status(404).json({ error: 'Mascota no encontrada' });
-  res.json(mascota);
-};
+  getMascotas = async (req: Request, res: Response) => {
+    try {
+      const search = req.query.search as string | undefined;
+      const propietario_id = req.query.propietario_id as string | undefined;
+      const mascotas = await this.mascotaService.getMascotas(
+        search,
+        propietario_id,
+      );
+      res.json(mascotas);
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
 
-export const createMascota = async (req: Request, res: Response) => {
-  try {
-    res.status(201).json(await svc.createMascotaConPropietario(req.body));
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : 'Error al crear mascota';
-    res.status(400).json({ error: msg });
-  }
-};
+  getMascotaById = async (req: Request, res: Response) => {
+    try {
+      const mascota = await this.mascotaService.getMascotaById(
+        req.params.id as string,
+      );
+      if (!mascota) return this.errors.e404(req, res);
+      res.json(mascota);
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
 
-export const updateMascota = async (req: Request, res: Response) => {
-  try {
-    res.json(await svc.updateMascota(req.params['id'] as string, req.body));
-  } catch {
-    res.status(400).json({ error: 'Error al actualizar mascota' });
-  }
-};
+  createMascota = async (req: Request, res: Response) => {
+    try {
+      const mascota = await this.mascotaService.createMascotaConPropietario(
+        req.body,
+      );
+      res.status(201).json(mascota);
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
 
-export const deleteMascota = async (req: Request, res: Response) => {
-  await svc.deleteMascota(req.params['id'] as string);
-  res.json({ ok: true });
-};
+  updateMascota = async (req: Request, res: Response) => {
+    try {
+      const mascota = await this.mascotaService.updateMascota(
+        req.params.id as string,
+        req.body,
+      );
+      res.json(mascota);
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
+
+  deleteMascota = async (req: Request, res: Response) => {
+    try {
+      await this.mascotaService.deleteMascota(req.params.id as string);
+      res.json({ ok: true });
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
+}

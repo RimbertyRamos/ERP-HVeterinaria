@@ -1,15 +1,17 @@
-import prisma from '../config/db';
-import bcrypt from 'bcryptjs';
-import { validatePassword } from '../helpers/password';
+import { PrismaClient } from "@prisma/client";
+import { UsuariosService } from "./usuarios.service";
+import { CreateMascotaConPropietarioDto, UpdateMascotaDto } from "../types";
 
 const mascotaInclude = {
   especie: true,
   raza: true,
   color: true,
-  propietario: { select: { id: true, nombre: true, email: true, telefono: true, ci: true } },
+  propietario: {
+    select: { id: true, nombre: true, email: true, telefono: true, ci: true },
+  },
   alergias: { include: { alergia: true } },
   fichas: {
-    orderBy: { fecha_hora: 'desc' as const },
+    orderBy: { fecha_hora: "desc" as const },
     take: 20,
     include: {
       servicio: true,
@@ -17,125 +19,158 @@ const mascotaInclude = {
       consultorio: { select: { nombre: true } },
       soap: { select: { diagnostico: true, tratamiento: true } },
       recibo: {
-        select: { id: true, num_recibo: true, total: true, metodo_pago: true, fecha_pago: true, estado: true },
+        select: {
+          id: true,
+          num_recibo: true,
+          total: true,
+          metodo_pago: true,
+          fecha_pago: true,
+          estado: true,
+        },
       },
     },
   },
 };
 
-export const getMascotas = (search?: string, propietario_id?: string) =>
-  prisma.mascota.findMany({
-    where: {
-      ...(propietario_id ? { propietario_id } : {}),
-      ...(search
-        ? {
-            OR: [
-              { nombre: { contains: search, mode: 'insensitive' } },
-              { propietario: { nombre: { contains: search, mode: 'insensitive' } } },
-              { propietario: { email: { contains: search, mode: 'insensitive' } } },
-              { propietario: { ci: { contains: search, mode: 'insensitive' } } },
-            ],
-          }
-        : {}),
-    },
-    include: mascotaInclude,
-    orderBy: { nombre: 'asc' },
-  });
+export class MascotaService {
+  constructor(
+    private readonly prisma: PrismaClient,
+    private readonly usuariosService: UsuariosService,
+  ) {}
 
-export const getMascotaById = (id: string) =>
-  prisma.mascota.findUnique({ where: { id }, include: mascotaInclude });
-
-export const createMascotaConPropietario = async (data: {
-  mascota: {
-    nombre: string;
-    especie_id: string;
-    raza_id?: string;
-    color_id?: string;
-    fecha_nacimiento?: string;
-    sexo?: string;
-    peso_actual?: number;
-    esterilizado?: boolean;
-    alergias?: { alergia_id: string; severidad: string }[];
-  };
-  propietario?: {
-    nombre: string;
-    email: string;
-    telefono?: string;
-    ci?: string;
-    password?: string;
-  };
-  propietario_id?: string;
-}) => {
-  let propietario: { id: string } | null = null;
-
-  if (data.propietario_id) {
-    propietario = await prisma.usuario.findUnique({ where: { id: data.propietario_id } });
-    if (!propietario) throw new Error('Propietario no encontrado');
-  } else {
-    if (!data.propietario) throw new Error('Se requieren datos del propietario');
-    const normalizedEmail = data.propietario.email.trim().toLowerCase();
-    const rolCliente = await prisma.role.findFirst({ where: { nombre: 'CLIENTE' } });
-    if (!rolCliente) throw new Error('Rol CLIENTE no encontrado en la base de datos');
-
-    propietario = await prisma.usuario.findUnique({ where: { email: normalizedEmail } });
-    if (!propietario) {
-      const provided = data.propietario.password;
-      let rawPassword: string;
-      let debeCambiar: boolean;
-      if (provided && provided.trim().length > 0) {
-        validatePassword(provided);
-        rawPassword = provided;
-        debeCambiar = false;
-      } else {
-        // NUNCA usar el CI (es semi-público). Default genérico + obligar cambio.
-        rawPassword = 'cliente123';
-        debeCambiar = true;
-      }
-      const hash = await bcrypt.hash(rawPassword, 10);
-      propietario = await prisma.usuario.create({
-        data: {
-          nombre: data.propietario.nombre,
-          email: normalizedEmail,
-          password_hash: hash,
-          telefono: data.propietario.telefono,
-          ci: data.propietario.ci,
-          rol_id: rolCliente.id,
-          debe_cambiar_password: debeCambiar,
+  async getMascotas(search?: string, propietario_id?: string) {
+    try {
+      return await this.prisma.mascota.findMany({
+        where: {
+          ...(propietario_id ? { propietario_id } : {}),
+          ...(search
+            ? {
+                OR: [
+                  { nombre: { contains: search, mode: "insensitive" } },
+                  {
+                    propietario: {
+                      nombre: { contains: search, mode: "insensitive" },
+                    },
+                  },
+                  {
+                    propietario: {
+                      email: { contains: search, mode: "insensitive" },
+                    },
+                  },
+                  {
+                    propietario: {
+                      ci: { contains: search, mode: "insensitive" },
+                    },
+                  },
+                ],
+              }
+            : {}),
         },
+        include: mascotaInclude,
+        orderBy: { nombre: "asc" },
       });
+    } catch (err) {
+      throw { status: 500, message: "Error al obtener las mascotas" };
     }
   }
 
-  const { alergias, ...mascotaData } = data.mascota;
+  async getMascotaById(id: string) {
+    try {
+      return await this.prisma.mascota.findUnique({
+        where: { id },
+        include: mascotaInclude,
+      });
+    } catch (err) {
+      throw { status: 500, message: "Error al obtener la mascota" };
+    }
+  }
 
-  return prisma.mascota.create({
-    data: {
-      ...mascotaData,
-      peso_actual: mascotaData.peso_actual ?? undefined,
-      fecha_nacimiento: mascotaData.fecha_nacimiento ? new Date(mascotaData.fecha_nacimiento) : undefined,
-      propietario_id: propietario!.id,
-      alergias: alergias?.length
-        ? { create: alergias.map((a) => ({ alergia_id: a.alergia_id, severidad: a.severidad })) }
-        : undefined,
-    },
-    include: mascotaInclude,
-  });
-};
+  /**
+   * Crea una mascota vinculándola a un propietario existente o creando uno nuevo.
+   * La lógica de creación del propietario (usuario) se delega completamente a
+   * usuariosService.findOrCreateCliente() — alta cohesión, bajo acoplamiento.
+   */
+  async createMascotaConPropietario(data: CreateMascotaConPropietarioDto) {
+    try {
+      let propietarioId: string;
 
-export const updateMascota = (id: string, data: Record<string, unknown>) =>
-  prisma.mascota.update({
-    where: { id },
-    data: {
-      nombre: data.nombre as string | undefined,
-      especie_id: data.especie_id as string | undefined,
-      raza_id: data.raza_id as string | undefined,
-      color_id: data.color_id as string | undefined,
-      sexo: data.sexo as string | undefined,
-      esterilizado: data.esterilizado as boolean | undefined,
-      peso_actual: data.peso_actual != null ? Number(data.peso_actual) : undefined,
-      fecha_nacimiento: data.fecha_nacimiento ? new Date(data.fecha_nacimiento as string) : undefined,
-    },
-    include: mascotaInclude,
-  });
+      if (data.propietario_id) {
+        // Propietario ya existe: solo verificamos que existe
+        const existing = await this.prisma.usuario.findUnique({
+          where: { id: data.propietario_id },
+        });
+        if (!existing)
+          throw { status: 404, message: "Propietario no encontrado" };
+        propietarioId = existing.id;
+      } else {
+        if (!data.propietario) {
+          throw { status: 400, message: "Se requieren datos del propietario" };
+        }
+        // Delega toda la lógica de creación de usuario al servicio responsable
+        const propietario = await this.usuariosService.findOrCreateCliente(
+          data.propietario,
+        );
+        propietarioId = propietario.id;
+      }
 
-export const deleteMascota = (id: string) => prisma.mascota.delete({ where: { id } });
+      const { alergias, ...mascotaData } = data.mascota;
+
+      return await this.prisma.mascota.create({
+        data: {
+          ...mascotaData,
+          peso_actual: mascotaData.peso_actual ?? undefined,
+          fecha_nacimiento: mascotaData.fecha_nacimiento
+            ? new Date(mascotaData.fecha_nacimiento)
+            : undefined,
+          propietario_id: propietarioId,
+          alergias: alergias?.length
+            ? {
+                create: alergias.map((a) => ({
+                  alergia_id: a.alergia_id,
+                  severidad: a.severidad,
+                })),
+              }
+            : undefined,
+        },
+        include: mascotaInclude,
+      });
+    } catch (err: any) {
+      throw {
+        status: err?.status || 500,
+        message: err?.message || "Error al crear la mascota",
+      };
+    }
+  }
+
+  async updateMascota(id: string, data: UpdateMascotaDto) {
+    try {
+      return await this.prisma.mascota.update({
+        where: { id },
+        data: {
+          nombre: data.nombre,
+          especie_id: data.especie_id,
+          raza_id: data.raza_id,
+          color_id: data.color_id,
+          sexo: data.sexo,
+          esterilizado: data.esterilizado,
+          peso_actual:
+            data.peso_actual != null ? Number(data.peso_actual) : undefined,
+          fecha_nacimiento: data.fecha_nacimiento
+            ? new Date(data.fecha_nacimiento)
+            : undefined,
+        },
+        include: mascotaInclude,
+      });
+    } catch (err) {
+      throw { status: 500, message: "Error al actualizar la mascota" };
+    }
+  }
+
+  async deleteMascota(id: string) {
+    try {
+      return await this.prisma.mascota.delete({ where: { id } });
+    } catch (err) {
+      throw { status: 500, message: "Error al eliminar la mascota" };
+    }
+  }
+}

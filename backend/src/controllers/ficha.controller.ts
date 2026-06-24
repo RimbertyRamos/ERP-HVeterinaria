@@ -1,79 +1,188 @@
-import { Request, Response } from 'express';
-import * as svc from '../services/ficha.service';
-import { getUserId } from '../middlewares/auth.middleware';
+import { Request, Response } from "express";
+import { FichaService } from "../services/ficha.service";
+import { getUserId } from "../middlewares/auth.middleware";
+import { ErrorHandler } from "../middlewares/error.middleware";
 
-const id = (req: Request) => req.params['id'] as string;
+export class FichaController {
+  constructor(
+    private readonly fichaService: FichaService,
+    private readonly errors: ErrorHandler,
+  ) {}
 
-export const getFichas = async (req: Request, res: Response) => {
-  const { estado, doctor_id, fecha } = req.query as Record<string, string>;
-  res.json(await svc.getFichas({ estado, doctor_id, fecha }));
-};
+  getFichas = async (req: Request, res: Response) => {
+    try {
+      const { estado, doctor_id, fecha } = req.query as Record<string, string>;
+      const fichas = await this.fichaService.getFichas({
+        estado,
+        doctor_id,
+        fecha,
+      });
+      res.json(fichas);
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
 
-export const getFichaById = async (req: Request, res: Response) => {
-  const ficha = await svc.getFichaById(id(req));
-  if (!ficha) return res.status(404).json({ error: 'Ficha no encontrada' });
-  res.json(ficha);
-};
+  getFichaById = async (req: Request, res: Response) => {
+    try {
+      const ficha = await this.fichaService.getFichaById(
+        req.params.id as string,
+      );
+      if (!ficha) return this.errors.e404(req, res);
+      res.json(ficha);
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
 
-export const createFicha = async (req: Request, res: Response) => {
-  try {
-    // creado_por_id SIEMPRE desde el token: el actor que crea la ficha
-    res.status(201).json(await svc.createFicha({ ...req.body, creado_por_id: getUserId(req) }));
-  } catch (err: unknown) {
-    res.status(400).json({ error: err instanceof Error ? err.message : 'Error' });
-  }
-};
+  createFicha = async (req: Request, res: Response) => {
+    try {
+      // creado_por_id SIEMPRE desde el token: el actor que crea la ficha
+      const ficha = await this.fichaService.createFicha({
+        ...req.body,
+        creado_por_id: getUserId(req),
+      });
+      res.status(201).json(ficha);
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
 
-export const iniciarFicha = async (req: Request, res: Response) => {
-  // doctor_id del body = asignación deliberada; si no viene, cae al actor del token
-  try { res.json(await svc.iniciarFicha(id(req), req.body, getUserId(req))); }
-  catch { res.status(400).json({ error: 'Error al iniciar ficha' }); }
-};
+  iniciarFicha = async (req: Request, res: Response) => {
+    try {
+      // doctor_id del body = asignación deliberada; si no viene, cae al actor del token
+      const ficha = await this.fichaService.iniciarFicha(
+        req.params.id as string,
+        req.body,
+        getUserId(req),
+      );
+      res.json(ficha);
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
 
-export const completarFicha = async (req: Request, res: Response) => {
-  try { res.json(await svc.completarFicha(id(req))); }
-  catch { res.status(400).json({ error: 'Error al completar ficha' }); }
-};
+  completarFicha = async (req: Request, res: Response) => {
+    try {
+      const ficha = await this.fichaService.completarFicha(
+        req.params.id as string,
+      );
+      res.json(ficha);
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
 
-export const cancelarFicha = async (req: Request, res: Response) => {
-  try { res.json(await svc.cancelarFicha(id(req))); }
-  catch { res.status(400).json({ error: 'Error al cancelar ficha' }); }
-};
+  cancelarFicha = async (req: Request, res: Response) => {
+    try {
+      const ficha = await this.fichaService.cancelarFicha(
+        req.params.id as string,
+      );
+      res.json(ficha);
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
 
-export const updateFicha = async (req: Request, res: Response) => {
-  try { res.json(await svc.updateFicha(id(req), req.body)); }
-  catch { res.status(400).json({ error: 'Error al actualizar ficha' }); }
-};
+  updateFicha = async (req: Request, res: Response) => {
+    try {
+      const ficha = await this.fichaService.updateFicha(
+        req.params.id as string,
+        req.body,
+      );
+      res.json(ficha);
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
 
-export const getSoap = async (req: Request, res: Response) => {
-  const soap = await svc.getSoap(id(req));
-  if (!soap) return res.status(404).json({ error: 'SOAP no encontrado' });
-  res.json(soap);
-};
+  getSoap = async (req: Request, res: Response) => {
+    try {
+      const soap = await this.fichaService.getSoap(req.params.id as string);
+      if (!soap) return this.errors.e404(req, res);
+      res.json(soap);
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
 
-export const upsertSoap = async (req: Request, res: Response) => {
-  try { res.json(await svc.upsertSoap(id(req), req.body)); }
-  catch { res.status(400).json({ error: 'Error al guardar SOAP' }); }
-};
+  upsertSoap = async (req: Request, res: Response) => {
+    try {
+      const soap = await this.fichaService.upsertSoap(
+        req.params.id as string,
+        req.body,
+      );
+      res.json(soap);
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
 
-export const createReceta = async (req: Request, res: Response) => {
-  try { res.status(201).json(await svc.createReceta(id(req), req.body)); }
-  catch { res.status(400).json({ error: 'Error al crear receta' }); }
-};
+  getConsumos = async (req: Request, res: Response) => {
+    try {
+      const consumos = await this.fichaService.getConsumos(
+        req.params.id as string,
+      );
+      res.json(consumos);
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
 
-export const getConsumos = async (req: Request, res: Response) => {
-  try { res.json(await svc.getConsumos(id(req))); }
-  catch { res.status(500).json({ error: 'Error al obtener consumos' }); }
-};
+  addConsumo = async (req: Request, res: Response) => {
+    try {
+      const consumo = await this.fichaService.addConsumo(
+        req.params.id as string,
+        req.body,
+      );
+      res.status(201).json(consumo);
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
 
-export const addConsumo = async (req: Request, res: Response) => {
-  try { res.status(201).json(await svc.addConsumo(id(req), req.body)); }
-  catch (e: any) { res.status(400).json({ error: e.message ?? 'Error al registrar consumo' }); }
-};
+  removeConsumo = async (req: Request, res: Response) => {
+    try {
+      await this.fichaService.removeConsumo(req.params.consumoId as string);
+      res.json({ ok: true });
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
 
-export const removeConsumo = async (req: Request, res: Response) => {
-  try {
-    await svc.removeConsumo(req.params['consumoId'] as string);
-    res.json({ ok: true });
-  } catch { res.status(400).json({ error: 'Error al eliminar consumo' }); }
-};
+  getServiciosRealizados = async (req: Request, res: Response) => {
+    try {
+      res.json(
+        await this.fichaService.getServiciosRealizados(req.params.id as string),
+      );
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
+
+  addServicioRealizado = async (req: Request, res: Response) => {
+    try {
+      res
+        .status(201)
+        .json(
+          await this.fichaService.addServicioRealizado(
+            req.params.id as string,
+            req.body,
+          ),
+        );
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
+
+  removeServicioRealizado = async (req: Request, res: Response) => {
+    try {
+      await this.fichaService.removeServicioRealizado(
+        req.params.servicioId as string,
+      );
+      res.json({ ok: true });
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
+}

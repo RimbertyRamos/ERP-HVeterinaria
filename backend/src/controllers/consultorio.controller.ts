@@ -1,48 +1,74 @@
-import { Request, Response } from 'express';
-import { ConsultorioEstado } from '@prisma/client';
-import * as svc from '../services/consultorio.service';
+import { Request, Response } from "express";
+import { ConsultorioEstado } from "@prisma/client";
+import { ConsultorioService } from "../services/consultorio.service";
+import { ErrorHandler } from "../middlewares/error.middleware";
 
-export const getConsultorios = async (_: Request, res: Response) => {
-  res.json(await svc.getConsultorios());
-};
+export class ConsultorioController {
+  constructor(
+    private readonly consultorioService: ConsultorioService,
+    private readonly errors: ErrorHandler,
+  ) {}
 
-export const createConsultorio = async (req: Request, res: Response) => {
-  try {
-    res.status(201).json(await svc.createConsultorio(req.body));
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : 'Error';
-    res.status(400).json({ error: msg });
-  }
-};
+  getConsultorios = async (req: Request, res: Response) => {
+    try {
+      const consultorios = await this.consultorioService.getConsultorios();
+      res.json(consultorios);
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
 
-export const updateEstado = async (req: Request, res: Response) => {
-  try {
-    const id = req.params['id'] as string;
-    const { estado } = req.body;
-    res.json(await svc.updateEstado(id, estado));
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : 'Error';
-    res.status(400).json({ error: msg });
-  }
-};
+  createConsultorio = async (req: Request, res: Response) => {
+    try {
+      const consultorio = await this.consultorioService.createConsultorio(
+        req.body,
+      );
+      res.status(201).json(consultorio);
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
 
-export const updateConsultorio = async (req: Request, res: Response) => {
-  try {
-    const id = req.params['id'] as string;
-    const { nombre, especialidad, estado } = req.body;
-    await svc.updateConsultorio(id, {
-      ...(nombre !== undefined && { nombre }),
-      ...(especialidad !== undefined && { especialidad }),
-      ...(estado !== undefined && { estado: estado as ConsultorioEstado }),
-    });
-    res.json(await svc.getConsultorios().then(list => list.find(c => c.id === id)));
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : 'Error';
-    res.status(400).json({ error: msg });
-  }
-};
+  updateEstado = async (req: Request, res: Response) => {
+    try {
+      const id = req.params.id as string;
+      const { estado } = req.body;
+      const consultorio = await this.consultorioService.updateEstado(
+        id,
+        estado,
+      );
+      res.json(consultorio);
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
 
-export const deleteConsultorio = async (req: Request, res: Response) => {
-  await svc.deleteConsultorio(req.params['id'] as string);
-  res.json({ ok: true });
-};
+  updateConsultorio = async (req: Request, res: Response) => {
+    try {
+      const id = req.params.id as string;
+      const { nombre, especialidad, estado, tipo, responsable_id } = req.body;
+      const consultorio = await this.consultorioService.updateConsultorio(id, {
+        ...(nombre !== undefined && { nombre }),
+        ...(especialidad !== undefined && { especialidad }),
+        ...(estado !== undefined && { estado: estado as ConsultorioEstado }),
+        ...(tipo !== undefined && { tipo }),
+        // responsable_id puede ser un id (asignar) o null (quitar responsable)
+        ...(responsable_id !== undefined && {
+          responsable_id: responsable_id || null,
+        }),
+      });
+      res.json(consultorio);
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
+
+  deleteConsultorio = async (req: Request, res: Response) => {
+    try {
+      await this.consultorioService.deleteConsultorio(req.params.id as string);
+      res.json({ ok: true });
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
+}

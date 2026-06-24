@@ -1,15 +1,15 @@
-import { 
-  LayoutDashboard, 
-  Stethoscope, 
-  Calendar, 
-  PawPrint, 
-  Package, 
-  Banknote, 
-  Settings, 
-  Search, 
-  Plus, 
-  Bell, 
-  User, 
+import {
+  LayoutDashboard,
+  Stethoscope,
+  Calendar,
+  PawPrint,
+  Package,
+  Banknote,
+  Settings,
+  Search,
+  Plus,
+  Bell,
+  User,
   LogOut,
   Microscope,
   TrendingUp,
@@ -41,8 +41,11 @@ import {
   Sparkles,
   Monitor,
   Inbox,
-  Check
-} from 'lucide-react';
+  Check,
+  Maximize,
+  Minimize,
+  Menu,
+} from "lucide-react";
 
 export const Icons = {
   Dashboard: LayoutDashboard,
@@ -87,6 +90,9 @@ export const Icons = {
   Moon,
   Inbox,
   Check,
+  Maximize,
+  Minimize,
+  Menu,
   MeetingRoom: DoorOpen,
-  CleaningServices: Sparkles
+  CleaningServices: Sparkles,
 };

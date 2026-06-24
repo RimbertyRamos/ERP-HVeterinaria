@@ -1,14 +1,25 @@
-import { Request, Response } from 'express';
-import * as svc from '../services/chatbot.service';
+import { Request, Response } from "express";
+import { ChatbotService } from "../services/chatbot.service";
+import { ErrorHandler } from "../middlewares/error.middleware";
 
-export const handleEmergencyChat = async (req: Request, res: Response) => {
-  try {
-    const { message, history } = req.body;
-    if (!message) return res.status(400).json({ error: 'Mensaje requerido' });
+export class ChatbotController {
+  constructor(
+    private readonly chatbotService: ChatbotService,
+    private readonly errors: ErrorHandler,
+  ) {}
 
-    const reply = await svc.getEmergencyAdvice(message, history);
-    res.json({ reply });
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-};
+  handleEmergencyChat = async (req: Request, res: Response) => {
+    try {
+      const { message, history } = req.body;
+      if (!message) return res.status(400).json({ error: "Mensaje requerido" });
+
+      const reply = await this.chatbotService.getEmergencyAdvice(
+        message,
+        history,
+      );
+      res.json({ reply });
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
+}

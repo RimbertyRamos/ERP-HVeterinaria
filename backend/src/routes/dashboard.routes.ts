@@ -1,8 +1,8 @@
-import { Router } from 'express';
-import * as ctrl from '../controllers/dashboard.controller';
+import { Router } from "express";
+import { dashboardController } from "../container";
 
 const router = Router();
 
-router.get('/kpis', ctrl.getKpis);
+router.get("/kpis", dashboardController.getKpis);
 
 export default router;

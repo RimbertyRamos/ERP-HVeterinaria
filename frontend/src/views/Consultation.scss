@@ -4,6 +4,27 @@
   padding: 20px;
   height: calc(100vh - 100px);
 
+  // Responsivo: en pantallas chicas apila las columnas y deja crecer el alto.
+  @media (max-width: 1024px) {
+    flex-direction: column;
+    height: auto;
+
+    .fichas-list {
+      width: 100%;
+      max-height: 220px;
+      border-right: none;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .consultation-panel {
+      flex-direction: column;
+
+      .left-panel {
+        width: 100%;
+      }
+    }
+  }
+
   .fichas-list {
     width: 250px;
     border-right: 1px solid #ddd;
@@ -136,36 +157,41 @@
         overflow-y: auto;
         padding-right: 10px;
 
-        input,
-        textarea,
-        select {
-          width: 100%;
-          padding: 10px;
-          margin-bottom: 10px;
-          border: 1px solid #ddd;
-          border-radius: 4px;
-          font-family: inherit;
-          font-size: 1rem;
+        // Estilos genéricos SOLO para las pestañas de Insumos/Servicios.
+        // La Historia Clínica usa sus propios estilos (Tailwind) y NO debe
+        // heredar width:100%/padding en sus checkboxes, radios y botones.
+        .consumos-form {
+          input,
+          textarea,
+          select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 1rem;
 
-          &:focus {
-            outline: none;
-            border-color: #007bff;
-            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+            &:focus {
+              outline: none;
+              border-color: #007bff;
+              box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+            }
           }
-        }
 
-        button {
-          padding: 8px 15px;
-          background: #007bff;
-          color: white;
-          border: none;
-          border-radius: 4px;
-          cursor: pointer;
-          font-weight: 500;
-          transition: background 0.3s;
+          button {
+            padding: 8px 15px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.3s;
 
-          &:hover {
-            background: #0056b3;
+            &:hover {
+              background: #0056b3;
+            }
           }
         }
       }
