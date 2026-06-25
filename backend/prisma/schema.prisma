@@ -185,21 +185,21 @@ model FichaAtencion {
 }
 
 model Cita {
-  id             String       @id @default(uuid())
-  mascota_id     String
-  mascota        Mascota      @relation(fields: [mascota_id], references: [id])
-  doctor_id      String?
-  doctor         Usuario?     @relation(fields: [doctor_id], references: [id])
-  consultorio_id String?
-  consultorio    Consultorio? @relation(fields: [consultorio_id], references: [id])
-  fecha_hora     DateTime
-  duracion_min   Int          @default(30)
-  tipo           TipoCita     @default(CONSULTA)
-  motivo         String
-  notas          String?
-  estado         EstadoCita   @default(PROGRAMADA)
-  recordatorio_enviado Boolean  @default(false)
-  created_at     DateTime     @default(now())
+  id                   String       @id @default(uuid())
+  mascota_id           String
+  mascota              Mascota      @relation(fields: [mascota_id], references: [id])
+  doctor_id            String?
+  doctor               Usuario?     @relation(fields: [doctor_id], references: [id])
+  consultorio_id       String?
+  consultorio          Consultorio? @relation(fields: [consultorio_id], references: [id])
+  fecha_hora           DateTime
+  duracion_min         Int          @default(30)
+  tipo                 TipoCita     @default(CONSULTA)
+  motivo               String
+  notas                String?
+  estado               EstadoCita   @default(PROGRAMADA)
+  recordatorio_enviado Boolean      @default(false)
+  created_at           DateTime     @default(now())
 }
 
 enum EstadoCita {
@@ -429,12 +429,12 @@ model Lead {
 }
 
 model Suscripcion {
-  id                String            @id @default(uuid())
-  plan              String
-  nombre            String?
-  email             String?
-  monto             Decimal           @default(0)
-  moneda            String            @default("usd")
+  id                  String            @id @default(uuid())
+  plan                String
+  nombre              String?
+  email               String?
+  monto               Decimal           @default(0)
+  moneda              String            @default("usd")
   estado              EstadoSuscripcion @default(PENDIENTE)
   stripe_session_id   String?           @unique
   cuenta_provisionada Boolean           @default(false)
