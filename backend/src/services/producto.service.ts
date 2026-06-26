@@ -136,9 +136,21 @@ export class ProductoService {
     motivo?: string,
   ) {
     try {
+      if (!Number.isFinite(cantidad) || cantidad <= 0) {
+        throw {
+          status: 400,
+          message: "La cantidad debe ser un número mayor a cero.",
+        };
+      }
       const prod = await this.prisma.producto.findUniqueOrThrow({
         where: { id },
       });
+      if (tipo === "SALIDA" && prod.stock_actual < cantidad) {
+        throw {
+          status: 400,
+          message: `Stock insuficiente: disponible ${prod.stock_actual}, solicitado ${cantidad}.`,
+        };
+      }
       const nuevo_stock =
         tipo === "INGRESO"
           ? prod.stock_actual + cantidad
@@ -160,8 +172,11 @@ export class ProductoService {
         }),
       ]);
       return updated;
-    } catch (err) {
-      throw { status: 500, message: "Error al ajustar el stock del producto" };
+    } catch (err: any) {
+      throw {
+        status: err?.status || 500,
+        message: err?.message || "Error al ajustar el stock del producto",
+      };
     }
   }
 }

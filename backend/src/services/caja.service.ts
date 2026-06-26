@@ -243,6 +243,12 @@ export class CajaService {
         },
       });
 
+      // Evita el doble cobro: si la ficha ya está pagada, no se debe generar
+      // otro recibo ni volver a descontar stock de los insumos.
+      if (ficha.estado_cobro === "PAGADO") {
+        throw { status: 400, message: "Esta ficha ya fue cobrada." };
+      }
+
       type Detalle = {
         tipo: "SERVICIO" | "FARMACIA" | "SUMINISTRO";
         descripcion: string;
@@ -313,6 +319,26 @@ export class CajaService {
           where: { id: data.ficha_id },
           data: { estado_cobro: "PAGADO" },
         });
+
+        // Descontar del inventario los insumos/suministros consumidos durante
+        // la consulta y dejar la trazabilidad en el kardex. Sin esto, los
+        // productos se facturan pero el stock nunca baja (inventario divergente).
+        for (const cons of ficha.consumos) {
+          const nuevo = cons.producto.stock_actual - cons.cantidad;
+          await tx.producto.update({
+            where: { id: cons.producto_id },
+            data: { stock_actual: nuevo },
+          });
+          await tx.kardexMovimiento.create({
+            data: {
+              producto_id: cons.producto_id,
+              tipo: "SALIDA",
+              cantidad: cons.cantidad,
+              saldo_final: nuevo,
+              motivo: `Consumo en consulta ${ficha.cod_ficha}, Recibo ${num_recibo}`,
+            },
+          });
+        }
 
         // Liberar el consultorio automáticamente al registrarse el pago.
         if (ficha.consultorio_id) {

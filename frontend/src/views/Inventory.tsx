@@ -89,11 +89,17 @@ export const Inventory: React.FC = () => {
 
   const categoriasNombres = [
     "Todo",
-    ...Array.from(new Set(productos.map((p) => p.categoria.nombre))),
+    ...Array.from(
+      new Set(
+        productos
+          .map((p) => p.categoria?.nombre)
+          .filter((n): n is string => Boolean(n)),
+      ),
+    ),
   ];
 
   const filtrados = productos.filter((p) => {
-    const matchCat = filtro === "Todo" || p.categoria.nombre === filtro;
+    const matchCat = filtro === "Todo" || p.categoria?.nombre === filtro;
     const matchSearch = p.nombre.toLowerCase().includes(search.toLowerCase());
     return matchCat && matchSearch;
   });
@@ -401,17 +407,17 @@ export const Inventory: React.FC = () => {
                         </td>
                         <td className="px-6 py-4">
                           <span className="px-2 py-1 text-[10px] font-bold rounded uppercase bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">
-                            {p.categoria.nombre}
+                            {p.categoria?.nombre ?? "Sin categoría"}
                           </span>
                         </td>
                         <td className="px-6 py-4">
                           <span
                             className={cn(
                               "px-2 py-1 text-[10px] font-bold rounded uppercase",
-                              tipoColor(p.categoria.tipo_item),
+                              tipoColor(p.categoria?.tipo_item),
                             )}
                           >
-                            {tipoLabel(p.categoria.tipo_item)}
+                            {tipoLabel(p.categoria?.tipo_item)}
                           </span>
                         </td>
                         <td className="px-6 py-4">

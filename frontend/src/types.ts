@@ -215,8 +215,8 @@ export interface Producto {
   id: string;
   nombre: string;
   descripcion?: string;
-  categoria_id: string;
-  categoria: CategoriaProducto;
+  categoria_id?: string | null;
+  categoria?: CategoriaProducto | null;
   precio_venta: string | number;
   stock_actual: number;
   stock_minimo: number;

@@ -343,10 +343,24 @@ export class FichaService {
     },
   ) {
     try {
+      // Solo se persisten campos válidos del modelo RegistroSOAP. Filtrar evita
+      // que un campo inesperado en el body haga fallar el upsert de Prisma
+      // ("Unknown argument") y derive en un 500.
+      const payload = {
+        motivo_detalle: data.motivo_detalle,
+        anamnesis: data.anamnesis,
+        peso: data.peso,
+        temperatura: data.temperatura,
+        fc: data.fc,
+        fr: data.fr,
+        hallazgos: data.hallazgos,
+        diagnostico: data.diagnostico,
+        tratamiento: data.tratamiento,
+      };
       return await this.prisma.registroSOAP.upsert({
         where: { ficha_id },
-        create: { ficha_id, ...data },
-        update: data,
+        create: { ficha_id, ...payload },
+        update: payload,
       });
     } catch (err) {
       throw { status: 500, message: "Error al guardar el registro SOAP" };
