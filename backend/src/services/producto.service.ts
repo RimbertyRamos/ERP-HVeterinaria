@@ -1,8 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 
-const productoInclude = { categoria: true };
-
 export class ProductoService {
+  private static readonly PRODUCTO_INCLUDE = { categoria: true };
+
   constructor(private readonly prisma: PrismaClient) {}
 
   async getProductos(search?: string, categoria_id?: string) {
@@ -14,7 +14,7 @@ export class ProductoService {
             ? { nombre: { contains: search, mode: "insensitive" as const } }
             : {}),
         },
-        include: productoInclude,
+        include: ProductoService.PRODUCTO_INCLUDE,
         orderBy: { nombre: "asc" },
       });
     } catch (err) {
@@ -26,7 +26,7 @@ export class ProductoService {
     try {
       return await this.prisma.producto.findUnique({
         where: { id },
-        include: productoInclude,
+        include: ProductoService.PRODUCTO_INCLUDE,
       });
     } catch (err) {
       throw { status: 500, message: "Error al obtener el producto" };
@@ -44,7 +44,7 @@ export class ProductoService {
     try {
       return await this.prisma.producto.create({
         data,
-        include: productoInclude,
+        include: ProductoService.PRODUCTO_INCLUDE,
       });
     } catch (err) {
       throw { status: 500, message: "Error al crear el producto" };
@@ -66,7 +66,7 @@ export class ProductoService {
       return await this.prisma.producto.update({
         where: { id },
         data,
-        include: productoInclude,
+        include: ProductoService.PRODUCTO_INCLUDE,
       });
     } catch (err) {
       throw { status: 500, message: "Error al actualizar el producto" };
@@ -147,7 +147,7 @@ export class ProductoService {
         this.prisma.producto.update({
           where: { id },
           data: { stock_actual: nuevo_stock },
-          include: productoInclude,
+          include: ProductoService.PRODUCTO_INCLUDE,
         }),
         this.prisma.kardexMovimiento.create({
           data: {

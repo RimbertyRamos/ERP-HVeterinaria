@@ -1,23 +1,27 @@
 import { PrismaClient } from "@prisma/client";
-
-const reciboInclude = {
-  ficha: {
-    include: {
-      mascota: {
-        include: {
-          propietario: { select: { id: true, nombre: true, ci: true } },
-        },
-      },
-      servicio: true,
-    },
-  },
-  cajero: { select: { id: true, nombre: true } },
-  punto_caja: true,
-  detalles: { include: { producto: true } },
-};
+import { ConsultorioService } from "./consultorio.service";
 
 export class CajaService {
-  constructor(private readonly prisma: PrismaClient) {}
+  private static readonly RECIBO_INCLUDE = {
+    ficha: {
+      include: {
+        mascota: {
+          include: {
+            propietario: { select: { id: true, nombre: true, ci: true } },
+          },
+        },
+        servicio: true,
+      },
+    },
+    cajero: { select: { id: true, nombre: true } },
+    punto_caja: true,
+    detalles: { include: { producto: true } },
+  };
+
+  constructor(
+    private readonly prisma: PrismaClient,
+    private readonly consultorioService: ConsultorioService,
+  ) {}
 
   // ── Arqueo y cierre de caja ────────────────────────────────────────────────
 
@@ -199,7 +203,7 @@ export class CajaService {
   async getRecibos() {
     try {
       return await this.prisma.reciboCaja.findMany({
-        include: reciboInclude,
+        include: CajaService.RECIBO_INCLUDE,
         orderBy: { fecha_pago: "desc" },
       });
     } catch (err) {
@@ -211,7 +215,7 @@ export class CajaService {
     try {
       return await this.prisma.reciboCaja.findUnique({
         where: { id },
-        include: reciboInclude,
+        include: CajaService.RECIBO_INCLUDE,
       });
     } catch (err) {
       throw { status: 500, message: "Error al obtener el recibo" };
@@ -302,7 +306,7 @@ export class CajaService {
             estado: "PAGADO",
             detalles: { create: detalles },
           },
-          include: reciboInclude,
+          include: CajaService.RECIBO_INCLUDE,
         });
 
         await tx.fichaAtencion.update({
@@ -312,10 +316,10 @@ export class CajaService {
 
         // Liberar el consultorio automáticamente al registrarse el pago.
         if (ficha.consultorio_id) {
-          await tx.consultorio.update({
-            where: { id: ficha.consultorio_id },
-            data: { estado: "LIBRE" },
-          });
+          await this.consultorioService.liberarConsultorio(
+            ficha.consultorio_id,
+            tx,
+          );
         }
 
         return recibo;
@@ -333,7 +337,7 @@ export class CajaService {
       return await this.prisma.reciboCaja.update({
         where: { id },
         data: { estado: "ANULADO", motivo_anulacion },
-        include: reciboInclude,
+        include: CajaService.RECIBO_INCLUDE,
       });
     } catch (err) {
       throw { status: 500, message: "Error al anular el recibo" };
@@ -406,7 +410,7 @@ export class CajaService {
             estado: "PAGADO",
             detalles: { create: detalles },
           },
-          include: reciboInclude,
+          include: CajaService.RECIBO_INCLUDE,
         });
 
         // Descontar stock

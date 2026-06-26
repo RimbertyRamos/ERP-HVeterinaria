@@ -1,33 +1,33 @@
 import { PrismaClient } from "@prisma/client";
 
-const fichaInclude = {
-  mascota: {
-    include: {
-      especie: true,
-      raza: true,
-      propietario: {
-        select: {
-          id: true,
-          nombre: true,
-          email: true,
-          telefono: true,
-          ci: true,
-        },
-      },
-      alergias: { include: { alergia: true } },
-    },
-  },
-  servicio: true,
-  doctor: { select: { id: true, nombre: true, email: true } },
-  consultorio: true,
-  creado_por: { select: { id: true, nombre: true } },
-  soap: true,
-  consumos: { include: { producto: true } },
-  servicios_realizados: { include: { servicio: true } },
-  recibo: true,
-};
-
 export class FichaService {
+  private static readonly FICHA_INCLUDE = {
+    mascota: {
+      include: {
+        especie: true,
+        raza: true,
+        propietario: {
+          select: {
+            id: true,
+            nombre: true,
+            email: true,
+            telefono: true,
+            ci: true,
+          },
+        },
+        alergias: { include: { alergia: true } },
+      },
+    },
+    servicio: true,
+    doctor: { select: { id: true, nombre: true, email: true } },
+    consultorio: true,
+    creado_por: { select: { id: true, nombre: true } },
+    soap: true,
+    consumos: { include: { producto: true } },
+    servicios_realizados: { include: { servicio: true } },
+    recibo: true,
+  };
+
   constructor(private readonly prisma: PrismaClient) {}
 
   /**
@@ -85,7 +85,7 @@ export class FichaService {
       }
       return await this.prisma.fichaAtencion.findMany({
         where,
-        include: fichaInclude,
+        include: FichaService.FICHA_INCLUDE,
         orderBy: { fecha_hora: "desc" },
       });
     } catch (err) {
@@ -97,7 +97,7 @@ export class FichaService {
     try {
       return await this.prisma.fichaAtencion.findUnique({
         where: { id },
-        include: fichaInclude,
+        include: FichaService.FICHA_INCLUDE,
       });
     } catch (err) {
       throw { status: 500, message: "Error al obtener la ficha de atención" };
@@ -120,7 +120,7 @@ export class FichaService {
         );
         return await this.prisma.fichaAtencion.create({
           data: { ...data, cod_ficha },
-          include: fichaInclude,
+          include: FichaService.FICHA_INCLUDE,
         });
       } catch (err: any) {
         // P2002 = colisión de cod_ficha → recalcular y reintentar
@@ -166,7 +166,7 @@ export class FichaService {
             consultorio_id: data.consultorio_id,
             estado: "EN_CURSO",
           },
-          include: fichaInclude,
+          include: FichaService.FICHA_INCLUDE,
         });
       });
     } catch (err: any) {
@@ -184,7 +184,7 @@ export class FichaService {
       return await this.prisma.fichaAtencion.update({
         where: { id },
         data: { estado: "COMPLETADA" },
-        include: fichaInclude,
+        include: FichaService.FICHA_INCLUDE,
       });
     } catch (err) {
       throw { status: 500, message: "Error al completar la ficha de atención" };
@@ -207,7 +207,7 @@ export class FichaService {
         return tx.fichaAtencion.update({
           where: { id },
           data: { estado: "CANCELADA" },
-          include: fichaInclude,
+          include: FichaService.FICHA_INCLUDE,
         });
       });
     } catch (err) {
@@ -220,7 +220,7 @@ export class FichaService {
       return await this.prisma.fichaAtencion.update({
         where: { id },
         data,
-        include: fichaInclude,
+        include: FichaService.FICHA_INCLUDE,
       });
     } catch (err) {
       throw {

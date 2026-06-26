@@ -2,37 +2,37 @@ import { PrismaClient } from "@prisma/client";
 import { UsuariosService } from "./usuarios.service";
 import { CreateMascotaConPropietarioDto, UpdateMascotaDto } from "../types";
 
-const mascotaInclude = {
-  especie: true,
-  raza: true,
-  color: true,
-  propietario: {
-    select: { id: true, nombre: true, email: true, telefono: true, ci: true },
-  },
-  alergias: { include: { alergia: true } },
-  fichas: {
-    orderBy: { fecha_hora: "desc" as const },
-    take: 20,
-    include: {
-      servicio: true,
-      doctor: { select: { id: true, nombre: true } },
-      consultorio: { select: { nombre: true } },
-      soap: { select: { diagnostico: true, tratamiento: true } },
-      recibo: {
-        select: {
-          id: true,
-          num_recibo: true,
-          total: true,
-          metodo_pago: true,
-          fecha_pago: true,
-          estado: true,
+export class MascotaService {
+  private static readonly MASCOTA_INCLUDE = {
+    especie: true,
+    raza: true,
+    color: true,
+    propietario: {
+      select: { id: true, nombre: true, email: true, telefono: true, ci: true },
+    },
+    alergias: { include: { alergia: true } },
+    fichas: {
+      orderBy: { fecha_hora: "desc" as const },
+      take: 20,
+      include: {
+        servicio: true,
+        doctor: { select: { id: true, nombre: true } },
+        consultorio: { select: { nombre: true } },
+        soap: { select: { diagnostico: true, tratamiento: true } },
+        recibo: {
+          select: {
+            id: true,
+            num_recibo: true,
+            total: true,
+            metodo_pago: true,
+            fecha_pago: true,
+            estado: true,
+          },
         },
       },
     },
-  },
-};
+  };
 
-export class MascotaService {
   constructor(
     private readonly prisma: PrismaClient,
     private readonly usuariosService: UsuariosService,
@@ -66,7 +66,7 @@ export class MascotaService {
               }
             : {}),
         },
-        include: mascotaInclude,
+        include: MascotaService.MASCOTA_INCLUDE,
         orderBy: { nombre: "asc" },
       });
     } catch (err) {
@@ -78,7 +78,7 @@ export class MascotaService {
     try {
       return await this.prisma.mascota.findUnique({
         where: { id },
-        include: mascotaInclude,
+        include: MascotaService.MASCOTA_INCLUDE,
       });
     } catch (err) {
       throw { status: 500, message: "Error al obtener la mascota" };
@@ -132,7 +132,7 @@ export class MascotaService {
               }
             : undefined,
         },
-        include: mascotaInclude,
+        include: MascotaService.MASCOTA_INCLUDE,
       });
     } catch (err: any) {
       throw {
@@ -159,7 +159,7 @@ export class MascotaService {
             ? new Date(data.fecha_nacimiento)
             : undefined,
         },
-        include: mascotaInclude,
+        include: MascotaService.MASCOTA_INCLUDE,
       });
     } catch (err) {
       throw { status: 500, message: "Error al actualizar la mascota" };
@@ -171,6 +171,23 @@ export class MascotaService {
       return await this.prisma.mascota.delete({ where: { id } });
     } catch (err) {
       throw { status: 500, message: "Error al eliminar la mascota" };
+    }
+  }
+
+  // ── Autoservicio ────────────────────────────────────────────────────────────
+
+  async getMascotasByPropietario(propietarioId: string) {
+    try {
+      return await this.prisma.mascota.findMany({
+        where: { propietario_id: propietarioId },
+        include: MascotaService.MASCOTA_INCLUDE,
+        orderBy: { nombre: "asc" },
+      });
+    } catch (err) {
+      throw {
+        status: 500,
+        message: "Error al obtener las mascotas del propietario",
+      };
     }
   }
 }

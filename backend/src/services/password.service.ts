@@ -1,8 +1,5 @@
 import bcrypt from "bcryptjs";
 
-/** Longitud mínima de contraseña exigida por el backend (no confiar solo en el frontend). */
-export const MIN_PASSWORD_LENGTH = 6;
-
 /**
  * Servicio de contraseñas: validación de políticas + hashing/verificación con bcrypt.
  *
@@ -11,6 +8,8 @@ export const MIN_PASSWORD_LENGTH = 6;
  * el coste de hashing (saltRounds) es configurable y la lógica queda en un único lugar.
  */
 export class PasswordService {
+  static readonly MIN_LENGTH = 6;
+
   constructor(private readonly saltRounds: number = 10) {}
 
   /**
@@ -21,10 +20,10 @@ export class PasswordService {
   validate(password: string): void {
     if (
       typeof password !== "string" ||
-      password.trim().length < MIN_PASSWORD_LENGTH
+      password.trim().length < PasswordService.MIN_LENGTH
     ) {
       throw new Error(
-        `La contraseña debe tener al menos ${MIN_PASSWORD_LENGTH} caracteres`,
+        `La contraseña debe tener al menos ${PasswordService.MIN_LENGTH} caracteres`,
       );
     }
   }

@@ -76,9 +76,9 @@ const mailService = new MailService({
 });
 const agendaService = new AgendaService(prisma, fichaService, mailService);
 const authService = new AuthService(prisma, tokenService, passwordService);
-const cajaService = new CajaService(prisma);
-const catalogoService = new CatalogoService(prisma);
 const consultorioService = new ConsultorioService(prisma);
+const cajaService = new CajaService(prisma, consultorioService);
+const catalogoService = new CatalogoService(prisma);
 const dashboardService = new DashboardService(prisma);
 const productoService = new ProductoService(prisma);
 const servicioService = new ServicioService(prisma);
@@ -102,6 +102,7 @@ export const mascotaController = new MascotaController(
 export const fichaController = new FichaController(fichaService, errorHandler);
 export const agendaController = new AgendaController(
   agendaService,
+  mascotaService,
   errorHandler,
 );
 export const cajaController = new CajaController(cajaService, errorHandler);

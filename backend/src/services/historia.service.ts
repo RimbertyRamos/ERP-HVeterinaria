@@ -1,64 +1,64 @@
 import { PrismaClient } from "@prisma/client";
 
-const historiaInclude = {
-  mascota: {
-    include: {
-      especie: true,
-      raza: true,
-      propietario: {
-        select: { id: true, nombre: true, telefono: true, ci: true, email: true },
+export class HistoriaService {
+  private static readonly HISTORIA_INCLUDE = {
+    mascota: {
+      include: {
+        especie: true,
+        raza: true,
+        propietario: {
+          select: { id: true, nombre: true, telefono: true, ci: true, email: true },
+        },
       },
     },
-  },
-  atendido_por: { select: { id: true, nombre: true } },
-  created_by: { select: { id: true, nombre: true } },
-  finalized_by: { select: { id: true, nombre: true } },
-  evoluciones: { orderBy: { fecha: "asc" as const } },
-};
+    atendido_por: { select: { id: true, nombre: true } },
+    created_by: { select: { id: true, nombre: true } },
+    finalized_by: { select: { id: true, nombre: true } },
+    evoluciones: { orderBy: { fecha: "asc" as const } },
+  };
 
-// Campos que el médico puede escribir. Protege estado/folio/auditoría/relaciones
-// de un mass-assignment desde el body.
-const CAMPOS_EDITABLES = [
-  "propietario_nombre",
-  "domicilio",
-  "telefono",
-  "celular",
-  "edad",
-  "peso",
-  "motivo_consulta",
-  "vacunas",
-  "vacunas_otras",
-  "desparasitacion",
-  "desparasitacion_cuando",
-  "enfermedades_previas",
-  "intervenciones_previas",
-  "estado_general",
-  "apetito",
-  "hidratacion",
-  "mucosa",
-  "ap_digestivo",
-  "ap_genitourinario",
-  "ap_respiratorio",
-  "temperatura",
-  "fc",
-  "fr",
-  "observacion_clinica",
-  "pruebas_complementarias",
-  "diagnostico_presuntivo",
-  "diagnostico_confirmativo",
-  "pronostico",
-  "tratamiento",
-];
+  // Campos que el médico puede escribir. Protege estado/folio/auditoría/relaciones
+  // de un mass-assignment desde el body.
+  private static readonly CAMPOS_EDITABLES = [
+    "propietario_nombre",
+    "domicilio",
+    "telefono",
+    "celular",
+    "edad",
+    "peso",
+    "motivo_consulta",
+    "vacunas",
+    "vacunas_otras",
+    "desparasitacion",
+    "desparasitacion_cuando",
+    "enfermedades_previas",
+    "intervenciones_previas",
+    "estado_general",
+    "apetito",
+    "hidratacion",
+    "mucosa",
+    "ap_digestivo",
+    "ap_genitourinario",
+    "ap_respiratorio",
+    "temperatura",
+    "fc",
+    "fr",
+    "observacion_clinica",
+    "pruebas_complementarias",
+    "diagnostico_presuntivo",
+    "diagnostico_confirmativo",
+    "pronostico",
+    "tratamiento",
+  ];
 
-function pickCampos(data: any) {
-  const out: Record<string, any> = {};
-  for (const k of CAMPOS_EDITABLES) {
-    if (data[k] !== undefined) out[k] = data[k];
+  private static pickCampos(data: any) {
+    const out: Record<string, any> = {};
+    for (const k of HistoriaService.CAMPOS_EDITABLES) {
+      if (data[k] !== undefined) out[k] = data[k];
+    }
+    return out;
   }
-  return out;
-}
 
-export class HistoriaService {
   constructor(private readonly prisma: PrismaClient) {}
 
   async getByMascota(mascota_id: string) {
@@ -86,7 +86,7 @@ export class HistoriaService {
     try {
       return await this.prisma.historiaClinica.findUnique({
         where: { ficha_id },
-        include: historiaInclude,
+        include: HistoriaService.HISTORIA_INCLUDE,
       });
     } catch (err) {
       throw { status: 500, message: "Error al obtener la historia de la ficha" };
@@ -97,7 +97,7 @@ export class HistoriaService {
     try {
       return await this.prisma.historiaClinica.findUnique({
         where: { id },
-        include: historiaInclude,
+        include: HistoriaService.HISTORIA_INCLUDE,
       });
     } catch (err) {
       throw { status: 500, message: "Error al obtener la historia clínica" };
@@ -109,7 +109,7 @@ export class HistoriaService {
       if (!data.mascota_id) {
         throw { status: 400, message: "mascota_id es obligatorio" };
       }
-      const campos = pickCampos(data);
+      const campos = HistoriaService.pickCampos(data);
       const evoluciones = Array.isArray(data.evoluciones)
         ? data.evoluciones
         : [];
@@ -133,7 +133,7 @@ export class HistoriaService {
               }
             : {}),
         },
-        include: historiaInclude,
+        include: HistoriaService.HISTORIA_INCLUDE,
       });
     } catch (err: any) {
       if (err?.code === "P2002") {
@@ -162,7 +162,7 @@ export class HistoriaService {
             "La historia clínica está finalizada y no puede modificarse.",
         };
       }
-      const campos = pickCampos(data);
+      const campos = HistoriaService.pickCampos(data);
       return await this.prisma.$transaction(async (tx) => {
         if (Array.isArray(data.evoluciones)) {
           await tx.evolucionTratamiento.deleteMany({
@@ -189,7 +189,7 @@ export class HistoriaService {
               atendido_por_id: data.atendido_por_id,
             }),
           },
-          include: historiaInclude,
+          include: HistoriaService.HISTORIA_INCLUDE,
         });
       });
     } catch (err: any) {
@@ -216,7 +216,7 @@ export class HistoriaService {
           finalized_by_id: userId,
           finalized_at: new Date(),
         },
-        include: historiaInclude,
+        include: HistoriaService.HISTORIA_INCLUDE,
       });
     } catch (err: any) {
       throw {

@@ -1,20 +1,21 @@
 import { PrismaClient } from "@prisma/client";
 
-const diaBuckets = () =>
-  Array.from({ length: 7 }, (_, i) => {
-    const start = new Date();
-    start.setHours(0, 0, 0, 0);
-    start.setDate(start.getDate() - (6 - i));
-    const end = new Date(start);
-    end.setDate(start.getDate() + 1);
-    const label = start.toLocaleDateString("es-ES", {
-      weekday: "short",
-      day: "numeric",
-    });
-    return { start, end, label };
-  });
-
 export class DashboardService {
+  private static diaBuckets() {
+    return Array.from({ length: 7 }, (_, i) => {
+      const start = new Date();
+      start.setHours(0, 0, 0, 0);
+      start.setDate(start.getDate() - (6 - i));
+      const end = new Date(start);
+      end.setDate(start.getDate() + 1);
+      const label = start.toLocaleDateString("es-ES", {
+        weekday: "short",
+        day: "numeric",
+      });
+      return { start, end, label };
+    });
+  }
+
   constructor(private readonly prisma: PrismaClient) {}
 
   async getKpis() {
@@ -24,7 +25,7 @@ export class DashboardService {
       const manana = new Date(hoy);
       manana.setDate(hoy.getDate() + 1);
 
-      const buckets = diaBuckets();
+      const buckets = DashboardService.diaBuckets();
 
       const [
         fichasHoy,

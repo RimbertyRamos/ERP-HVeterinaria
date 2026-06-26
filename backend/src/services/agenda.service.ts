@@ -9,20 +9,19 @@ import {
   TipoCita,
 } from "../types";
 
-const citaInclude = {
-  mascota: {
-    include: {
-      especie: { select: { nombre: true } },
-      propietario: {
-        select: { id: true, nombre: true, telefono: true, email: true },
+export class AgendaService {
+  private static readonly CITA_INCLUDE = {
+    mascota: {
+      include: {
+        especie: { select: { nombre: true } },
+        propietario: {
+          select: { id: true, nombre: true, telefono: true, email: true },
+        },
       },
     },
-  },
-  doctor: { select: { id: true, nombre: true } },
-  consultorio: { select: { id: true, nombre: true, tipo: true } },
-};
-
-export class AgendaService {
+    doctor: { select: { id: true, nombre: true } },
+    consultorio: { select: { id: true, nombre: true, tipo: true } },
+  };
   // Horario de atención del hospital (configurable a futuro).
   private static readonly HORA_INICIO = 8;
   private static readonly HORA_FIN = 20;
@@ -73,7 +72,7 @@ export class AgendaService {
           recordatorio_enviado: false,
           fecha_hora: { gte: ahora, lte: limite },
         },
-        include: citaInclude,
+        include: AgendaService.CITA_INCLUDE,
       });
       for (const cita of proximas) {
         // Marcamos primero para no duplicar ante cargas concurrentes.
@@ -113,7 +112,7 @@ export class AgendaService {
 
       return await this.prisma.cita.findMany({
         where,
-        include: citaInclude,
+        include: AgendaService.CITA_INCLUDE,
         orderBy: { fecha_hora: "asc" },
       });
     } catch (err) {
@@ -142,7 +141,7 @@ export class AgendaService {
           motivo: data.motivo,
           notas: data.notas,
         },
-        include: citaInclude,
+        include: AgendaService.CITA_INCLUDE,
       });
       // Confirmación al propietario (no bloquea la respuesta).
       void this.mailService.enviarConfirmacionCita(cita);
@@ -196,7 +195,7 @@ export class AgendaService {
       return await this.prisma.cita.update({
         where: { id },
         data: updateData,
-        include: citaInclude,
+        include: AgendaService.CITA_INCLUDE,
       });
     } catch (err: any) {
       throw {
@@ -211,7 +210,7 @@ export class AgendaService {
       const cita = await this.prisma.cita.update({
         where: { id },
         data: { estado },
-        include: citaInclude,
+        include: AgendaService.CITA_INCLUDE,
       });
       // Al programar/confirmar (incluye aceptar una solicitud) avisamos por correo.
       if (estado === "PROGRAMADA") {
@@ -239,7 +238,7 @@ export class AgendaService {
     try {
       return await this.prisma.cita.findMany({
         where: { estado: "SOLICITADA" },
-        include: citaInclude,
+        include: AgendaService.CITA_INCLUDE,
         orderBy: { fecha_hora: "asc" },
       });
     } catch (err) {
@@ -285,7 +284,7 @@ export class AgendaService {
           motivo: data.motivo?.trim() || "Solicitud de cita en línea",
           estado: "SOLICITADA",
         },
-        include: citaInclude,
+        include: AgendaService.CITA_INCLUDE,
       });
     } catch (err: any) {
       throw {
@@ -300,7 +299,7 @@ export class AgendaService {
       await this.marcarInasistencias();
       return await this.prisma.cita.findMany({
         where: { mascota: { propietario_id: propietarioId } },
-        include: citaInclude,
+        include: AgendaService.CITA_INCLUDE,
         orderBy: { fecha_hora: "desc" },
       });
     } catch (err) {
@@ -308,21 +307,6 @@ export class AgendaService {
     }
   }
 
-  async getMascotasPropietario(propietarioId: string) {
-    try {
-      return await this.prisma.mascota.findMany({
-        where: { propietario_id: propietarioId },
-        select: {
-          id: true,
-          nombre: true,
-          especie: { select: { nombre: true } },
-        },
-        orderBy: { nombre: "asc" },
-      });
-    } catch (err) {
-      throw { status: 500, message: "Error al obtener tus mascotas" };
-    }
-  }
 
   /**
    * Calcula los horarios (slots de 30 min) de un día y marca cuáles están libres.

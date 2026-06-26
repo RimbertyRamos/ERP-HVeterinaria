@@ -6,18 +6,18 @@ import {
   CreatePropietarioDto,
 } from "../types";
 
-const usuarioSelect = {
-  id: true,
-  nombre: true,
-  email: true,
-  telefono: true,
-  ci: true,
-  rol: true,
-  created_at: true,
-  _count: { select: { mascotas: true } },
-};
-
 export class UsuariosService {
+  private static readonly USUARIO_SELECT = {
+    id: true,
+    nombre: true,
+    email: true,
+    telefono: true,
+    ci: true,
+    rol: true,
+    created_at: true,
+    _count: { select: { mascotas: true } },
+  };
+
   constructor(
     private readonly prisma: PrismaClient,
     private readonly passwordService: PasswordService,
@@ -38,7 +38,7 @@ export class UsuariosService {
               }
             : {}),
         },
-        select: usuarioSelect,
+        select: UsuariosService.USUARIO_SELECT,
         orderBy: { nombre: "asc" },
       });
     } catch (err) {
@@ -50,7 +50,7 @@ export class UsuariosService {
     try {
       return await this.prisma.usuario.findUnique({
         where: { id },
-        select: usuarioSelect,
+        select: UsuariosService.USUARIO_SELECT,
       });
     } catch (err) {
       throw { status: 500, message: "Error al obtener el usuario" };
@@ -81,7 +81,7 @@ export class UsuariosService {
           password_hash: hash,
           debe_cambiar_password: debeCambiar,
         },
-        select: usuarioSelect,
+        select: UsuariosService.USUARIO_SELECT,
       });
     } catch (err: any) {
       throw {
@@ -96,7 +96,7 @@ export class UsuariosService {
       return await this.prisma.usuario.update({
         where: { id },
         data,
-        select: usuarioSelect,
+        select: UsuariosService.USUARIO_SELECT,
       });
     } catch (err) {
       throw { status: 500, message: "Error al actualizar el usuario" };

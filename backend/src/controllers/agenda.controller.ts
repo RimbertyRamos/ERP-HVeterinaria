@@ -1,11 +1,13 @@
 import { Request, Response } from "express";
 import { AgendaService } from "../services/agenda.service";
+import { MascotaService } from "../services/mascota.service";
 import { getUserId } from "../middlewares/auth.middleware";
 import { ErrorHandler } from "../middlewares/error.middleware";
 
 export class AgendaController {
   constructor(
     private readonly agendaService: AgendaService,
+    private readonly mascotaService: MascotaService,
     private readonly errors: ErrorHandler,
   ) {}
 
@@ -104,7 +106,7 @@ export class AgendaController {
 
   getMisMascotas = async (req: Request, res: Response) => {
     try {
-      const mascotas = await this.agendaService.getMascotasPropietario(
+      const mascotas = await this.mascotaService.getMascotasByPropietario(
         getUserId(req),
       );
       res.json(mascotas);

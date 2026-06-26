@@ -1,18 +1,18 @@
 import { PrismaClient } from "@prisma/client";
 
-const consultorioInclude = {
-  responsable: {
-    select: { id: true, nombre: true, rol: { select: { nombre: true } } },
-  },
-};
-
 export class ConsultorioService {
+  private static readonly CONSULTORIO_INCLUDE = {
+    responsable: {
+      select: { id: true, nombre: true, rol: { select: { nombre: true } } },
+    },
+  };
+
   constructor(private readonly prisma: PrismaClient) {}
 
   async getConsultorios() {
     try {
       return await this.prisma.consultorio.findMany({
-        include: consultorioInclude,
+        include: ConsultorioService.CONSULTORIO_INCLUDE,
         orderBy: { nombre: "asc" },
       });
     } catch (err) {
@@ -24,7 +24,7 @@ export class ConsultorioService {
     try {
       return await this.prisma.consultorio.findUnique({
         where: { id },
-        include: consultorioInclude,
+        include: ConsultorioService.CONSULTORIO_INCLUDE,
       });
     } catch (err) {
       throw { status: 500, message: "Error al obtener el consultorio" };
@@ -43,7 +43,7 @@ export class ConsultorioService {
           ...data,
           tipo: data.tipo || "CONSULTORIO",
         },
-        include: consultorioInclude,
+        include: ConsultorioService.CONSULTORIO_INCLUDE,
       });
     } catch (err) {
       throw { status: 500, message: "Error al crear el consultorio" };
@@ -69,7 +69,7 @@ export class ConsultorioService {
       return await this.prisma.consultorio.update({
         where: { id },
         data,
-        include: consultorioInclude,
+        include: ConsultorioService.CONSULTORIO_INCLUDE,
       });
     } catch (err) {
       throw { status: 500, message: "Error al actualizar el consultorio" };
@@ -81,7 +81,7 @@ export class ConsultorioService {
       return await this.prisma.consultorio.update({
         where: { id },
         data: { estado },
-        include: consultorioInclude,
+        include: ConsultorioService.CONSULTORIO_INCLUDE,
       });
     } catch (err) {
       throw {
@@ -96,6 +96,27 @@ export class ConsultorioService {
       return await this.prisma.consultorio.delete({ where: { id } });
     } catch (err) {
       throw { status: 500, message: "Error al eliminar el consultorio" };
+    }
+  }
+
+  // ── Delegaciones inter-servicios ──────────────────────────────────────────
+
+  /**
+   * Libera un consultorio (usado por CajaService al cobrar una ficha, por ejemplo).
+   * Acepta un tx opcional para participar en una transacción existente.
+   */
+  async liberarConsultorio(
+    id: string,
+    tx: PrismaClient | Parameters<Parameters<PrismaClient["$transaction"]>[0]>[0] = this.prisma,
+  ) {
+    try {
+      return await tx.consultorio.update({
+        where: { id },
+        data: { estado: "LIBRE" },
+        include: ConsultorioService.CONSULTORIO_INCLUDE,
+      });
+    } catch (err) {
+      throw { status: 500, message: `Error al liberar el consultorio ${id}` };
     }
   }
 }
