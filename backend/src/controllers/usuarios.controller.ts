@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { UsuariosService } from "../services/usuarios.service";
 import { ErrorHandler } from "../middlewares/error.middleware";
 import { getUserId } from "../middlewares/auth.middleware";
+import { bitacora, metaBitacora } from "../services/bitacora.singleton";
 
 export class UsuariosController {
   constructor(
@@ -34,6 +35,14 @@ export class UsuariosController {
   createUsuario = async (req: Request, res: Response) => {
     try {
       const usuario = await this.usuariosService.createUsuario(req.body);
+      void bitacora.registrar({
+        ...metaBitacora(req),
+        accion: "CREAR",
+        entidad: "usuario",
+        entidad_id: (usuario as any)?.id ?? null,
+        descripcion: `Creó al usuario ${req.body?.email ?? ""}`.trim(),
+        datos_despues: req.body, // el service redacta password
+      });
       res.status(201).json(usuario);
     } catch (err) {
       this.errors.e500(req, res, err);
@@ -42,10 +51,32 @@ export class UsuariosController {
 
   updateUsuario = async (req: Request, res: Response) => {
     try {
-      const usuario = await this.usuariosService.updateUsuario(
-        req.params.id as string,
-        req.body,
-      );
+      const id = req.params.id as string;
+      const antes: any = await this.usuariosService.getUsuarioById(id);
+      const usuario = await this.usuariosService.updateUsuario(id, req.body);
+
+      const rolCambio =
+        !!req.body?.rol_id && !!antes?.rol?.id && req.body.rol_id !== antes.rol.id;
+      const estadoCambio = typeof req.body?.activo === "boolean";
+      const etiqueta = antes?.email ?? id;
+
+      void bitacora.registrar({
+        ...metaBitacora(req),
+        accion: rolCambio
+          ? "CAMBIO_ROL"
+          : estadoCambio
+            ? "CAMBIO_ESTADO"
+            : "ACTUALIZAR",
+        entidad: "usuario",
+        entidad_id: id,
+        descripcion: rolCambio
+          ? `Cambió el rol del usuario ${etiqueta}`
+          : estadoCambio
+            ? `Cambió el estado (activo=${req.body.activo}) del usuario ${etiqueta}`
+            : `Actualizó al usuario ${etiqueta}`,
+        datos_antes: antes,
+        datos_despues: usuario,
+      });
       res.json(usuario);
     } catch (err) {
       this.errors.e500(req, res, err);
@@ -54,7 +85,17 @@ export class UsuariosController {
 
   deleteUsuario = async (req: Request, res: Response) => {
     try {
-      await this.usuariosService.deleteUsuario(req.params.id as string);
+      const id = req.params.id as string;
+      const antes: any = await this.usuariosService.getUsuarioById(id);
+      await this.usuariosService.deleteUsuario(id);
+      void bitacora.registrar({
+        ...metaBitacora(req),
+        accion: "ELIMINAR",
+        entidad: "usuario",
+        entidad_id: id,
+        descripcion: `Eliminó al usuario ${antes?.email ?? id}`,
+        datos_antes: antes,
+      });
       res.json({ ok: true });
     } catch (err) {
       this.errors.e500(req, res, err);
@@ -79,6 +120,13 @@ export class UsuariosController {
         currentPassword,
         newPassword,
       );
+      void bitacora.registrar({
+        ...metaBitacora(req),
+        accion: "CAMBIO_PASSWORD",
+        entidad: "usuario",
+        entidad_id: userId,
+        descripcion: "Cambió su propia contraseña",
+      });
       res.json(result);
     } catch (err) {
       this.errors.e500(req, res, err);

@@ -40,6 +40,22 @@ const del = (url: string) =>
     checkOk,
   );
 
+// Descarga un endpoint protegido (GET) como blob usando el token y dispara la
+// descarga en el navegador. Reutilizado por la bitácora y por finanzas.
+const descargarConToken = async (path: string, filename: string) => {
+  const res = await fetch(`${BASE}${path}`, { headers: headers() });
+  if (!res.ok) throw new Error(`Error HTTP ${res.status}`);
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+};
+
 export const api = {
   // Auth (sin checkOk — el login maneja 401 como error de credenciales)
   login: (email: string, password: string) =>
@@ -127,12 +143,16 @@ export const api = {
     cajero_id: string;
     metodo_pago: string;
     monto_recibido: number;
+    descuento?: number;
+    tipo_descuento?: "MONTO" | "PORCENTAJE";
   }) => post("/caja/recibos", data),
   ventaDirecta: (data: {
     cajero_id: string;
     nombre_cliente?: string;
     metodo_pago: string;
     monto_recibido: number;
+    descuento?: number;
+    tipo_descuento?: "MONTO" | "PORCENTAJE";
     productos: { id: string; cantidad: number }[];
   }) => post("/caja/venta-directa", data),
   anularRecibo: (id: string, motivo_anulacion: string) =>
@@ -147,6 +167,17 @@ export const api = {
   getEspecies: () => get("/catalogos/especies"),
   getRazas: (especie_id?: string) =>
     get(`/catalogos/razas${especie_id ? `?especie_id=${especie_id}` : ""}`),
+  // Gestión de catálogos base (solo permiso gestionar_catalogos)
+  createEspecie: (data: { nombre: string }) =>
+    post("/catalogos/especies", data),
+  updateEspecie: (id: string, data: { nombre: string }) =>
+    put(`/catalogos/especies/${id}`, data),
+  deleteEspecie: (id: string) => del(`/catalogos/especies/${id}`),
+  createRaza: (data: { nombre: string; especie_id: string }) =>
+    post("/catalogos/razas", data),
+  updateRaza: (id: string, data: { nombre?: string; especie_id?: string }) =>
+    put(`/catalogos/razas/${id}`, data),
+  deleteRaza: (id: string) => del(`/catalogos/razas/${id}`),
   getColores: () => get("/catalogos/colores"),
   getAlergias: () => get("/catalogos/alergias"),
   getServicios: () => get("/catalogos/servicios"),
@@ -245,4 +276,50 @@ export const api = {
   // Chatbot IA
   getEmergencyAdvice: (message: string, history: unknown[]) =>
     post("/chatbot/emergencia", { message, history }),
+
+  // Sesión
+  logout: () => post("/auth/logout", {}),
+
+  // Notificaciones in-app (persistidas) del usuario autenticado
+  getNotificaciones: () => get("/notificaciones"),
+  marcarNotificacionLeida: (id: string) => patch(`/notificaciones/${id}/leida`),
+
+  // Calificación del servicio (CU20) — el CLIENTE califica una ficha COMPLETADA
+  calificar: (data: {
+    ficha_id: string;
+    puntaje: number;
+    comentario?: string;
+  }) => post("/calificaciones", data),
+  getPromedioServicio: (servicioId: string) =>
+    get(`/calificaciones/servicio/${servicioId}/promedio`),
+
+  // Programación horaria de consultorios (solo permiso gestionar_horarios)
+  getHorarios: (qs = "") => get(`/horarios${qs ? `?${qs}` : ""}`),
+  createHorario: (data: {
+    consultorio_id: string;
+    doctor_id: string;
+    inicio: string;
+    fin: string;
+    nota?: string;
+  }) => post("/horarios", data),
+  updateHorario: (id: string, data: unknown) => put(`/horarios/${id}`, data),
+  deleteHorario: (id: string) => del(`/horarios/${id}`),
+
+  // Bitácora / auditoría (solo permiso bitacora.ver)
+  getBitacora: (qs: string) => get(`/bitacora${qs ? `?${qs}` : ""}`),
+  getBitacoraById: (id: string) => get(`/bitacora/${id}`),
+  getBitacoraResumen: (qs: string) =>
+    get(`/bitacora/resumen${qs ? `?${qs}` : ""}`),
+
+  // Descarga de reportes protegidos (GET → blob con el token).
+  descargarBitacora: (qs: string, formato: "csv" | "pdf") =>
+    descargarConToken(
+      `/bitacora/reporte?${qs}${qs ? "&" : ""}formato=${formato}`,
+      `bitacora-${new Date().toISOString().slice(0, 10)}.${formato}`,
+    ),
+  descargarReporteCaja: (qs: string, formato: "csv" | "pdf") =>
+    descargarConToken(
+      `/caja/reporte?${qs}${qs ? "&" : ""}formato=${formato}`,
+      `finanzas-${new Date().toISOString().slice(0, 10)}.${formato}`,
+    ),
 };

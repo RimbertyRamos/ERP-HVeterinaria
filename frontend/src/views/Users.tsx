@@ -17,6 +17,7 @@ interface Usuario {
   telefono?: string;
   rol: UserRole;
   created_at: string;
+  activo?: boolean;
 }
 
 export const Users: React.FC = () => {
@@ -100,6 +101,17 @@ export const Users: React.FC = () => {
       toast.error("Error al guardar usuario");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleToggleActivo = async (u: Usuario) => {
+    const desactivar = u.activo !== false; // por defecto activo
+    try {
+      await api.updateUsuario(u.id, { activo: !desactivar });
+      toast.success(desactivar ? "Usuario desactivado" : "Usuario reactivado");
+      fetchData();
+    } catch {
+      toast.error("No se pudo cambiar el estado del usuario");
     }
   };
 
@@ -205,6 +217,22 @@ export const Users: React.FC = () => {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-center gap-2">
+                        <button
+                          onClick={() => handleToggleActivo(u)}
+                          title={
+                            u.activo === false
+                              ? "Reactivar acceso"
+                              : "Desactivar acceso"
+                          }
+                          className={cn(
+                            "px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest transition-opacity hover:opacity-80",
+                            u.activo === false
+                              ? "bg-red-100 text-red-700"
+                              : "bg-emerald-100 text-emerald-700",
+                          )}
+                        >
+                          {u.activo === false ? "Inactivo" : "Activo"}
+                        </button>
                         <button
                           onClick={() => openModal(u)}
                           className="p-2 text-slate-400 hover:text-primary transition-colors"

@@ -22,6 +22,7 @@ interface SalaOption {
   nombre: string;
   tipo: string;
   estado: string;
+  responsable_id?: string | null;
 }
 interface DoctorOption {
   id: string;
@@ -122,6 +123,18 @@ export const WaitingRoom: React.FC<{ onClose?: () => void }> = ({
     return () => clearInterval(interval);
   }, [loadData]);
 
+  // Doctor sugerido para una sala: su responsable, siempre que sea un veterinario
+  // listado. Si la sala no tiene responsable (o no está entre los doctores),
+  // devuelve "" para que el recepcionista lo elija manualmente.
+  const doctorDeSala = (
+    consultorioId: string,
+    listaSalas: SalaOption[] = salas,
+    listaDocs: DoctorOption[] = doctores,
+  ) => {
+    const resp = listaSalas.find((s) => s.id === consultorioId)?.responsable_id;
+    return resp && listaDocs.some((d) => d.id === resp) ? resp : "";
+  };
+
   // Carga salas y doctores al abrir el modal (con pre-selección semi-automática)
   useEffect(() => {
     if (!iniciarId) return;
@@ -137,11 +150,12 @@ export const WaitingRoom: React.FC<{ onClose?: () => void }> = ({
         docsRes.status === "fulfilled" ? (docsRes.value as DoctorOption[]) : [];
       setSalas(freeSalas);
       setDoctores(docs);
-      // Semi-automático: sugiere la primera sala libre y el primer doctor.
-      // El recepcionista puede cambiarlos antes de confirmar.
+      // Semi-automático: sugiere la primera sala libre y, como doctor, el
+      // responsable de esa sala; si no tiene, queda para selección manual.
+      const salaInicial = freeSalas[0]?.id ?? "";
       setIniciarForm({
-        doctor_id: docs[0]?.id ?? "",
-        consultorio_id: freeSalas[0]?.id ?? "",
+        consultorio_id: salaInicial,
+        doctor_id: doctorDeSala(salaInicial, freeSalas, docs),
       });
       if (consRes.status === "rejected") console.error(consRes.reason);
       if (docsRes.status === "rejected") console.error(docsRes.reason);
@@ -557,12 +571,16 @@ export const WaitingRoom: React.FC<{ onClose?: () => void }> = ({
                   <select
                     required
                     value={iniciarForm.consultorio_id}
-                    onChange={(e) =>
+                    onChange={(e) => {
+                      const consultorio_id = e.target.value;
                       setIniciarForm((f) => ({
                         ...f,
-                        consultorio_id: e.target.value,
-                      }))
-                    }
+                        consultorio_id,
+                        // Pre-carga el responsable de la sala; si no tiene, mantiene
+                        // el doctor ya elegido (selección manual).
+                        doctor_id: doctorDeSala(consultorio_id) || f.doctor_id,
+                      }));
+                    }}
                     className="w-full h-12 px-4 rounded-xl bg-slate-800 border border-white/10 text-white outline-none focus:border-primary transition-colors"
                   >
                     <option value="">— Seleccionar sala libre —</option>

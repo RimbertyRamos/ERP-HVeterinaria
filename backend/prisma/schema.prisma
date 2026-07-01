@@ -12,10 +12,31 @@ datasource db {
 // ===========================
 
 model Role {
-  id       String    @id @default(uuid())
-  nombre   String    @unique
-  permisos Json?
+  id       String        @id @default(uuid())
+  nombre   String        @unique
   usuarios Usuario[]
+  permisos RolePermiso[]
+}
+
+// Catálogo de permisos del sistema (uno por acción/CU: gestionar_usuarios,
+// gestionar_caja, registrar_historia_clinica, …). Reemplaza al antiguo
+// Role.permisos Json? por un RBAC normalizado (1FN).
+model Permiso {
+  id          String        @id @default(uuid())
+  codigo      String        @unique
+  descripcion String?
+  roles       RolePermiso[]
+}
+
+// Tabla intermedia N–M Role↔Permiso. Al borrar un rol se eliminan sus
+// asignaciones (onDelete: Cascade en el lado Role).
+model RolePermiso {
+  role_id    String
+  permiso_id String
+  role       Role    @relation(fields: [role_id], references: [id], onDelete: Cascade)
+  permiso    Permiso @relation(fields: [permiso_id], references: [id])
+
+  @@id([role_id, permiso_id])
 }
 
 model Usuario {
@@ -43,6 +64,11 @@ model Usuario {
   historias_atendidas   HistoriaClinica[] @relation("HistoriaMedico")
   historias_creadas     HistoriaClinica[] @relation("HistoriaCreadaPor")
   historias_finalizadas HistoriaClinica[] @relation("HistoriaFinalizadaPor")
+
+  calificaciones Calificacion[]
+  notificaciones Notificacion[]
+  bitacoras      Bitacora[]
+  horarios       HorarioConsultorio[] @relation("HorarioDoctor")
 }
 
 // ===========================
@@ -129,15 +155,16 @@ model PacienteAlergia {
 // ===========================
 
 model Consultorio {
-  id             String            @id @default(uuid())
+  id             String               @id @default(uuid())
   nombre         String
   especialidad   String?
-  tipo           TipoSala          @default(CONSULTORIO)
-  estado         ConsultorioEstado @default(LIBRE)
+  tipo           TipoSala             @default(CONSULTORIO)
+  estado         ConsultorioEstado    @default(LIBRE)
   responsable_id String?
-  responsable    Usuario?          @relation("ResponsableSala", fields: [responsable_id], references: [id])
+  responsable    Usuario?             @relation("ResponsableSala", fields: [responsable_id], references: [id])
   fichas         FichaAtencion[]
   citas          Cita[]
+  horarios       HorarioConsultorio[]
 }
 
 enum TipoSala {
@@ -182,6 +209,7 @@ model FichaAtencion {
   servicios_realizados FichaServicio[]
   recibo               ReciboCaja?
   historia             HistoriaClinica?
+  calificacion         Calificacion?
 }
 
 model Cita {
@@ -323,43 +351,15 @@ model FichaServicio {
 // PROVEEDORES Y STOCK
 // ===========================
 
-model Proveedor {
-  id             String            @id @default(uuid())
-  nombre_empresa String
-  nit            String?
-  contacto       String?
-  telefono       String?
-  compras        CompraProveedor[]
-}
-
-model CompraProveedor {
-  id           String             @id @default(uuid())
-  proveedor_id String
-  proveedor    Proveedor          @relation(fields: [proveedor_id], references: [id])
-  fecha        DateTime           @default(now())
-  monto_total  Decimal
-  estado       EstadoCompra       @default(EN_TRANSITO)
-  notas        String?
-  movimientos  KardexMovimiento[]
-}
-
-enum EstadoCompra {
-  EN_TRANSITO
-  COMPLETADA
-  CANCELADA
-}
-
 model KardexMovimiento {
-  id          String           @id @default(uuid())
+  id          String         @id @default(uuid())
   producto_id String
-  producto    Producto         @relation(fields: [producto_id], references: [id])
+  producto    Producto       @relation(fields: [producto_id], references: [id])
   tipo        TipoMovimiento
   cantidad    Int
   saldo_final Int
   motivo      String?
-  compra_id   String?
-  compra      CompraProveedor? @relation(fields: [compra_id], references: [id])
-  created_at  DateTime         @default(now())
+  created_at  DateTime       @default(now())
 }
 
 enum TipoMovimiento {
@@ -389,6 +389,8 @@ model ReciboCaja {
   punto_caja_id    String?
   punto_caja       PuntoCaja?     @relation(fields: [punto_caja_id], references: [id])
   total            Decimal
+  descuento        Decimal        @default(0)
+  tipo_descuento   TipoDescuento?
   metodo_pago      MetodoPago     @default(EFECTIVO)
   monto_recibido   Decimal?
   cambio_devuelto  Decimal?
@@ -461,6 +463,11 @@ enum MetodoPago {
   QR
 }
 
+enum TipoDescuento {
+  PORCENTAJE
+  MONTO
+}
+
 enum EstadoRecibo {
   EMITIDO
   PAGADO
@@ -519,9 +526,8 @@ model HistoriaClinica {
 
   // Anamnesis
   motivo_consulta        String?
-  vacunas                String[] @default([])
-  vacunas_otras          String?
-  desparasitacion        Boolean  @default(false)
+  vacunas_otras          String? // texto libre para vacunas no catalogadas
+  desparasitacion        Boolean @default(false)
   desparasitacion_cuando String?
   enfermedades_previas   String?
   intervenciones_previas String?
@@ -556,6 +562,7 @@ model HistoriaClinica {
   updated_at      DateTime  @updatedAt
 
   evoluciones EvolucionTratamiento[]
+  vacunas     HistoriaVacuna[]
 }
 
 model EvolucionTratamiento {
@@ -564,4 +571,140 @@ model EvolucionTratamiento {
   historia    HistoriaClinica @relation(fields: [historia_id], references: [id], onDelete: Cascade)
   fecha       DateTime        @default(now())
   descripcion String
+}
+
+// Catálogo de vacunas (reemplaza al antiguo HistoriaClinica.vacunas String[]).
+model Vacuna {
+  id        String           @id @default(uuid())
+  nombre    String           @unique
+  historias HistoriaVacuna[]
+}
+
+// Tabla intermedia N–M HistoriaClinica↔Vacuna. Al borrar la historia se eliminan
+// sus filas de vacuna aplicada (onDelete: Cascade en el lado historia).
+model HistoriaVacuna {
+  historia_id          String
+  vacuna_id            String
+  fecha_aplicacion     DateTime?
+  // RF14: fecha de próxima dosis (la fija el veterinario) y bandera para no
+  // duplicar el recordatorio de vencimiento.
+  proxima_dosis        DateTime?
+  recordatorio_enviado Boolean         @default(false)
+  historia             HistoriaClinica @relation(fields: [historia_id], references: [id], onDelete: Cascade)
+  vacuna               Vacuna          @relation(fields: [vacuna_id], references: [id])
+
+  @@id([historia_id, vacuna_id])
+}
+
+// ===========================
+// CALIFICACIÓN DE SERVICIO (CU20)
+// ===========================
+// El propietario califica la atención recibida. Relación 1–1 con la ficha
+// (ficha_id @unique): una ficha se califica una sola vez.
+model Calificacion {
+  id             String        @id @default(uuid())
+  ficha_id       String        @unique
+  ficha          FichaAtencion @relation(fields: [ficha_id], references: [id], onDelete: Cascade)
+  propietario_id String
+  propietario    Usuario       @relation(fields: [propietario_id], references: [id])
+  puntaje        Int
+  comentario     String?
+  fecha          DateTime      @default(now())
+}
+
+// ===========================
+// NOTIFICACIONES (in-app)
+// ===========================
+enum TipoNotificacion {
+  CITA
+  RECORDATORIO
+  SISTEMA
+}
+
+// Notificación in-app del usuario. Complementa (no reemplaza) los correos:
+// p. ej. el recordatorio de cita persiste aquí además de enviarse por email.
+model Notificacion {
+  id          String           @id @default(uuid())
+  usuario_id  String
+  usuario     Usuario          @relation(fields: [usuario_id], references: [id], onDelete: Cascade)
+  tipo        TipoNotificacion
+  titulo      String
+  mensaje     String
+  leida       Boolean          @default(false)
+  fecha_envio DateTime         @default(now())
+}
+
+// ===========================
+// BITÁCORA (auditoría del sistema — realiza "EventoSistema")
+// ===========================
+enum AccionBitacora {
+  LOGIN
+  LOGOUT
+  LOGIN_FALLIDO
+  CAMBIO_PASSWORD
+  CREAR
+  ACTUALIZAR
+  ELIMINAR
+  CAMBIO_ESTADO
+  CAMBIO_ROL
+  APLICAR_DESCUENTO
+  ANULAR
+  CIERRE_CAJA
+  EXPORTAR
+  ACCESO_HISTORIA
+}
+
+// Registro de auditoría. Los campos actor_* son SNAPSHOTS: preservan quién hizo
+// la acción aunque luego se borre el Usuario (usuario_id queda en null por
+// onDelete: SetNull). Los snapshots datos_antes/despues guardan JSON serializado
+// (String, no Json nativo) con los secretos ya redactados.
+model Bitacora {
+  id         String   @id @default(uuid())
+  fecha_hora DateTime @default(now())
+
+  usuario_id   String?
+  usuario      Usuario? @relation(fields: [usuario_id], references: [id], onDelete: SetNull)
+  actor_email  String?
+  actor_nombre String?
+  actor_rol    String?
+
+  accion      AccionBitacora
+  entidad     String?
+  entidad_id  String?
+  descripcion String
+
+  datos_antes   String?
+  datos_despues String?
+
+  exito       Boolean @default(true)
+  ip          String?
+  user_agent  String?
+  metodo_http String?
+  ruta        String?
+
+  @@index([fecha_hora])
+  @@index([usuario_id])
+  @@index([entidad, entidad_id])
+  @@index([accion])
+}
+
+// ===========================
+// PROGRAMACIÓN HORARIA (asignación de doctor a consultorio por franjas)
+// ===========================
+// Franja de disponibilidad: un doctor asignado a un consultorio entre [inicio, fin).
+// La validación de solapamiento (misma sala o mismo doctor a la vez) vive en
+// HorarioService, no en la BD.
+model HorarioConsultorio {
+  id             String      @id @default(uuid())
+  consultorio_id String
+  consultorio    Consultorio @relation(fields: [consultorio_id], references: [id], onDelete: Cascade)
+  doctor_id      String
+  doctor         Usuario     @relation("HorarioDoctor", fields: [doctor_id], references: [id])
+  inicio         DateTime
+  fin            DateTime
+  nota           String?
+  created_at     DateTime    @default(now())
+
+  @@index([consultorio_id, inicio])
+  @@index([doctor_id, inicio])
 }

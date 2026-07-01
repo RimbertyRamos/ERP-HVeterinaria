@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { ProductoService } from "../services/producto.service";
 import { ErrorHandler } from "../middlewares/error.middleware";
+import { bitacora, metaBitacora } from "../services/bitacora.singleton";
 
 export class ProductoController {
   constructor(
@@ -72,6 +73,19 @@ export class ProductoController {
         tipo,
         motivo,
       );
+      void bitacora.registrar({
+        ...metaBitacora(req),
+        accion: "ACTUALIZAR",
+        entidad: "producto",
+        entidad_id: req.params.id as string,
+        descripcion: `Ajuste de stock (${tipo} ${cantidad}) en ${(producto as any)?.nombre ?? req.params.id}${motivo ? `: ${motivo}` : ""}`,
+        datos_despues: {
+          tipo,
+          cantidad,
+          motivo,
+          stock_actual: (producto as any)?.stock_actual,
+        },
+      });
       res.json(producto);
     } catch (err) {
       this.errors.e500(req, res, err);

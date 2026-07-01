@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { HistoriaService } from "../services/historia.service";
 import { getUserId } from "../middlewares/auth.middleware";
 import { ErrorHandler } from "../middlewares/error.middleware";
+import { bitacora, metaBitacora } from "../services/bitacora.singleton";
 
 export class HistoriaController {
   constructor(
@@ -33,6 +34,15 @@ export class HistoriaController {
     try {
       const h = await this.historiaService.getById(req.params.id as string);
       if (!h) return this.errors.e404(req, res);
+      // ACCESO_HISTORIA: deja traza de quién abre un expediente (GET no lo cubre
+      // el middleware automático).
+      void bitacora.registrar({
+        ...metaBitacora(req),
+        accion: "ACCESO_HISTORIA",
+        entidad: "historia_clinica",
+        entidad_id: req.params.id as string,
+        descripcion: `Consultó la historia clínica ${(h as any)?.folio ?? req.params.id}`,
+      });
       res.json(h);
     } catch (err) {
       this.errors.e500(req, res, err);
@@ -61,12 +71,18 @@ export class HistoriaController {
 
   finalizar = async (req: Request, res: Response) => {
     try {
-      res.json(
-        await this.historiaService.finalizar(
-          req.params.id as string,
-          getUserId(req),
-        ),
+      const h = await this.historiaService.finalizar(
+        req.params.id as string,
+        getUserId(req),
       );
+      void bitacora.registrar({
+        ...metaBitacora(req),
+        accion: "CAMBIO_ESTADO",
+        entidad: "historia_clinica",
+        entidad_id: req.params.id as string,
+        descripcion: `Finalizó la historia clínica ${(h as any)?.folio ?? req.params.id}`,
+      });
+      res.json(h);
     } catch (err) {
       this.errors.e500(req, res, err);
     }

@@ -13,6 +13,7 @@ export class UsuariosService {
     email: true,
     telefono: true,
     ci: true,
+    activo: true,
     rol: true,
     created_at: true,
     _count: { select: { mascotas: true } },

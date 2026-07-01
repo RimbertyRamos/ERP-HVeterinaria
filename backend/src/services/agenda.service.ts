@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { FichaService } from "./ficha.service";
 import { MailService } from "./mail.service";
+import { NotificacionService } from "./notificacion.service";
 import {
   CreateCitaDto,
   UpdateCitaDto,
@@ -34,6 +35,7 @@ export class AgendaService {
     private readonly prisma: PrismaClient,
     private readonly fichaService: FichaService,
     private readonly mailService: MailService,
+    private readonly notificacionService: NotificacionService,
   ) {}
 
   /**
@@ -81,6 +83,26 @@ export class AgendaService {
           data: { recordatorio_enviado: true },
         });
         void this.mailService.enviarRecordatorioCita(cita);
+
+        // Notificación in-app COMPLEMENTARIA al correo (no lo reemplaza).
+        // Un fallo aquí no debe interrumpir el recordatorio del resto de citas.
+        const propietarioId = cita.mascota?.propietario?.id;
+        if (propietarioId) {
+          try {
+            const cuando = new Date(cita.fecha_hora).toLocaleString("es-ES", {
+              dateStyle: "full",
+              timeStyle: "short",
+            });
+            await this.notificacionService.enviar({
+              usuario_id: propietarioId,
+              tipo: "RECORDATORIO",
+              titulo: "Recordatorio de cita",
+              mensaje: `Recordatorio: cita de ${cita.mascota?.nombre ?? "tu mascota"} el ${cuando}.`,
+            });
+          } catch {
+            // No interrumpir el envío de recordatorios por un fallo al persistir la notificación.
+          }
+        }
       }
     } catch {
       // No interrumpir la carga de la agenda por una falla de recordatorios.
@@ -120,6 +142,23 @@ export class AgendaService {
     }
   }
 
+  /** Formatea una fecha para el texto de la notificación (YYYY-MM-DD HH:mm). */
+  private fmtFecha(d: Date | string) {
+    return new Date(d).toISOString().slice(0, 16).replace("T", " ");
+  }
+
+  /**
+   * Notificación in-app al propietario de la mascota de la cita. Fire-and-forget:
+   * si falla, se traga el error (nunca rompe la operación de agenda).
+   */
+  private notificarPropietario(cita: any, titulo: string, mensaje: string) {
+    const propietarioId = cita?.mascota?.propietario?.id;
+    if (!propietarioId) return;
+    void this.notificacionService
+      .enviar({ usuario_id: propietarioId, tipo: "CITA", titulo, mensaje })
+      .catch(() => {});
+  }
+
   async createCita(data: CreateCitaDto) {
     try {
       const fechaHora = new Date(data.fecha_hora);
@@ -145,6 +184,11 @@ export class AgendaService {
       });
       // Confirmación al propietario (no bloquea la respuesta).
       void this.mailService.enviarConfirmacionCita(cita);
+      this.notificarPropietario(
+        cita,
+        "Cita agendada",
+        `Se agendó una cita para ${cita.mascota?.nombre ?? "tu mascota"} el ${this.fmtFecha(cita.fecha_hora)}.`,
+      );
       return cita;
     } catch (err: any) {
       throw {
@@ -215,6 +259,14 @@ export class AgendaService {
       // Al programar/confirmar (incluye aceptar una solicitud) avisamos por correo.
       if (estado === "PROGRAMADA") {
         void this.mailService.enviarConfirmacionCita(cita);
+      }
+      // Notificación in-app al propietario cuando su cita queda programada/confirmada.
+      if (estado === "PROGRAMADA" || estado === "CONFIRMADA") {
+        this.notificarPropietario(
+          cita,
+          "Cita confirmada",
+          `Tu cita para ${cita.mascota?.nombre ?? "tu mascota"} fue ${estado === "PROGRAMADA" ? "programada" : "confirmada"} para el ${this.fmtFecha(cita.fecha_hora)}.`,
+        );
       }
       return cita;
     } catch (err) {

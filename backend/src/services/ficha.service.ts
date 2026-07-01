@@ -158,11 +158,17 @@ export class FichaService {
               "La sala seleccionada ya no está disponible. Elige otra sala libre.",
           };
         }
+        // Responsable de la sala: se usa como doctor por defecto si no se envió uno.
+        const sala = await tx.consultorio.findUnique({
+          where: { id: data.consultorio_id },
+          select: { responsable_id: true },
+        });
         return tx.fichaAtencion.update({
           where: { id },
-          // asignación deliberada (body) si viene; si no, el actor que inicia la atención
+          // Prioridad: doctor explícito (body) → responsable del consultorio →
+          // actor del JWT que inicia la atención.
           data: {
-            doctor_id: data.doctor_id ?? actorId,
+            doctor_id: data.doctor_id ?? sala?.responsable_id ?? actorId,
             consultorio_id: data.consultorio_id,
             estado: "EN_CURSO",
           },

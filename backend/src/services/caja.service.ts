@@ -1,5 +1,6 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 import { ConsultorioService } from "./consultorio.service";
+import { MailService } from "./mail.service";
 
 export class CajaService {
   private static readonly RECIBO_INCLUDE = {
@@ -21,7 +22,64 @@ export class CajaService {
   constructor(
     private readonly prisma: PrismaClient,
     private readonly consultorioService: ConsultorioService,
+    private readonly mailService: MailService,
   ) {}
+
+  /** Resuelve el email del propietario de la ficha del recibo (o {} en venta directa). */
+  private async resolverEmailPropietario(
+    recibo: any,
+  ): Promise<{ email?: string; nombre?: string }> {
+    const prop = recibo?.ficha?.mascota?.propietario;
+    if (!prop?.id) return {};
+    try {
+      const u = await this.prisma.usuario.findUnique({
+        where: { id: prop.id },
+        select: { email: true, nombre: true },
+      });
+      return { email: u?.email ?? undefined, nombre: u?.nombre ?? prop.nombre };
+    } catch {
+      return {};
+    }
+  }
+
+  /**
+   * Envía el comprobante por correo. FIRE-AND-FORGET: nunca bloquea ni rompe el
+   * cobro (todo dentro de try/catch; venta directa sin email se omite en silencio).
+   */
+  private enviarComprobante(recibo: any): void {
+    void (async () => {
+      try {
+        const { email, nombre } = await this.resolverEmailPropietario(recibo);
+        if (!email) return;
+        const items = (recibo.detalles ?? []).map((d: any) => ({
+          descripcion: d.descripcion,
+          cantidad: d.cantidad,
+          subtotal: Number(d.subtotal),
+        }));
+        const subtotal = items.reduce(
+          (s: number, i: { subtotal: number }) => s + i.subtotal,
+          0,
+        );
+        await this.mailService.enviarRecibo({
+          email,
+          nombre: nombre ?? null,
+          num_recibo: recibo.num_recibo,
+          fecha: recibo.fecha_pago,
+          items,
+          subtotal,
+          descuento: Number(recibo.descuento ?? 0),
+          tipo_descuento: recibo.tipo_descuento ?? null,
+          total: Number(recibo.total),
+          metodo_pago: recibo.metodo_pago,
+        });
+      } catch (err: any) {
+        console.error(
+          "[Caja] No se pudo enviar el comprobante por correo:",
+          err?.message || err,
+        );
+      }
+    })();
+  }
 
   // ── Arqueo y cierre de caja ────────────────────────────────────────────────
 
@@ -223,6 +281,47 @@ export class CajaService {
   }
 
   /**
+   * Calcula el total NETO aplicando un descuento sobre la suma de subtotales.
+   * - PORCENTAJE: total = subtotales × (1 − descuento/100), con descuento 0..100.
+   * - MONTO (o sin tipo): total = subtotales − descuento, con descuento ≤ subtotales.
+   * Valida descuento ≥ 0 y que el total resultante NO quede negativo.
+   * Redondea a 2 decimales (moneda).
+   */
+  aplicarDescuento(
+    subtotales: number,
+    descuento = 0,
+    tipoDescuento?: "PORCENTAJE" | "MONTO" | null,
+  ): number {
+    const round2 = (n: number) => Math.round(n * 100) / 100;
+    const base = Number(subtotales) || 0;
+    const desc = Number(descuento) || 0;
+
+    if (desc < 0) {
+      throw { status: 400, message: "El descuento no puede ser negativo" };
+    }
+    if (desc === 0) return round2(base);
+
+    if (tipoDescuento === "PORCENTAJE") {
+      if (desc > 100) {
+        throw {
+          status: 400,
+          message: "El descuento porcentual debe estar entre 0 y 100",
+        };
+      }
+      return round2(base * (1 - desc / 100));
+    }
+
+    // MONTO (o descuento sin tipo explícito → se interpreta como monto fijo)
+    if (desc > base) {
+      throw {
+        status: 400,
+        message: "El descuento no puede exceder el subtotal del recibo",
+      };
+    }
+    return round2(base - desc);
+  }
+
+  /**
    * Cobra una ficha completa.
    * Construye automáticamente los DetalleCobro desde el servicio, exámenes y receta.
    */
@@ -232,6 +331,8 @@ export class CajaService {
     punto_caja_id?: string;
     metodo_pago?: "EFECTIVO" | "TARJETA" | "QR";
     monto_recibido?: number;
+    descuento?: number;
+    tipo_descuento?: "PORCENTAJE" | "MONTO";
   }) {
     try {
       const ficha = await this.prisma.fichaAtencion.findUniqueOrThrow({
@@ -293,12 +394,16 @@ export class CajaService {
         });
       }
 
-      const total = detalles.reduce((s, d) => s + d.subtotal, 0);
+      const subtotales = detalles.reduce((s, d) => s + d.subtotal, 0);
+      const descuento = Number(data.descuento) || 0;
+      const tipo_descuento =
+        descuento > 0 ? (data.tipo_descuento ?? "MONTO") : null;
+      const total = this.aplicarDescuento(subtotales, descuento, tipo_descuento);
       const monto_recibido = data.monto_recibido ?? total;
       const cambio_devuelto = Math.max(0, monto_recibido - total);
       const num_recibo = await this.genNumRecibo();
 
-      return await this.prisma.$transaction(async (tx) => {
+      const recibo = await this.prisma.$transaction(async (tx) => {
         const recibo = await tx.reciboCaja.create({
           data: {
             num_recibo,
@@ -307,6 +412,8 @@ export class CajaService {
             punto_caja_id: data.punto_caja_id,
             metodo_pago: data.metodo_pago ?? "EFECTIVO",
             total,
+            descuento,
+            tipo_descuento,
             monto_recibido,
             cambio_devuelto,
             estado: "PAGADO",
@@ -350,6 +457,9 @@ export class CajaService {
 
         return recibo;
       });
+      // Comprobante por correo (fire-and-forget; no afecta la respuesta del cobro).
+      this.enviarComprobante(recibo);
+      return recibo;
     } catch (err: any) {
       throw {
         status: err?.status || 500,
@@ -376,6 +486,8 @@ export class CajaService {
     punto_caja_id?: string;
     metodo_pago?: "EFECTIVO" | "TARJETA" | "QR";
     monto_recibido?: number;
+    descuento?: number;
+    tipo_descuento?: "PORCENTAJE" | "MONTO";
     productos: { id: string; cantidad: number }[];
   }) {
     try {
@@ -407,11 +519,15 @@ export class CajaService {
         };
       });
 
-      const total = detalles.reduce((s, d) => s + d.subtotal, 0);
+      const subtotales = detalles.reduce((s, d) => s + d.subtotal, 0);
+      const descuento = Number(data.descuento) || 0;
+      const tipo_descuento =
+        descuento > 0 ? (data.tipo_descuento ?? "MONTO") : null;
+      const total = this.aplicarDescuento(subtotales, descuento, tipo_descuento);
       const monto_recibido = data.monto_recibido ?? total;
       const cambio_devuelto = Math.max(0, monto_recibido - total);
 
-      return await this.prisma.$transaction(async (tx) => {
+      const recibo = await this.prisma.$transaction(async (tx) => {
         // Check stock explicitly to avoid errors if stock goes negative
         for (const det of detalles) {
           const prod = dbProducts.find((p) => p.id === det.producto_id)!;
@@ -431,6 +547,8 @@ export class CajaService {
             punto_caja_id: data.punto_caja_id,
             metodo_pago: data.metodo_pago ?? "EFECTIVO",
             total,
+            descuento,
+            tipo_descuento,
             monto_recibido,
             cambio_devuelto,
             estado: "PAGADO",
@@ -460,10 +578,59 @@ export class CajaService {
 
         return recibo;
       });
+      // Comprobante por correo (solo si la venta tiene propietario con email; si
+      // no, se omite en silencio). Fire-and-forget: no afecta la respuesta.
+      this.enviarComprobante(recibo);
+      return recibo;
     } catch (err: any) {
       throw {
         status: err?.status || 500,
         message: err?.message || "Error al procesar la venta directa",
+      };
+    }
+  }
+
+  /**
+   * Reporte de ingresos (recibos no anulados) en un rango, para exportar. Devuelve
+   * las filas y los agregados (total de ingresos y cantidad de recibos).
+   */
+  async reporteIngresos(f: { desde?: Date; hasta?: Date }) {
+    try {
+      const where: Prisma.ReciboCajaWhereInput = { estado: { not: "ANULADO" } };
+      if (f.desde || f.hasta) {
+        where.fecha_pago = {};
+        if (f.desde) where.fecha_pago.gte = f.desde;
+        if (f.hasta) where.fecha_pago.lte = f.hasta;
+      }
+      const recibos = await this.prisma.reciboCaja.findMany({
+        where,
+        orderBy: { fecha_pago: "desc" },
+        take: 10000, // tope de seguridad para una exportación
+        select: {
+          id: true,
+          num_recibo: true,
+          fecha_pago: true,
+          metodo_pago: true,
+          descuento: true,
+          tipo_descuento: true,
+          total: true,
+          estado: true,
+          nombre_cliente: true,
+          cajero: { select: { nombre: true } },
+          ficha: {
+            select: {
+              mascota: { select: { nombre: true } },
+              servicio: { select: { nombre: true } },
+            },
+          },
+        },
+      });
+      const totalIngresos = recibos.reduce((s, r) => s + Number(r.total), 0);
+      return { recibos, total_ingresos: totalIngresos, cantidad: recibos.length };
+    } catch (err: any) {
+      throw {
+        status: err?.status || 500,
+        message: err?.message || "Error al generar el reporte de ingresos",
       };
     }
   }

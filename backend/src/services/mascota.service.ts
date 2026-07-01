@@ -19,6 +19,9 @@ export class MascotaService {
         doctor: { select: { id: true, nombre: true } },
         consultorio: { select: { nombre: true } },
         soap: { select: { diagnostico: true, tratamiento: true } },
+        // Solo lectura: permite al portal del cliente saber si la ficha ya fue
+        // calificada y mostrar su calificación (no toca el schema).
+        calificacion: { select: { id: true, puntaje: true, comentario: true } },
         recibo: {
           select: {
             id: true,

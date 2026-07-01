@@ -91,6 +91,14 @@ export class AuthService {
 
       const { password_hash: _, ...userWithoutPassword } = user;
 
+      // Códigos de permiso del rol (RBAC normalizado) — el frontend los usa para
+      // mostrar/ocultar opciones por permiso (p. ej. la Bitácora con bitacora.ver).
+      const filasPermiso = await this.prisma.rolePermiso.findMany({
+        where: { role_id: user.rol_id },
+        select: { permiso: { select: { codigo: true } } },
+      });
+      const permisos = filasPermiso.map((f) => f.permiso.codigo);
+
       // El token incluye 'rol' (nombre) para que role.middleware no consulte la BD
       const token = this.tokenService.generate({
         id: user.id,
@@ -98,7 +106,7 @@ export class AuthService {
         rol: user.rol.nombre,
       });
 
-      return { user: userWithoutPassword, token };
+      return { user: { ...userWithoutPassword, permisos }, token };
     } catch (err: any) {
       throw {
         status: err?.status || 500,

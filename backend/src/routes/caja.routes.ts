@@ -1,5 +1,12 @@
 import { Router } from "express";
 import { cajaController, authMiddleware, roleMiddleware } from "../container";
+import { validate } from "../middlewares/validate.middleware";
+import {
+  cobrarFichaSchema,
+  ventaDirectaSchema,
+  anularReciboSchema,
+  registrarCierreSchema,
+} from "../schemas/caja.schema";
 
 const router = Router();
 
@@ -15,16 +22,19 @@ router.get("/recibos/:id", cajaController.getReciboById);
 router.post(
   "/recibos",
   roleMiddleware.require("Cajero", "Admin"),
+  validate(cobrarFichaSchema),
   cajaController.cobrarFicha,
 );
 router.post(
   "/venta-directa",
   roleMiddleware.require("Cajero", "Admin"),
+  validate(ventaDirectaSchema),
   cajaController.ventaDirecta,
 );
 router.put(
   "/recibos/:id/anular",
   roleMiddleware.require("Cajero", "Admin"),
+  validate(anularReciboSchema),
   cajaController.anularRecibo,
 );
 
@@ -39,9 +49,16 @@ router.get(
   roleMiddleware.require("Cajero", "Admin"),
   cajaController.getCierres,
 );
+// Reporte de ingresos exportable (CSV/PDF): mismo acceso que la caja.
+router.get(
+  "/reporte",
+  roleMiddleware.require("Cajero", "Admin"),
+  cajaController.reporte,
+);
 router.post(
   "/cierres",
   roleMiddleware.require("Cajero", "Admin"),
+  validate(registrarCierreSchema),
   cajaController.registrarCierre,
 );
 

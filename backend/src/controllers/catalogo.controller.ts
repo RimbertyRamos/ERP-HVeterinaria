@@ -85,4 +85,66 @@ export class CatalogoController {
       this.errors.e500(req, res, err);
     }
   };
+
+  // ── Gestión (solo permiso gestionar_catalogos) ──────────────────────────────
+
+  createEspecie = async (req: Request, res: Response) => {
+    try {
+      res.status(201).json(await this.catalogoService.createEspecie(req.body));
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
+
+  updateEspecie = async (req: Request, res: Response) => {
+    try {
+      res.json(
+        await this.catalogoService.updateEspecie(
+          req.params.id as string,
+          req.body,
+        ),
+      );
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
+
+  deleteEspecie = async (req: Request, res: Response) => {
+    try {
+      await this.catalogoService.deleteEspecie(req.params.id as string);
+      res.json({ ok: true });
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
+
+  createRaza = async (req: Request, res: Response) => {
+    try {
+      res.status(201).json(await this.catalogoService.createRaza(req.body));
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
+
+  updateRaza = async (req: Request, res: Response) => {
+    try {
+      res.json(
+        await this.catalogoService.updateRaza(
+          req.params.id as string,
+          req.body,
+        ),
+      );
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
+
+  deleteRaza = async (req: Request, res: Response) => {
+    try {
+      await this.catalogoService.deleteRaza(req.params.id as string);
+      res.json({ ok: true });
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
 }

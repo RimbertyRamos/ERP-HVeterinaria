@@ -119,4 +119,120 @@ export class CatalogoService {
       throw { status: 500, message: "Error al obtener los propietarios" };
     }
   }
+
+  // ── Gestión de catálogos base (solo permiso gestionar_catalogos) ────────────
+
+  async createEspecie(data: { nombre: string }) {
+    try {
+      return await this.prisma.especie.create({
+        data: { nombre: data.nombre.trim() },
+      });
+    } catch (err: any) {
+      if (err?.code === "P2002")
+        throw { status: 409, message: "Ya existe una especie con ese nombre" };
+      throw {
+        status: err?.status || 500,
+        message: err?.message || "Error al crear la especie",
+      };
+    }
+  }
+
+  async updateEspecie(id: string, data: { nombre: string }) {
+    try {
+      return await this.prisma.especie.update({
+        where: { id },
+        data: { nombre: data.nombre.trim() },
+      });
+    } catch (err: any) {
+      if (err?.code === "P2002")
+        throw { status: 409, message: "Ya existe una especie con ese nombre" };
+      throw {
+        status: err?.status || 500,
+        message: err?.message || "Error al actualizar la especie",
+      };
+    }
+  }
+
+  async deleteEspecie(id: string) {
+    try {
+      return await this.prisma.especie.delete({ where: { id } });
+    } catch (err: any) {
+      // FK: la especie tiene razas o mascotas asociadas.
+      if (err?.code === "P2003" || err?.code === "P2014")
+        throw {
+          status: 409,
+          message:
+            "No se puede eliminar: la especie tiene razas o mascotas asociadas.",
+        };
+      throw {
+        status: err?.status || 500,
+        message: err?.message || "Error al eliminar la especie",
+      };
+    }
+  }
+
+  async createRaza(data: { nombre: string; especie_id: string }) {
+    try {
+      return await this.prisma.raza.create({
+        data: { nombre: data.nombre.trim(), especie_id: data.especie_id },
+        include: { especie: true },
+      });
+    } catch (err: any) {
+      if (err?.code === "P2002")
+        throw {
+          status: 409,
+          message: "Ya existe una raza con ese nombre en la especie",
+        };
+      if (err?.code === "P2003")
+        throw { status: 400, message: "La especie indicada no existe" };
+      throw {
+        status: err?.status || 500,
+        message: err?.message || "Error al crear la raza",
+      };
+    }
+  }
+
+  async updateRaza(
+    id: string,
+    data: { nombre?: string; especie_id?: string },
+  ) {
+    try {
+      return await this.prisma.raza.update({
+        where: { id },
+        data: {
+          ...(data.nombre !== undefined && { nombre: data.nombre.trim() }),
+          ...(data.especie_id !== undefined && {
+            especie_id: data.especie_id,
+          }),
+        },
+        include: { especie: true },
+      });
+    } catch (err: any) {
+      if (err?.code === "P2002")
+        throw {
+          status: 409,
+          message: "Ya existe una raza con ese nombre en la especie",
+        };
+      throw {
+        status: err?.status || 500,
+        message: err?.message || "Error al actualizar la raza",
+      };
+    }
+  }
+
+  async deleteRaza(id: string) {
+    try {
+      return await this.prisma.raza.delete({ where: { id } });
+    } catch (err: any) {
+      if (err?.code === "P2003" || err?.code === "P2014")
+        throw {
+          status: 409,
+          message: "No se puede eliminar: la raza tiene mascotas asociadas.",
+        };
+      throw {
+        status: err?.status || 500,
+        message: err?.message || "Error al eliminar la raza",
+      };
+    }
+  }
 }

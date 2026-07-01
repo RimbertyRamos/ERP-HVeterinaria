@@ -5,6 +5,8 @@ import {
   roleMiddleware,
 } from "../container";
 import { rateLimit } from "../middlewares/rateLimit.middleware";
+import { validate } from "../middlewares/validate.middleware";
+import { crearLeadSchema, crearCheckoutSchema } from "../schemas/landing.schema";
 
 const router = Router();
 
@@ -12,8 +14,13 @@ const router = Router();
 const limiter = rateLimit({ windowMs: 60_000, max: 8 });
 
 // Públicas (landing)
-router.post("/leads", limiter, landingController.crearLead);
-router.post("/checkout", limiter, landingController.crearCheckout);
+router.post("/leads", limiter, validate(crearLeadSchema), landingController.crearLead);
+router.post(
+  "/checkout",
+  limiter,
+  validate(crearCheckoutSchema),
+  landingController.crearCheckout,
+);
 router.get("/checkout/verify", landingController.verificarCheckout);
 
 // Solo Administrador: ver solicitudes y suscripciones recibidas

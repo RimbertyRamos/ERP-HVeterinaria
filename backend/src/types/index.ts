@@ -160,11 +160,14 @@ export interface UpdateUsuarioDto {
   telefono?: string;
   ci?: string;
   rol_id?: string;
+  activo?: boolean;
 }
 
 // ─── CAJA ────────────────────────────────────────────────────────────────────
 
 export type MetodoPago = "EFECTIVO" | "TARJETA" | "QR";
+
+export type TipoDescuento = "PORCENTAJE" | "MONTO";
 
 export interface CobrarFichaDto {
   ficha_id: string;
@@ -172,6 +175,8 @@ export interface CobrarFichaDto {
   punto_caja_id?: string;
   metodo_pago?: MetodoPago;
   monto_recibido?: number;
+  descuento?: number;
+  tipo_descuento?: TipoDescuento;
 }
 
 export interface VentaDirectaDto {
@@ -180,6 +185,8 @@ export interface VentaDirectaDto {
   punto_caja_id?: string;
   metodo_pago?: MetodoPago;
   monto_recibido?: number;
+  descuento?: number;
+  tipo_descuento?: TipoDescuento;
   productos: { id: string; cantidad: number }[];
 }
 
@@ -234,4 +241,23 @@ export interface AjustarStockDto {
   cantidad: number;
   tipo: TipoMovimiento;
   motivo?: string;
+}
+
+// ─── CALIFICACIÓN (CU20) ──────────────────────────────────────────────────────
+
+export interface CreateCalificacionDto {
+  ficha_id: string;
+  puntaje: number; // 1..5
+  comentario?: string;
+}
+
+// ─── NOTIFICACIÓN ─────────────────────────────────────────────────────────────
+
+export type TipoNotificacion = "CITA" | "RECORDATORIO" | "SISTEMA";
+
+export interface EnviarNotificacionDto {
+  usuario_id: string;
+  tipo: TipoNotificacion;
+  titulo: string;
+  mensaje: string;
 }

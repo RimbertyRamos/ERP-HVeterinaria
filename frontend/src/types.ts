@@ -11,7 +11,10 @@ export type ViewType =
   | "users"
   | "servicios"
   | "consultation"
-  | "solicitudes";
+  | "solicitudes"
+  | "bitacora"
+  | "catalogos"
+  | "horarios";
 
 // ── Catálogos ────────────────────────────────────────────────────────
 export interface Especie {

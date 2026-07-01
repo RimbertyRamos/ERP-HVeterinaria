@@ -19,6 +19,8 @@ import { PasswordService } from "./services/password.service";
 import { ErrorHandler } from "./middlewares/error.middleware";
 import { AuthMiddleware } from "./middlewares/auth.middleware";
 import { RoleMiddleware } from "./middlewares/role.middleware";
+import { PermissionMiddleware } from "./middlewares/permission.middleware";
+import { BitacoraMiddleware } from "./middlewares/bitacora.middleware";
 
 // ── Servicios ──
 import { AuthService } from "./services/auth.service";
@@ -36,6 +38,11 @@ import { ProductoService } from "./services/producto.service";
 import { ServicioService } from "./services/servicio.service";
 import { HistoriaService } from "./services/historia.service";
 import { ChatbotService } from "./services/chatbot.service";
+import { RoleService } from "./services/role.service";
+import { CalificacionService } from "./services/calificacion.service";
+import { NotificacionService } from "./services/notificacion.service";
+import { HorarioService } from "./services/horario.service";
+import { VacunaService } from "./services/vacuna.service";
 
 // ── Controllers ──
 import { AuthController } from "./controllers/auth.controller";
@@ -52,6 +59,12 @@ import { ServicioController } from "./controllers/servicio.controller";
 import { HistoriaController } from "./controllers/historia.controller";
 import { ChatbotController } from "./controllers/chatbot.controller";
 import { LandingController } from "./controllers/landing.controller";
+import { CalificacionController } from "./controllers/calificacion.controller";
+import { NotificacionController } from "./controllers/notificacion.controller";
+import { BitacoraController } from "./controllers/bitacora.controller";
+import { HorarioController } from "./controllers/horario.controller";
+import { VacunaController } from "./controllers/vacuna.controller";
+import { bitacora } from "./services/bitacora.singleton";
 
 // ─── Infraestructura ──────────────────────────────────────────────────────────
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -69,25 +82,45 @@ const errorHandler = new ErrorHandler();
 const usuariosService = new UsuariosService(prisma, passwordService);
 const fichaService = new FichaService(prisma);
 const mascotaService = new MascotaService(prisma, usuariosService);
-const mailService = new MailService({
+// Exportado para poder inyectarlo/espiarlo (p. ej. envío de comprobantes).
+export const mailService = new MailService({
   user: process.env.SMTP_USER,
   pass: process.env.SMTP_PASS,
   from: process.env.MAIL_FROM,
 });
-const agendaService = new AgendaService(prisma, fichaService, mailService);
+const notificacionService = new NotificacionService(prisma);
+const agendaService = new AgendaService(
+  prisma,
+  fichaService,
+  mailService,
+  notificacionService,
+);
 const authService = new AuthService(prisma, tokenService, passwordService);
 const consultorioService = new ConsultorioService(prisma);
-const cajaService = new CajaService(prisma, consultorioService);
+const cajaService = new CajaService(prisma, consultorioService, mailService);
 const catalogoService = new CatalogoService(prisma);
 const dashboardService = new DashboardService(prisma);
 const productoService = new ProductoService(prisma);
 const servicioService = new ServicioService(prisma);
 const historiaService = new HistoriaService(prisma);
 const chatbotService = new ChatbotService(process.env.OPENAI_API_KEY || "");
+const roleService = new RoleService(prisma);
+const calificacionService = new CalificacionService(prisma);
+const horarioService = new HorarioService(prisma);
+// Exportado para que el cron (server.ts) pueda invocar el barrido de vacunas.
+export const vacunaService = new VacunaService(
+  prisma,
+  mailService,
+  notificacionService,
+);
 
 // ─── Middlewares ───────────────────────────────────────────────────────────────
 export const authMiddleware = new AuthMiddleware(tokenService);
 export const roleMiddleware = new RoleMiddleware();
+// Autorización por permiso (RBAC normalizado, lee de RolePermiso vía RoleService)
+export const permissionMiddleware = new PermissionMiddleware(roleService);
+// Auditoría automática de escrituras (usa el singleton de bitácora).
+export const bitacoraMiddleware = new BitacoraMiddleware();
 
 // ─── Controllers (reciben su servicio + el manejador de errores) ───────────────
 export const authController = new AuthController(authService, errorHandler);
@@ -146,5 +179,23 @@ export const historiaController = new HistoriaController(
 );
 export const chatbotController = new ChatbotController(
   chatbotService,
+  errorHandler,
+);
+export const calificacionController = new CalificacionController(
+  calificacionService,
+  errorHandler,
+);
+export const notificacionController = new NotificacionController(
+  notificacionService,
+  errorHandler,
+);
+// Reusa la instancia singleton de bitácora (misma que usan las llamadas explícitas).
+export const bitacoraController = new BitacoraController(bitacora, errorHandler);
+export const horarioController = new HorarioController(
+  horarioService,
+  errorHandler,
+);
+export const vacunaController = new VacunaController(
+  vacunaService,
   errorHandler,
 );

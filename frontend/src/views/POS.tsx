@@ -23,6 +23,20 @@ interface CartItem {
   cantidad: number;
 }
 
+type TipoDescuento = "MONTO" | "PORCENTAJE";
+const round2 = (n: number) => Math.round(n * 100) / 100;
+// Espeja la lógica de caja.service.aplicarDescuento para previsualizar el total.
+const calcTotalNeto = (
+  base: number,
+  descuento: number,
+  tipo: TipoDescuento,
+) => {
+  const d = Number(descuento) || 0;
+  if (d <= 0) return round2(base);
+  if (tipo === "PORCENTAJE") return round2(base * (1 - Math.min(d, 100) / 100));
+  return round2(Math.max(0, base - d));
+};
+
 const calcTotalFicha = (ficha: FichaPendiente) => {
   let t = Number(ficha.servicio.precio_base);
   for (const s of ficha.servicios_realizados ?? [])
@@ -82,6 +96,8 @@ export const POS: React.FC = () => {
 
   // -- ESTADOS DE PAGO COMPARTIDOS --
   const [metodo, setMetodo] = useState<MetodoPago>("EFECTIVO");
+  const [descuento, setDescuento] = useState("");
+  const [tipoDescuento, setTipoDescuento] = useState<TipoDescuento>("MONTO");
   const [procesando, setProcesando] = useState(false);
   const [exito, setExito] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -138,9 +154,19 @@ export const POS: React.FC = () => {
         ? calcTotalFicha(selectedFicha)
         : 0
       : totalCart;
+
+  // Descuento: previsualización del total neto + validación (no superar el total)
+  const descNum = Number(descuento) || 0;
+  const totalNeto = calcTotalNeto(total, descNum, tipoDescuento);
+  const descInvalido =
+    descNum < 0 ||
+    (tipoDescuento === "PORCENTAJE" ? descNum > 100 : descNum > total);
+
   const handleSeleccionarFicha = (f: FichaPendiente) => {
     setSelectedFicha(f);
     setMetodo("EFECTIVO");
+    setDescuento("");
+    setTipoDescuento("MONTO");
     setExito(null);
     setError(null);
   };
@@ -167,10 +193,23 @@ export const POS: React.FC = () => {
   const handleCobrar = async () => {
     if (tab === "CONSULTAS" && !selectedFicha) return;
     if (tab === "VENTA_DIRECTA" && cart.length === 0) return;
+    if (descInvalido) {
+      setError(
+        tipoDescuento === "PORCENTAJE"
+          ? "El descuento porcentual no puede superar 100%."
+          : "El descuento no puede superar el total.",
+      );
+      return;
+    }
 
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     setProcesando(true);
     setError(null);
+    // Solo se envía tipo_descuento cuando hay descuento (el backend usa MONTO por defecto).
+    const descFields =
+      descNum > 0
+        ? { descuento: descNum, tipo_descuento: tipoDescuento }
+        : { descuento: 0 };
     try {
       let res;
       if (tab === "CONSULTAS") {
@@ -178,14 +217,16 @@ export const POS: React.FC = () => {
           ficha_id: selectedFicha!.id,
           cajero_id: user.id,
           metodo_pago: metodo,
-          monto_recibido: total,
+          monto_recibido: totalNeto,
+          ...descFields,
         });
       } else {
         res = await api.ventaDirecta({
           cajero_id: user.id,
           nombre_cliente: nombreCliente || undefined,
           metodo_pago: metodo,
-          monto_recibido: total,
+          monto_recibido: totalNeto,
+          ...descFields,
           productos: cart.map((c) => ({
             id: c.producto.id,
             cantidad: c.cantidad,
@@ -199,6 +240,8 @@ export const POS: React.FC = () => {
       }
       setExito(res.num_recibo);
       setLastRecibo(res);
+      setDescuento("");
+      setTipoDescuento("MONTO");
 
       if (tab === "CONSULTAS") {
         setSelectedFicha(null);
@@ -688,14 +731,79 @@ export const POS: React.FC = () => {
               </div>
             )}
 
-            {/* Total */}
-            <div className="flex justify-between items-end py-2 border-b border-dashed border-slate-200 dark:border-slate-700">
-              <span className="text-base font-bold text-slate-900 dark:text-white">
-                Total a Pagar
-              </span>
-              <span className="text-2xl font-extrabold text-slate-900 dark:text-white">
-                Bs.{total.toFixed(2)}
-              </span>
+            {/* Descuento */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  Descuento
+                </label>
+                <div className="flex overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-bold">
+                  {(["MONTO", "PORCENTAJE"] as TipoDescuento[]).map((t) => (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => setTipoDescuento(t)}
+                      className={cn(
+                        "px-3 py-1 transition-colors",
+                        tipoDescuento === t
+                          ? "bg-primary text-slate-900"
+                          : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300",
+                      )}
+                    >
+                      {t === "MONTO" ? "Bs." : "%"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <input
+                type="number"
+                min="0"
+                max={tipoDescuento === "PORCENTAJE" ? 100 : undefined}
+                step="0.01"
+                value={descuento}
+                onChange={(e) => setDescuento(e.target.value)}
+                placeholder={
+                  tipoDescuento === "PORCENTAJE" ? "0 – 100 %" : "Bs. 0.00"
+                }
+                className={cn(
+                  "w-full rounded-lg border bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-primary",
+                  descInvalido
+                    ? "border-red-400"
+                    : "border-slate-200 dark:border-slate-700",
+                )}
+              />
+              {descInvalido && (
+                <p className="text-xs text-red-600">
+                  {tipoDescuento === "PORCENTAJE"
+                    ? "El porcentaje no puede superar 100%."
+                    : "El descuento no puede superar el total."}
+                </p>
+              )}
+            </div>
+
+            {/* Resumen del total */}
+            <div className="space-y-1 py-2 border-b border-dashed border-slate-200 dark:border-slate-700">
+              <div className="flex justify-between text-sm text-slate-500">
+                <span>Subtotal</span>
+                <span>Bs.{total.toFixed(2)}</span>
+              </div>
+              {descNum > 0 && !descInvalido && (
+                <div className="flex justify-between text-sm font-medium text-emerald-600">
+                  <span>
+                    Descuento
+                    {tipoDescuento === "PORCENTAJE" ? ` (${descNum}%)` : ""}
+                  </span>
+                  <span>- Bs.{(total - totalNeto).toFixed(2)}</span>
+                </div>
+              )}
+              <div className="flex justify-between items-end pt-1">
+                <span className="text-base font-bold text-slate-900 dark:text-white">
+                  Total a Pagar
+                </span>
+                <span className="text-2xl font-extrabold text-slate-900 dark:text-white">
+                  Bs.{totalNeto.toFixed(2)}
+                </span>
+              </div>
             </div>
 
             {/* Método de pago */}
@@ -729,7 +837,7 @@ export const POS: React.FC = () => {
 
             <button
               onClick={handleCobrar}
-              disabled={procesando}
+              disabled={procesando || descInvalido}
               className="w-full bg-primary hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed text-slate-900 font-bold text-base py-3.5 rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2"
             >
               {procesando ? (

@@ -11,10 +11,12 @@ import {
   Area,
   CartesianGrid,
 } from "recharts";
+import { toast } from "sonner";
 import { Icons } from "../constants";
 import { cn } from "../utils/cn";
 import { api } from "../utils/api";
 import { DashboardKpis, Consultorio } from "../types";
+import { CalificacionFicha } from "../components/CalificacionFicha";
 
 const estadoLabel: Record<Consultorio["estado"], string> = {
   LIBRE: "Libre",
@@ -54,6 +56,14 @@ function getUserId(): string {
   }
 }
 
+function getPermisos(): string[] {
+  try {
+    return JSON.parse(localStorage.getItem("user") || "{}")?.permisos ?? [];
+  } catch {
+    return [];
+  }
+}
+
 type ClienteTab = "mascotas" | "historial" | "pagos";
 
 interface MascotaCliente {
@@ -68,10 +78,15 @@ interface MascotaCliente {
     fecha_hora: string;
     estado: string;
     estado_cobro: string;
-    servicio?: { nombre: string; precio_base: string | number };
+    servicio?: { id?: string; nombre: string; precio_base: string | number };
     doctor?: { nombre: string } | null;
     consultorio?: { nombre: string } | null;
     soap?: { diagnostico?: string | null; tratamiento?: string | null } | null;
+    calificacion?: {
+      id: string;
+      puntaje: number;
+      comentario?: string | null;
+    } | null;
     recibo?: {
       id: string;
       num_recibo: string;
@@ -110,6 +125,25 @@ export const Dashboard: React.FC = () => {
   const role = getRole();
   const isCliente = role === "CLIENTE";
   const isAdmin = role === "ADMIN";
+  const puedeCalificar = getPermisos().includes("calificar_servicio");
+
+  const [descargandoFin, setDescargandoFin] = useState(false);
+  const exportarFinanzas = async (formato: "csv" | "pdf") => {
+    // Reporte de ingresos de los últimos 7 días (coincide con el KPI del panel).
+    const desde = new Date(Date.now() - 7 * 86400000).toISOString();
+    setDescargandoFin(true);
+    try {
+      await api.descargarReporteCaja(
+        new URLSearchParams({ desde }).toString(),
+        formato,
+      );
+      toast.success(`Reporte ${formato.toUpperCase()} generado`);
+    } catch (e: any) {
+      toast.error(e.message ?? "No se pudo exportar el reporte");
+    } finally {
+      setDescargandoFin(false);
+    }
+  };
 
   useEffect(() => {
     if (isCliente) return;
@@ -356,6 +390,14 @@ export const Dashboard: React.FC = () => {
                       </div>
                     )}
                   </div>
+                  {ficha.estado === "COMPLETADA" && (
+                    <CalificacionFicha
+                      fichaId={ficha.id}
+                      servicioId={ficha.servicio?.id}
+                      yaCalificada={ficha.calificacion}
+                      puedeCalificar={puedeCalificar}
+                    />
+                  )}
                 </div>
               ))}
             </div>
@@ -640,6 +682,22 @@ export const Dashboard: React.FC = () => {
           </p>
         </div>
         <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => exportarFinanzas("csv")}
+              disabled={descargandoFin}
+              className="h-9 px-3 rounded-lg bg-slate-200 dark:bg-slate-700 text-xs font-bold text-slate-800 dark:text-slate-100 hover:opacity-90 disabled:opacity-50 transition-opacity"
+            >
+              Exportar CSV
+            </button>
+            <button
+              onClick={() => exportarFinanzas("pdf")}
+              disabled={descargandoFin}
+              className="h-9 px-3 rounded-lg bg-primary text-xs font-bold text-slate-900 hover:opacity-90 disabled:opacity-50 transition-opacity"
+            >
+              Exportar PDF
+            </button>
+          </div>
           <div className="flex items-center gap-2 text-sm text-slate-500">
             <Icons.Agenda size={18} />
             <span>

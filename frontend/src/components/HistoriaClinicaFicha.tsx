@@ -46,6 +46,14 @@ export const HistoriaClinicaFicha = forwardRef<HistoriaFichaHandle, Props>(
   const ro = readOnly || historia.estado === "FINALIZADA";
 
   const set = (k: string, val: any) => setForm((f: any) => ({ ...f, [k]: val }));
+  // RF14: próxima dosis sugerida (+1 año) para las vacunas registradas; editable.
+  const defaultProxima = () => {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() + 1);
+    return d.toISOString().slice(0, 10);
+  };
+  const [proximaDosis, setProximaDosis] = useState<string>(defaultProxima);
+
   const toggleVacuna = (vac: string) =>
     setForm((f: any) => {
       const cur: string[] = f.vacunas ?? [];
@@ -79,6 +87,8 @@ export const HistoriaClinicaFicha = forwardRef<HistoriaFichaHandle, Props>(
     fc: num(form.fc),
     fr: num(form.fr),
     evoluciones: evoluciones.filter((e) => e.descripcion?.trim()),
+    // Próxima dosis "de lote": se aplica a las vacunas registradas en esta historia.
+    proxima_dosis_vacunas: proximaDosis || undefined,
   });
 
   // Guarda el borrador y, si finalize=true, lo finaliza. Expuesto por ref
@@ -337,6 +347,16 @@ export const HistoriaClinicaFicha = forwardRef<HistoriaFichaHandle, Props>(
               value={v(form.vacunas_otras)}
               disabled={ro}
               onChange={(e) => set("vacunas_otras", e.target.value)}
+            />
+          </div>
+          <div className="mt-1 flex items-center gap-1.5 hc-no-print">
+            <span className="text-[11px] font-bold">Próxima dosis: </span>
+            <input
+              type="date"
+              className={inputCls}
+              value={proximaDosis}
+              disabled={ro}
+              onChange={(e) => setProximaDosis(e.target.value)}
             />
           </div>
         </div>

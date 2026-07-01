@@ -23,6 +23,8 @@ services:
     repo: https://github.com/0093564228/sw2-grupal-back
     branch: main
     plan: free
+    # Render pinguea esta ruta para saber si el servicio está sano (chequea la BD).
+    healthCheckPath: /health
     # install → compila TS → aplica migraciones SIN borrar datos → siembra (idempotente)
     buildCommand: npm install && npm run build && npx prisma migrate deploy && npm run seed
     startCommand: npm start

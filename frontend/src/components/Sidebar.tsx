@@ -15,6 +15,7 @@ interface StoredUser {
   nombre: string;
   email: string;
   rol?: { nombre: string };
+  permisos?: string[];
 }
 
 // Lista maestra de navegación SIN DUPLICADOS
@@ -31,7 +32,18 @@ const ALL_NAV_ITEMS = [
   { id: "financial", label: "Finanzas", icon: Icons.Financial },
   { id: "solicitudes", label: "Suscripciones", icon: Icons.Financial },
   { id: "waiting-room", label: "Pantalla Espera", icon: Icons.WaitingRoom },
+  // Ítems mostrados por PERMISO (no por rol) — ver PERMISO_POR_ITEM abajo.
+  { id: "horarios", label: "Horarios", icon: Icons.Agenda },
+  { id: "catalogos", label: "Catálogos", icon: Icons.Settings },
+  { id: "bitacora", label: "Bitácora", icon: Icons.FileText },
 ];
+
+// Ítems de menú que se muestran según un permiso concreto (RBAC), no por rol.
+const PERMISO_POR_ITEM: Record<string, string> = {
+  bitacora: "bitacora.ver",
+  catalogos: "gestionar_catalogos",
+  horarios: "gestionar_horarios",
+};
 
 const NAV_POR_ROL: Record<string, string[]> = {
   ADMIN: [
@@ -71,10 +83,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const user = getStoredUser();
   const roleName = user?.rol?.nombre ?? "";
   const allowedIds = NAV_POR_ROL[roleName] ?? [];
+  const permisos = user?.permisos ?? [];
 
-  // Filtramos y aseguramos que no haya duplicados por ID
+  // Los ítems de PERMISO_POR_ITEM se muestran por permiso; el resto, por rol.
   const visibleNavItems = ALL_NAV_ITEMS.filter((item) =>
-    allowedIds.includes(item.id),
+    PERMISO_POR_ITEM[item.id]
+      ? permisos.includes(PERMISO_POR_ITEM[item.id])
+      : allowedIds.includes(item.id),
   );
 
   // Menú colapsable (solo iconos) — la preferencia se recuerda entre sesiones.

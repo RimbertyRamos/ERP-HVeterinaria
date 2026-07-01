@@ -6,6 +6,7 @@ import { api } from "../utils/api";
 import { toast } from "sonner";
 import type { HistoriaResumen, HistoriaClinica } from "../types";
 import { HistoriaClinicaFicha } from "../components/HistoriaClinicaFicha";
+import { MascotaCarnet } from "../components/MascotaCarnet";
 
 interface EspecieObj {
   id: string;
@@ -744,7 +745,8 @@ export const Patients: React.FC = () => {
                   {selectedPatient.propietario.telefono}
                 </p>
               )}
-              <div className="mt-3">
+              <div className="mt-3 flex items-center justify-end gap-2">
+                <MascotaCarnet mascota={selectedPatient} />
                 {isInQueue ? (
                   <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 text-xs font-black uppercase tracking-widest">
                     <span className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />{" "}

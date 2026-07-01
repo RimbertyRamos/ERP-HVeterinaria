@@ -11,38 +11,121 @@ async function main() {
     prisma.role.upsert({
       where: { nombre: "ADMIN" },
       update: {},
-      create: { nombre: "ADMIN", permisos: { all: true } },
+      create: { nombre: "ADMIN" },
     }),
     prisma.role.upsert({
       where: { nombre: "VETERINARIO" },
       update: {},
-      create: {
-        nombre: "VETERINARIO",
-        permisos: { clinical: true },
-      },
+      create: { nombre: "VETERINARIO" },
     }),
     prisma.role.upsert({
       where: { nombre: "RECEPCIONISTA" },
       update: {},
-      create: {
-        nombre: "RECEPCIONISTA",
-        permisos: { fichas: true, pacientes: true },
-      },
+      create: { nombre: "RECEPCIONISTA" },
     }),
     prisma.role.upsert({
       where: { nombre: "CAJERO" },
       update: {},
-      create: { nombre: "CAJERO", permisos: { caja: true } },
+      create: { nombre: "CAJERO" },
     }),
     prisma.role.upsert({
       where: { nombre: "CLIENTE" },
       update: {},
-      create: { nombre: "CLIENTE", permisos: {} },
+      create: { nombre: "CLIENTE" },
     }),
   ]);
 
   const [roleAdmin, roleVet, roleRecep, roleCajero, roleCliente] = roles;
   console.log("✅ Roles creados");
+
+  // ===========================
+  // PERMISOS (RBAC normalizado) — reemplaza al antiguo Role.permisos Json
+  // ===========================
+  // Catálogo de permisos, uno por acción/CU del sistema.
+  const PERMISOS: { codigo: string; descripcion: string }[] = [
+    { codigo: "gestionar_usuarios", descripcion: "Crear, editar y desactivar usuarios" },
+    { codigo: "gestionar_roles", descripcion: "Administrar roles y sus permisos" },
+    { codigo: "gestionar_pacientes", descripcion: "Registrar y editar mascotas/pacientes" },
+    { codigo: "gestionar_fichas", descripcion: "Crear y administrar fichas de atención (fichaje)" },
+    { codigo: "registrar_historia_clinica", descripcion: "Registrar, editar y finalizar historias clínicas" },
+    { codigo: "gestionar_agenda", descripcion: "Crear y administrar citas (agenda)" },
+    { codigo: "gestionar_caja", descripcion: "Cobrar fichas, ventas directas y cierre de caja" },
+    { codigo: "gestionar_inventario", descripcion: "Administrar productos e inventario" },
+    { codigo: "gestionar_consultorios", descripcion: "Administrar consultorios/salas" },
+    { codigo: "gestionar_catalogos", descripcion: "Administrar catálogos base (especies, razas, servicios…)" },
+    { codigo: "ver_dashboard", descripcion: "Ver el panel de indicadores" },
+    { codigo: "usar_asistente_emergencias", descripcion: "Usar el asistente virtual de emergencias" },
+    { codigo: "calificar_servicio", descripcion: "Calificar la atención de una ficha completada (CU20)" },
+    { codigo: "bitacora.ver", descripcion: "Ver y exportar la bitácora/auditoría del sistema" },
+    { codigo: "gestionar_horarios", descripcion: "Administrar la programación horaria de consultorios" },
+  ];
+
+  await Promise.all(
+    PERMISOS.map((p) =>
+      prisma.permiso.upsert({
+        where: { codigo: p.codigo },
+        update: { descripcion: p.descripcion },
+        create: p,
+      }),
+    ),
+  );
+
+  // Mapeo de los antiguos buckets del JSON (all / clinical / fichas / pacientes /
+  // caja) a códigos de permiso concretos. Así se "migra" la intención del JSON
+  // anterior a filas RolePermiso sin romper la semántica de cada rol.
+  const TODOS = PERMISOS.map((p) => p.codigo);
+  const CLINICAL = [
+    "registrar_historia_clinica",
+    "gestionar_fichas",
+    "gestionar_pacientes",
+    "gestionar_agenda",
+    "ver_dashboard",
+    "usar_asistente_emergencias",
+  ];
+
+  const ASIGNACIONES: { rolId: string; codigos: string[] }[] = [
+    { rolId: roleAdmin.id, codigos: TODOS }, // ADMIN: { all: true }
+    { rolId: roleVet.id, codigos: CLINICAL }, // VETERINARIO: { clinical: true }
+    {
+      rolId: roleRecep.id, // RECEPCIONISTA: { fichas: true, pacientes: true }
+      codigos: [
+        "gestionar_fichas",
+        "gestionar_pacientes",
+        "gestionar_agenda",
+        "ver_dashboard",
+        "usar_asistente_emergencias",
+      ],
+    },
+    {
+      rolId: roleCajero.id, // CAJERO: { caja: true }
+      codigos: ["gestionar_caja", "ver_dashboard", "usar_asistente_emergencias"],
+    },
+    {
+      rolId: roleCliente.id, // CLIENTE: {} + calificar (CU20)
+      codigos: ["usar_asistente_emergencias", "calificar_servicio"],
+    },
+  ];
+
+  // Resuelve los ids de permiso por código una sola vez.
+  const permisosDb = await prisma.permiso.findMany({
+    select: { id: true, codigo: true },
+  });
+  const idPorCodigo = new Map(permisosDb.map((p) => [p.codigo, p.id]));
+
+  await Promise.all(
+    ASIGNACIONES.flatMap(({ rolId, codigos }) =>
+      codigos.map((codigo) => {
+        const permisoId = idPorCodigo.get(codigo);
+        if (!permisoId) return Promise.resolve(); // código inexistente → se ignora
+        return prisma.rolePermiso.upsert({
+          where: { role_id_permiso_id: { role_id: rolId, permiso_id: permisoId } },
+          update: {},
+          create: { role_id: rolId, permiso_id: permisoId },
+        });
+      }),
+    ),
+  );
+  console.log("✅ Permisos y asignaciones de rol creados");
 
   // ===========================
   // USUARIOS DEL PERSONAL
@@ -348,6 +431,31 @@ async function main() {
   console.log("✅ Alergias creadas");
 
   // ===========================
+  // CATÁLOGO: VACUNAS (mismo listado que la migración vacuna_normalizada)
+  // ===========================
+  const VACUNAS = [
+    "Rabia",
+    "Quíntuple / Polivalente",
+    "Moquillo",
+    "Parvovirus",
+    "Leptospirosis",
+    "Hepatitis",
+    "Bordetella",
+    "Antirrábica felina",
+    "Triple felina",
+  ];
+  await Promise.all(
+    VACUNAS.map((nombre) =>
+      prisma.vacuna.upsert({
+        where: { nombre },
+        update: {},
+        create: { nombre },
+      }),
+    ),
+  );
+  console.log("✅ Vacunas creadas");
+
+  // ===========================
   // CATÁLOGO: SERVICIOS (precios en Bs.)
   // ===========================
   const [svcGeneral, svcEspecialista, svcCirugia, svcLab, svcVacuna] =
@@ -565,33 +673,6 @@ async function main() {
     console.log("✅ Productos de inventario creados");
   } else {
     console.log("↪️  Productos ya existen — se omiten");
-  }
-
-  // ===========================
-  // PROVEEDORES
-  // ===========================
-  if ((await prisma.proveedor.count()) === 0) {
-    await Promise.all([
-    prisma.proveedor.create({
-      data: {
-        nombre_empresa: "Droguería INTI S.A.",
-        nit: "10203040",
-        contacto: "Lic. Mario Sosa",
-        telefono: "70001122",
-      },
-    }),
-    prisma.proveedor.create({
-      data: {
-        nombre_empresa: "Importadora VetSucre",
-        nit: "55667788",
-        contacto: "Dra. Elena Ruiz",
-        telefono: "71234567",
-      },
-    }),
-    ]);
-    console.log("✅ Proveedores creados");
-  } else {
-    console.log("↪️  Proveedores ya existen — se omiten");
   }
 
   // ===========================

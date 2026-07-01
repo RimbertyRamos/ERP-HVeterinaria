@@ -9,6 +9,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { toast } from "sonner";
 import { Icons } from "../constants";
 import { cn } from "../utils/cn";
 import { api } from "../utils/api";
@@ -145,6 +146,25 @@ export const Financial: React.FC = () => {
 
   const ultimos = recibosFiltrados.slice(0, 8);
 
+  const [descargando, setDescargando] = useState(false);
+  const exportar = async (formato: "csv" | "pdf") => {
+    // Exporta el reporte de ingresos del período seleccionado.
+    const dias = periodo === "Semana" ? 7 : periodo === "Mes" ? 30 : 365;
+    const desde = new Date(Date.now() - dias * 86400000).toISOString();
+    setDescargando(true);
+    try {
+      await api.descargarReporteCaja(
+        new URLSearchParams({ desde }).toString(),
+        formato,
+      );
+      toast.success(`Reporte ${formato.toUpperCase()} generado`);
+    } catch (e: any) {
+      toast.error(e.message ?? "No se pudo exportar el reporte");
+    } finally {
+      setDescargando(false);
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -160,21 +180,37 @@ export const Financial: React.FC = () => {
             Análisis de ingresos y cobros
           </p>
         </div>
-        <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
-          {(["Semana", "Mes", "Año"] as Periodo[]).map((p) => (
-            <button
-              key={p}
-              onClick={() => setPeriodo(p)}
-              className={cn(
-                "px-4 py-1.5 text-xs font-bold rounded-md transition-all",
-                periodo === p
-                  ? "bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-100"
-                  : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-300",
-              )}
-            >
-              {p}
-            </button>
-          ))}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => exportar("csv")}
+            disabled={descargando}
+            className="h-9 px-3 rounded-lg bg-slate-200 dark:bg-slate-700 text-xs font-bold text-slate-800 dark:text-slate-100 hover:opacity-90 disabled:opacity-50 transition-opacity"
+          >
+            Exportar CSV
+          </button>
+          <button
+            onClick={() => exportar("pdf")}
+            disabled={descargando}
+            className="h-9 px-3 rounded-lg bg-primary text-xs font-bold text-slate-900 hover:opacity-90 disabled:opacity-50 transition-opacity"
+          >
+            Exportar PDF
+          </button>
+          <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
+            {(["Semana", "Mes", "Año"] as Periodo[]).map((p) => (
+              <button
+                key={p}
+                onClick={() => setPeriodo(p)}
+                className={cn(
+                  "px-4 py-1.5 text-xs font-bold rounded-md transition-all",
+                  periodo === p
+                    ? "bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-100"
+                    : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-300",
+                )}
+              >
+                {p}
+              </button>
+            ))}
+          </div>
         </div>
       </header>
 

@@ -109,6 +109,172 @@ export class MailService {
     }
   }
 
+  /**
+   * Recordatorio de vencimiento de vacuna al propietario. Fail-safe: si no hay
+   * credenciales SMTP solo lo registra en consola; nunca lanza.
+   */
+  async enviarRecordatorioVacuna(opts: {
+    email?: string | null;
+    nombre?: string | null;
+    mascota: string;
+    vacuna: string;
+    fecha: string;
+  }): Promise<void> {
+    try {
+      const email = opts.email;
+      if (!email) return;
+      const nombre = opts.nombre || "Estimado/a cliente";
+      const asunto = `Recordatorio de vacunación — ${opts.mascota}`;
+      const texto =
+        `Hola ${nombre},\n\nLe recordamos que la vacuna "${opts.vacuna}" de ${opts.mascota} ` +
+        `está próxima a vencer. Próxima dosis sugerida: ${opts.fecha}.\n` +
+        `Le sugerimos agendar una cita para su aplicación.\n\n` +
+        `Hospital Escuela de Veterinaria U.A.G.R.M.`;
+      const html = `
+        <div style="font-family:Arial,sans-serif;max-width:520px;margin:auto;border:1px solid #eee;border-radius:12px;overflow:hidden">
+          <div style="background:#facc15;padding:16px 24px">
+            <h2 style="margin:0;color:#1e293b">Recordatorio de vacunación</h2>
+            <p style="margin:4px 0 0;color:#1e293b;font-size:13px">Hospital Escuela de Veterinaria U.A.G.R.M.</p>
+          </div>
+          <div style="padding:24px;color:#334155">
+            <p>Hola <strong>${nombre}</strong>,</p>
+            <p>La vacuna <strong>${opts.vacuna}</strong> de <strong>${opts.mascota}</strong> está próxima a vencer.</p>
+            <table style="margin:16px 0;font-size:15px">
+              <tr><td style="padding:4px 0">💉 <strong>Vacuna:</strong></td><td style="padding:4px 0 4px 12px">${opts.vacuna}</td></tr>
+              <tr><td style="padding:4px 0">📅 <strong>Próxima dosis:</strong></td><td style="padding:4px 0 4px 12px">${opts.fecha}</td></tr>
+            </table>
+            <p style="font-size:13px;color:#64748b">Le sugerimos agendar una cita para su aplicación.</p>
+          </div>
+        </div>`;
+
+      if (!this.transporter) {
+        console.log(
+          `[MailService] (sin credenciales SMTP) Se enviaría a ${email}: "${asunto}"`,
+        );
+        return;
+      }
+      await this.transporter.sendMail({
+        from: this.from,
+        to: email,
+        subject: asunto,
+        text: texto,
+        html,
+      });
+      console.log(`[MailService] Recordatorio de vacuna enviado a ${email}`);
+    } catch (err: any) {
+      console.error(
+        "[MailService] No se pudo enviar el recordatorio de vacuna:",
+        err?.message || err,
+      );
+    }
+  }
+
+  /**
+   * Envía el COMPROBANTE (recibo) por correo al propietario/cliente tras el cobro.
+   * Fail-safe: sin email o sin credenciales SMTP solo registra en consola; nunca
+   * lanza (no debe afectar el cobro).
+   */
+  async enviarRecibo(opts: {
+    email?: string | null;
+    nombre?: string | null;
+    num_recibo: string;
+    fecha: Date | string;
+    items: { descripcion: string; cantidad: number; subtotal: number }[];
+    subtotal: number;
+    descuento?: number;
+    tipo_descuento?: string | null;
+    total: number;
+    metodo_pago: string;
+  }): Promise<void> {
+    try {
+      const email = opts.email;
+      if (!email) return;
+      const nombre = opts.nombre || "Estimado/a cliente";
+      const fecha = new Date(opts.fecha).toLocaleString("es-ES", {
+        dateStyle: "long",
+        timeStyle: "short",
+      });
+      const asunto = `Comprobante de pago — Recibo ${opts.num_recibo}`;
+      const desc = Number(opts.descuento ?? 0);
+      const money = (n: number) => `Bs.${Number(n).toFixed(2)}`;
+
+      const filasTexto = opts.items
+        .map(
+          (i) =>
+            `  - ${i.descripcion} x${i.cantidad}: ${money(i.subtotal)}`,
+        )
+        .join("\n");
+      const descTexto =
+        desc > 0
+          ? `Descuento (${opts.tipo_descuento ?? "MONTO"}): -${money(opts.subtotal - opts.total)}\n`
+          : "";
+      const texto =
+        `Hola ${nombre},\n\nGracias por su pago. Detalle del comprobante ${opts.num_recibo} (${fecha}):\n\n` +
+        `${filasTexto}\n\n` +
+        `Subtotal: ${money(opts.subtotal)}\n` +
+        descTexto +
+        `Total: ${money(opts.total)}\n` +
+        `Método de pago: ${opts.metodo_pago}\n\n` +
+        `Hospital Escuela de Veterinaria U.A.G.R.M.`;
+
+      const filasHtml = opts.items
+        .map(
+          (i) =>
+            `<tr><td style="padding:4px 0">${i.descripcion}</td><td style="text-align:center;padding:4px 8px">${i.cantidad}</td><td style="text-align:right;padding:4px 0">${money(i.subtotal)}</td></tr>`,
+        )
+        .join("");
+      const descHtml =
+        desc > 0
+          ? `<tr><td colspan="2" style="text-align:right;padding:2px 8px;color:#059669">Descuento (${opts.tipo_descuento ?? "MONTO"}):</td><td style="text-align:right;color:#059669">-${money(opts.subtotal - opts.total)}</td></tr>`
+          : "";
+      const html = `
+        <div style="font-family:Arial,sans-serif;max-width:540px;margin:auto;border:1px solid #eee;border-radius:12px;overflow:hidden">
+          <div style="background:#facc15;padding:16px 24px">
+            <h2 style="margin:0;color:#1e293b">Comprobante de pago</h2>
+            <p style="margin:4px 0 0;color:#1e293b;font-size:13px">Hospital Escuela de Veterinaria U.A.G.R.M.</p>
+          </div>
+          <div style="padding:24px;color:#334155">
+            <p>Hola <strong>${nombre}</strong>, gracias por su pago.</p>
+            <p style="font-size:13px;color:#64748b;margin:0 0 12px">Recibo <strong>${opts.num_recibo}</strong> · ${fecha}</p>
+            <table style="width:100%;border-collapse:collapse;font-size:14px">
+              <thead>
+                <tr style="border-bottom:1px solid #e2e8f0"><th style="text-align:left;padding:6px 0">Concepto</th><th style="padding:6px 8px">Cant.</th><th style="text-align:right;padding:6px 0">Importe</th></tr>
+              </thead>
+              <tbody>${filasHtml}</tbody>
+              <tfoot style="border-top:1px solid #e2e8f0">
+                <tr><td colspan="2" style="text-align:right;padding:6px 8px">Subtotal:</td><td style="text-align:right">${money(opts.subtotal)}</td></tr>
+                ${descHtml}
+                <tr><td colspan="2" style="text-align:right;padding:6px 8px;font-weight:bold">Total:</td><td style="text-align:right;font-weight:bold">${money(opts.total)}</td></tr>
+              </tfoot>
+            </table>
+            <p style="font-size:13px;color:#64748b;margin-top:12px">Método de pago: <strong>${opts.metodo_pago}</strong></p>
+          </div>
+        </div>`;
+
+      if (!this.transporter) {
+        console.log(
+          `[MailService] (sin credenciales SMTP) Se enviaría a ${email}: "${asunto}" (total ${money(opts.total)})`,
+        );
+        return;
+      }
+      await this.transporter.sendMail({
+        from: this.from,
+        to: email,
+        subject: asunto,
+        text: texto,
+        html,
+      });
+      console.log(
+        `[MailService] Comprobante ${opts.num_recibo} enviado a ${email}`,
+      );
+    } catch (err: any) {
+      console.error(
+        "[MailService] No se pudo enviar el comprobante:",
+        err?.message || err,
+      );
+    }
+  }
+
   private async enviar(
     cita: any,
     tipo: "confirmacion" | "recordatorio",

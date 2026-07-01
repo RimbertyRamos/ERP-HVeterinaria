@@ -13,6 +13,10 @@ import { Agenda } from "./views/Agenda";
 import { MiAgenda } from "./views/MiAgenda";
 import { Users } from "./views/Users";
 import Consultation from "./views/Consultation";
+import { Bitacora } from "./views/Bitacora";
+import { Catalogos } from "./views/Catalogos";
+import { Horarios } from "./views/Horarios";
+import { ForcePasswordChange } from "./components/ForcePasswordChange";
 import { ChatAssistant } from "./components/ChatAssistant";
 import { ViewType } from "./types";
 import { Icons } from "./constants";
@@ -38,37 +42,66 @@ interface ProductoBajo {
   stock_minimo: number;
 }
 
+interface NotiReal {
+  id: string;
+  titulo: string;
+  mensaje: string;
+  leida: boolean;
+  fecha_envio: string;
+}
+
 const NotificationsPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const [fichas, setFichas] = useState<FichaEspera[]>([]);
   const [stockBajo, setStockBajo] = useState<ProductoBajo[]>([]);
+  const [notis, setNotis] = useState<NotiReal[]>([]);
   const [loading, setLoading] = useState(true);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    Promise.all([api.getFichas({ estado: "ESPERA" }), api.getProductos()])
-      .then(([f, p]) => {
+    // Notificaciones REALES persistidas + alertas operativas derivadas en vivo.
+    Promise.allSettled([
+      api.getFichas({ estado: "ESPERA" }),
+      api.getProductos(),
+      api.getNotificaciones(),
+    ])
+      .then(([f, p, n]) => {
         const now = Date.now();
-        const esperaFiltradas = (f as FichaEspera[])
-          .filter(
-            (fi) =>
-              Math.round((now - new Date(fi.fecha_hora).getTime()) / 60000) >=
-              10,
-          )
-          .sort(
-            (a, b) =>
-              new Date(a.fecha_hora).getTime() -
-              new Date(b.fecha_hora).getTime(),
+        if (f.status === "fulfilled") {
+          setFichas(
+            (f.value as FichaEspera[])
+              .filter(
+                (fi) =>
+                  Math.round(
+                    (now - new Date(fi.fecha_hora).getTime()) / 60000,
+                  ) >= 10,
+              )
+              .sort(
+                (a, b) =>
+                  new Date(a.fecha_hora).getTime() -
+                  new Date(b.fecha_hora).getTime(),
+              ),
           );
-        setFichas(esperaFiltradas);
-        setStockBajo(
-          (p as ProductoBajo[]).filter(
-            (pr) => Number(pr.stock_actual) <= Number(pr.stock_minimo),
-          ),
-        );
+        }
+        if (p.status === "fulfilled") {
+          setStockBajo(
+            (p.value as ProductoBajo[]).filter(
+              (pr) => Number(pr.stock_actual) <= Number(pr.stock_minimo),
+            ),
+          );
+        }
+        if (n.status === "fulfilled") setNotis(n.value as NotiReal[]);
       })
-      .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
+
+  const marcarLeida = async (id: string) => {
+    try {
+      await api.marcarNotificacionLeida(id);
+      setNotis((ns) => ns.map((x) => (x.id === id ? { ...x, leida: true } : x)));
+    } catch {
+      /* noop */
+    }
+  };
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -78,7 +111,8 @@ const NotificationsPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     return () => document.removeEventListener("mousedown", handler);
   }, [onClose]);
 
-  const total = fichas.length + stockBajo.length;
+  const noLeidas = notis.filter((n) => !n.leida).length;
+  const total = noLeidas + fichas.length + stockBajo.length;
 
   return (
     <motion.div
@@ -110,6 +144,30 @@ const NotificationsPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         </div>
       ) : (
         <div className="max-h-80 overflow-y-auto divide-y divide-slate-50 dark:divide-slate-800">
+          {notis.map((n) => (
+            <button
+              key={n.id}
+              onClick={() => marcarLeida(n.id)}
+              title={n.leida ? "Leída" : "Marcar como leída"}
+              className={`w-full text-left p-4 flex items-start gap-3 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800 ${
+                n.leida ? "opacity-50" : ""
+              }`}
+            >
+              <Icons.Bell
+                size={16}
+                className={`mt-0.5 flex-shrink-0 ${
+                  n.leida ? "text-slate-400" : "text-primary"
+                }`}
+              />
+              <div className="min-w-0">
+                <p className="text-sm font-bold truncate">{n.titulo}</p>
+                <p className="text-xs text-slate-500">{n.mensaje}</p>
+              </div>
+              {!n.leida && (
+                <span className="ml-auto mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-primary" />
+              )}
+            </button>
+          ))}
           {fichas.map((f) => {
             const min = Math.round(
               (Date.now() - new Date(f.fecha_hora).getTime()) / 60000,
@@ -238,6 +296,16 @@ const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(
     () => !!localStorage.getItem("token"),
   );
+  // Contraseña temporal pendiente de cambio (RF: forzar cambio en primer login).
+  const readMustChange = () => {
+    try {
+      return !!JSON.parse(localStorage.getItem("user") || "{}")
+        ?.debe_cambiar_password;
+    } catch {
+      return false;
+    }
+  };
+  const [mustChangePassword, setMustChangePassword] = useState(readMustChange);
   const [currentView, setCurrentView] = useState<ViewType>("dashboard");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -257,27 +325,42 @@ const App: React.FC = () => {
   // se refresca cada minuto.
   useEffect(() => {
     const rol = JSON.parse(localStorage.getItem("user") || "{}")?.rol?.nombre;
-    if (rol === "CLIENTE") {
-      setNotifCount(0);
-      return;
-    }
+    const esCliente = rol === "CLIENTE";
     let activo = true;
     const cargarAlertas = () => {
-      Promise.all([api.getFichas({ estado: "ESPERA" }), api.getProductos()])
-        .then(([f, p]) => {
-          if (!activo) return;
-          const now = Date.now();
-          const esperando = (f as FichaEspera[]).filter(
-            (fi) =>
-              Math.round((now - new Date(fi.fecha_hora).getTime()) / 60000) >=
-              10,
-          ).length;
-          const bajo = (p as ProductoBajo[]).filter(
-            (pr) => Number(pr.stock_actual) <= Number(pr.stock_minimo),
-          ).length;
-          setNotifCount(esperando + bajo);
-        })
-        .catch(() => {});
+      // El CLIENTE solo ve sus notificaciones reales; el personal ve además las
+      // alertas operativas (fichas esperando + stock bajo).
+      const tareas: Promise<unknown>[] = esCliente
+        ? [Promise.resolve([]), Promise.resolve([]), api.getNotificaciones()]
+        : [
+            api.getFichas({ estado: "ESPERA" }),
+            api.getProductos(),
+            api.getNotificaciones(),
+          ];
+      Promise.allSettled(tareas).then(([f, p, n]) => {
+        if (!activo) return;
+        const now = Date.now();
+        const esperando =
+          f.status === "fulfilled"
+            ? (f.value as FichaEspera[]).filter(
+                (fi) =>
+                  Math.round(
+                    (now - new Date(fi.fecha_hora).getTime()) / 60000,
+                  ) >= 10,
+              ).length
+            : 0;
+        const bajo =
+          p.status === "fulfilled"
+            ? (p.value as ProductoBajo[]).filter(
+                (pr) => Number(pr.stock_actual) <= Number(pr.stock_minimo),
+              ).length
+            : 0;
+        const noLeidas =
+          n.status === "fulfilled"
+            ? (n.value as { leida: boolean }[]).filter((x) => !x.leida).length
+            : 0;
+        setNotifCount(esperando + bajo + noLeidas);
+      });
     };
     cargarAlertas();
     const id = setInterval(cargarAlertas, 60000);
@@ -306,7 +389,11 @@ const App: React.FC = () => {
   };
 
   const handleLogout = () => {
+    // Deja constancia del cierre de sesión en la bitácora (fire-and-forget) antes
+    // de descartar el token en el cliente.
+    void api.logout().catch(() => {});
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
     setIsAuthenticated(false);
   };
 
@@ -340,6 +427,30 @@ const App: React.FC = () => {
         return <WaitingRoom onClose={() => setCurrentView("dashboard")} />;
       case "consultation":
         return <Consultation />;
+      case "bitacora": {
+        // Protección de la ruta: solo si el usuario tiene el permiso bitacora.ver.
+        const permisos: string[] =
+          JSON.parse(localStorage.getItem("user") || "{}")?.permisos ?? [];
+        return permisos.includes("bitacora.ver") ? <Bitacora /> : <Dashboard />;
+      }
+      case "catalogos": {
+        const permisos: string[] =
+          JSON.parse(localStorage.getItem("user") || "{}")?.permisos ?? [];
+        return permisos.includes("gestionar_catalogos") ? (
+          <Catalogos />
+        ) : (
+          <Dashboard />
+        );
+      }
+      case "horarios": {
+        const permisos: string[] =
+          JSON.parse(localStorage.getItem("user") || "{}")?.permisos ?? [];
+        return permisos.includes("gestionar_horarios") ? (
+          <Horarios />
+        ) : (
+          <Dashboard />
+        );
+      }
       case "settings":
         return (
           <div className="flex h-full items-center justify-center text-slate-500">
@@ -372,8 +483,16 @@ const App: React.FC = () => {
           setIsAuthenticated(true);
           setShowLogin(false);
           setIsLanding(false);
+          setMustChangePassword(readMustChange());
         }}
       />
+    );
+  }
+
+  // Contraseña temporal: bloquea el sistema hasta que el usuario la cambie.
+  if (mustChangePassword) {
+    return (
+      <ForcePasswordChange onDone={() => setMustChangePassword(false)} />
     );
   }
 
