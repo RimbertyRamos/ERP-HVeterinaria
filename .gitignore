@@ -36,3 +36,5 @@ dist-ssr
 
 # Project docs not tracked
 Documentacion_Proyecto/
+
+.claude/
