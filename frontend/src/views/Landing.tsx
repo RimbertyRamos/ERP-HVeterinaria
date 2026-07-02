@@ -88,7 +88,7 @@ const FloatingParticles: React.FC = () => (
         style={{
           width: Math.random() * 6 + 2,
           height: Math.random() * 6 + 2,
-          background: `rgba(250, 204, 21, ${Math.random() * 0.3 + 0.1})`,
+          background: `rgba(176, 68, 58, ${Math.random() * 0.3 + 0.1})`,
           left: `${Math.random() * 100}%`,
           top: `${Math.random() * 100}%`,
         }}
@@ -137,7 +137,7 @@ const features = [
     icon: PawPrint,
     title: "Gestión de Pacientes",
     desc: "Historial clínico completo, vacunas, alergias y seguimiento integral de cada mascota con ficha digital.",
-    color: "from-amber-400 to-orange-500",
+    color: "from-brand to-brand-strong",
   },
   {
     icon: Stethoscope,
@@ -173,7 +173,7 @@ const features = [
     icon: Sparkles,
     title: "Asistente IA",
     desc: "Chatbot inteligente con IA (Google Gemini) para consultas de emergencia veterinaria en tiempo real.",
-    color: "from-yellow-400 to-amber-500",
+    color: "from-accent to-[#a87c33]",
   },
 ];
 
@@ -491,13 +491,13 @@ export const Landing: React.FC<{ onGoToLogin?: () => void }> = ({
             {/* Logo */}
             <div className="flex items-center gap-3">
               <div className="relative">
-                <div className="h-10 w-10 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-xl flex items-center justify-center shadow-lg shadow-yellow-500/30">
+                <div className="h-10 w-10 bg-gradient-to-br from-brand to-brand-strong rounded-xl flex items-center justify-center shadow-lg shadow-brand/30">
                   <PawPrint size={22} className="text-white" />
                 </div>
                 <div className="absolute -top-0.5 -right-0.5 h-3 w-3 bg-emerald-400 rounded-full border-2 border-white dark:border-slate-950" />
               </div>
               <div>
-                <span className="text-xl font-black tracking-tighter bg-gradient-to-r from-yellow-500 to-amber-600 bg-clip-text text-transparent">
+                <span className="text-xl font-black tracking-tighter bg-gradient-to-r from-brand-ink to-accent bg-clip-text text-transparent">
                   VET-ERP
                 </span>
                 <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400 -mt-0.5">
@@ -529,7 +529,7 @@ export const Landing: React.FC<{ onGoToLogin?: () => void }> = ({
               </button>
               <button
                 onClick={() => scrollTo("pricing")}
-                className="px-5 py-2.5 text-sm font-bold bg-gradient-to-r from-yellow-400 to-amber-500 text-slate-900 rounded-xl shadow-lg shadow-yellow-500/25 hover:shadow-yellow-500/40 hover:scale-105 active:scale-95 transition-all"
+                className="px-5 py-2.5 text-sm font-bold bg-gradient-to-r from-brand to-brand-strong text-white rounded-xl shadow-lg shadow-brand/25 hover:shadow-brand/40 hover:scale-105 active:scale-95 transition-all"
               >
                 Prueba Gratis
               </button>
@@ -573,7 +573,7 @@ export const Landing: React.FC<{ onGoToLogin?: () => void }> = ({
                   </button>
                   <button
                     onClick={() => scrollTo("pricing")}
-                    className="w-full py-3 text-sm font-bold text-center rounded-xl bg-gradient-to-r from-yellow-400 to-amber-500 text-slate-900"
+                    className="w-full py-3 text-sm font-bold text-center rounded-xl bg-gradient-to-r from-brand to-brand-strong text-white"
                   >
                     Prueba Gratis
                   </button>
@@ -588,10 +588,10 @@ export const Landing: React.FC<{ onGoToLogin?: () => void }> = ({
       <section className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
         {/* Background */}
         <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-amber-50/40 dark:from-slate-950 dark:via-slate-900 dark:to-amber-950/20" />
-          <div className="absolute top-1/4 -left-32 w-96 h-96 bg-yellow-400/10 rounded-full blur-3xl" />
-          <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-radial from-yellow-400/5 to-transparent rounded-full" />
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-brand-soft/40 dark:from-slate-950 dark:via-slate-900 dark:to-brand/15" />
+          <div className="absolute top-1/4 -left-32 w-96 h-96 bg-brand/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-accent/10 rounded-full blur-3xl" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-radial from-brand/5 to-transparent rounded-full" />
           <FloatingParticles />
         </div>
 
@@ -615,7 +615,7 @@ export const Landing: React.FC<{ onGoToLogin?: () => void }> = ({
               className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[0.95]"
             >
               <span className="block">El software que</span>
-              <span className="block mt-2 bg-gradient-to-r from-yellow-500 via-amber-500 to-orange-500 bg-clip-text text-transparent">
+              <span className="block mt-2 bg-gradient-to-r from-brand-ink via-[#b1443a] to-accent bg-clip-text text-transparent">
                 transforma tu clínica
               </span>
               <span className="block mt-2">veterinaria</span>
@@ -642,7 +642,7 @@ export const Landing: React.FC<{ onGoToLogin?: () => void }> = ({
             >
               <button
                 onClick={() => scrollTo("pricing")}
-                className="group relative px-8 py-4 bg-gradient-to-r from-yellow-400 to-amber-500 text-slate-900 font-bold rounded-2xl shadow-xl shadow-yellow-500/25 hover:shadow-2xl hover:shadow-yellow-500/40 hover:scale-105 active:scale-95 transition-all text-base flex items-center gap-2"
+                className="group relative px-8 py-4 bg-gradient-to-r from-brand to-brand-strong text-white font-bold rounded-2xl shadow-xl shadow-brand/25 hover:shadow-2xl hover:shadow-brand/40 hover:scale-105 active:scale-95 transition-all text-base flex items-center gap-2"
               >
                 Comenzar Prueba Gratuita
                 <ArrowRight
@@ -652,9 +652,9 @@ export const Landing: React.FC<{ onGoToLogin?: () => void }> = ({
               </button>
               <button
                 onClick={() => scrollTo("features")}
-                className="group px-8 py-4 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-2xl font-bold text-base hover:border-yellow-400 dark:hover:border-yellow-500 hover:shadow-lg transition-all flex items-center gap-2"
+                className="group px-8 py-4 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-2xl font-bold text-base hover:border-brand dark:hover:border-brand-ink hover:shadow-lg transition-all flex items-center gap-2"
               >
-                <Play size={18} className="text-yellow-500" />
+                <Play size={18} className="text-brand-ink" />
                 Ver Demostración
               </button>
             </motion.div>
@@ -671,7 +671,7 @@ export const Landing: React.FC<{ onGoToLogin?: () => void }> = ({
                 <span>Datos Seguros</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <Zap size={14} className="text-yellow-500" />
+                <Zap size={14} className="text-brand-ink" />
                 <span>Setup en 24hrs</span>
               </div>
               <div className="flex items-center gap-1.5">
@@ -716,7 +716,7 @@ export const Landing: React.FC<{ onGoToLogin?: () => void }> = ({
                       label: "Pacientes Hoy",
                       value: "28",
                       trend: "+12%",
-                      color: "text-amber-400",
+                      color: "text-[#e0938b]",
                     },
                     {
                       icon: Stethoscope,
@@ -767,7 +767,7 @@ export const Landing: React.FC<{ onGoToLogin?: () => void }> = ({
                       Ingresos Semanales
                     </p>
                     <div className="flex gap-2">
-                      <div className="h-2 w-8 rounded-full bg-amber-500/30" />
+                      <div className="h-2 w-8 rounded-full bg-[#c2564a]/30" />
                       <div className="h-2 w-8 rounded-full bg-emerald-500/30" />
                     </div>
                   </div>
@@ -783,7 +783,7 @@ export const Landing: React.FC<{ onGoToLogin?: () => void }> = ({
                             duration: 0.5,
                             ease: "easeOut",
                           }}
-                          className="flex-1 rounded-md bg-gradient-to-t from-amber-500/80 to-yellow-400/80"
+                          className="flex-1 rounded-md bg-gradient-to-t from-[#8a2015]/80 to-[#c2564a]/80"
                         />
                       ),
                     )}
@@ -793,7 +793,7 @@ export const Landing: React.FC<{ onGoToLogin?: () => void }> = ({
             </div>
 
             {/* Decorative glow */}
-            <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-3/4 h-16 bg-yellow-400/20 blur-3xl rounded-full" />
+            <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-3/4 h-16 bg-brand/25 blur-3xl rounded-full" />
           </motion.div>
         </div>
 
@@ -820,7 +820,7 @@ export const Landing: React.FC<{ onGoToLogin?: () => void }> = ({
                 viewport={{ once: true }}
                 className="text-center"
               >
-                <p className="text-3xl md:text-5xl font-black bg-gradient-to-r from-yellow-500 to-amber-600 bg-clip-text text-transparent">
+                <p className="text-3xl md:text-5xl font-black bg-gradient-to-r from-brand-ink to-accent bg-clip-text text-transparent">
                   <AnimatedCounter end={s.value} suffix={s.suffix} />
                 </p>
                 <p className="mt-2 text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
@@ -842,14 +842,14 @@ export const Landing: React.FC<{ onGoToLogin?: () => void }> = ({
               viewport={{ once: true }}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-100 dark:bg-slate-800 mb-6"
             >
-              <BarChart3 size={14} className="text-yellow-500" />
+              <BarChart3 size={14} className="text-brand-ink" />
               <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
                 Módulos del Sistema
               </span>
             </motion.div>
             <h2 className="text-3xl md:text-5xl font-black tracking-tight">
               Todo lo que necesitas,{" "}
-              <span className="bg-gradient-to-r from-yellow-500 to-amber-600 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-brand-ink to-accent bg-clip-text text-transparent">
                 en un solo lugar
               </span>
             </h2>
@@ -868,7 +868,7 @@ export const Landing: React.FC<{ onGoToLogin?: () => void }> = ({
                 transition={{ delay: i * 0.08 }}
                 viewport={{ once: true }}
                 whileHover={{ y: -4, scale: 1.02 }}
-                className="group relative p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-yellow-400/50 dark:hover:border-yellow-500/30 shadow-sm hover:shadow-xl hover:shadow-yellow-500/5 transition-all duration-300"
+                className="group relative p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-brand/40 dark:hover:border-brand-ink/30 shadow-sm hover:shadow-xl hover:shadow-brand/5 transition-all duration-300"
               >
                 <div
                   className={`h-12 w-12 rounded-xl bg-gradient-to-br ${f.color} flex items-center justify-center shadow-lg mb-4`}
@@ -879,7 +879,7 @@ export const Landing: React.FC<{ onGoToLogin?: () => void }> = ({
                 <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
                   {f.desc}
                 </p>
-                <div className="mt-4 flex items-center gap-1 text-xs font-bold text-yellow-600 dark:text-yellow-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="mt-4 flex items-center gap-1 text-xs font-bold text-brand-ink opacity-0 group-hover:opacity-100 transition-opacity">
                   Conocer más <ChevronRight size={12} />
                 </div>
               </motion.div>
@@ -894,7 +894,7 @@ export const Landing: React.FC<{ onGoToLogin?: () => void }> = ({
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-3xl md:text-5xl font-black tracking-tight">
               Flujo de atención{" "}
-              <span className="bg-gradient-to-r from-yellow-500 to-amber-600 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-brand-ink to-accent bg-clip-text text-transparent">
                 completamente digital
               </span>
             </h2>
@@ -906,7 +906,7 @@ export const Landing: React.FC<{ onGoToLogin?: () => void }> = ({
 
           <div className="relative">
             {/* Connection line */}
-            <div className="hidden md:block absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-yellow-400/0 via-yellow-400/30 to-yellow-400/0 -translate-y-1/2" />
+            <div className="hidden md:block absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-brand-ink/0 via-brand-ink/30 to-brand-ink/0 -translate-y-1/2" />
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 md:gap-4">
               {[
@@ -939,12 +939,12 @@ export const Landing: React.FC<{ onGoToLogin?: () => void }> = ({
                   viewport={{ once: true }}
                   className="relative flex flex-col items-center text-center"
                 >
-                  <div className="relative z-10 h-16 w-16 rounded-2xl bg-white dark:bg-slate-800 border-2 border-yellow-400/50 shadow-lg shadow-yellow-500/10 flex items-center justify-center mb-4">
+                  <div className="relative z-10 h-16 w-16 rounded-2xl bg-white dark:bg-slate-800 border-2 border-brand-ink/50 shadow-lg shadow-brand/10 flex items-center justify-center mb-4">
                     <step.icon
                       size={28}
-                      className="text-yellow-600 dark:text-yellow-400"
+                      className="text-brand-ink"
                     />
-                    <div className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-yellow-400 text-slate-900 flex items-center justify-center text-xs font-black">
+                    <div className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-brand text-white flex items-center justify-center text-xs font-black">
                       {i + 1}
                     </div>
                   </div>
@@ -965,7 +965,7 @@ export const Landing: React.FC<{ onGoToLogin?: () => void }> = ({
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-3xl md:text-5xl font-black tracking-tight">
               Profesionales que{" "}
-              <span className="bg-gradient-to-r from-yellow-500 to-amber-600 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-brand-ink to-accent bg-clip-text text-transparent">
                 confían en nosotros
               </span>
             </h2>
@@ -981,12 +981,12 @@ export const Landing: React.FC<{ onGoToLogin?: () => void }> = ({
                 transition={{ duration: 0.4 }}
                 className="text-center"
               >
-                <Quote size={40} className="text-yellow-400/30 mx-auto mb-6" />
+                <Quote size={40} className="text-brand-ink/30 mx-auto mb-6" />
                 <p className="text-xl md:text-2xl font-medium text-slate-700 dark:text-slate-300 leading-relaxed italic">
                   "{testimonials[activeTestimonial].text}"
                 </p>
                 <div className="mt-8 flex items-center justify-center gap-4">
-                  <div className="h-14 w-14 rounded-full bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center text-white font-black text-lg shadow-lg">
+                  <div className="h-14 w-14 rounded-full bg-gradient-to-br from-brand to-brand-strong flex items-center justify-center text-white font-black text-lg shadow-lg">
                     {testimonials[activeTestimonial].avatar}
                   </div>
                   <div className="text-left">
@@ -1009,7 +1009,7 @@ export const Landing: React.FC<{ onGoToLogin?: () => void }> = ({
                   onClick={() => setActiveTestimonial(i)}
                   className={`h-2.5 rounded-full transition-all duration-300 ${
                     i === activeTestimonial
-                      ? "w-8 bg-yellow-500"
+                      ? "w-8 bg-brand-ink"
                       : "w-2.5 bg-slate-300 dark:bg-slate-700 hover:bg-slate-400"
                   }`}
                 />
@@ -1028,7 +1028,7 @@ export const Landing: React.FC<{ onGoToLogin?: () => void }> = ({
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-3xl md:text-5xl font-black tracking-tight">
               Planes que se adaptan a{" "}
-              <span className="bg-gradient-to-r from-yellow-500 to-amber-600 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-brand-ink to-accent bg-clip-text text-transparent">
                 tu clínica
               </span>
             </h2>
@@ -1048,12 +1048,12 @@ export const Landing: React.FC<{ onGoToLogin?: () => void }> = ({
                 whileHover={{ y: -4 }}
                 className={`relative rounded-2xl p-8 ${
                   plan.highlighted
-                    ? "bg-gradient-to-b from-slate-900 to-slate-950 text-white border-2 border-yellow-400/50 shadow-2xl shadow-yellow-500/10 scale-105"
+                    ? "bg-gradient-to-b from-slate-900 to-slate-950 text-white border-2 border-accent/50 shadow-2xl shadow-brand/10 scale-105"
                     : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm"
                 } transition-all`}
               >
                 {plan.highlighted && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-yellow-400 to-amber-500 text-slate-900 text-xs font-black uppercase tracking-wider rounded-full shadow-lg">
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-brand to-brand-strong text-white text-xs font-black uppercase tracking-wider rounded-full shadow-lg">
                     Más Popular
                   </div>
                 )}
@@ -1076,7 +1076,7 @@ export const Landing: React.FC<{ onGoToLogin?: () => void }> = ({
                       </span>
                     </div>
                   ) : (
-                    <span className="text-4xl font-black bg-gradient-to-r from-yellow-500 to-amber-600 bg-clip-text text-transparent">
+                    <span className="text-4xl font-black bg-gradient-to-r from-brand-ink to-accent bg-clip-text text-transparent">
                       Personalizado
                     </span>
                   )}
@@ -1087,7 +1087,7 @@ export const Landing: React.FC<{ onGoToLogin?: () => void }> = ({
                     <li key={fi} className="flex items-start gap-3">
                       <Check
                         size={16}
-                        className={`flex-shrink-0 mt-0.5 ${plan.highlighted ? "text-yellow-400" : "text-emerald-500"}`}
+                        className={`flex-shrink-0 mt-0.5 ${plan.highlighted ? "text-accent" : "text-emerald-500"}`}
                       />
                       <span
                         className={`text-sm ${plan.highlighted ? "text-slate-300" : "text-slate-600 dark:text-slate-400"}`}
@@ -1103,7 +1103,7 @@ export const Landing: React.FC<{ onGoToLogin?: () => void }> = ({
                   disabled={checkoutPlan === plan.name}
                   className={`w-full py-3.5 rounded-xl font-bold text-sm transition-all disabled:opacity-60 flex items-center justify-center gap-2 ${
                     plan.highlighted
-                      ? "bg-gradient-to-r from-yellow-400 to-amber-500 text-slate-900 shadow-lg shadow-yellow-500/25 hover:shadow-yellow-500/40 hover:scale-[1.02] active:scale-[0.98]"
+                      ? "bg-gradient-to-r from-brand to-brand-strong text-white shadow-lg shadow-brand/25 hover:shadow-brand/40 hover:scale-[1.02] active:scale-[0.98]"
                       : "bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white"
                   }`}
                 >
@@ -1130,7 +1130,7 @@ export const Landing: React.FC<{ onGoToLogin?: () => void }> = ({
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-black tracking-tight">
               Preguntas{" "}
-              <span className="bg-gradient-to-r from-yellow-500 to-amber-600 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-brand-ink to-accent bg-clip-text text-transparent">
                 frecuentes
               </span>
             </h2>
@@ -1148,8 +1148,8 @@ export const Landing: React.FC<{ onGoToLogin?: () => void }> = ({
       <Section className="py-20 md:py-32 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900" />
         <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-yellow-500/20 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-amber-500/20 rounded-full blur-3xl" />
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-brand/40 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#c2564a]/25 rounded-full blur-3xl" />
         </div>
         <FloatingParticles />
 
@@ -1159,13 +1159,13 @@ export const Landing: React.FC<{ onGoToLogin?: () => void }> = ({
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
           >
-            <div className="h-20 w-20 mx-auto mb-8 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-2xl flex items-center justify-center shadow-2xl shadow-yellow-500/30">
+            <div className="h-20 w-20 mx-auto mb-8 bg-gradient-to-br from-brand to-brand-strong rounded-2xl flex items-center justify-center shadow-2xl shadow-brand/30">
               <PawPrint size={40} className="text-white" />
             </div>
             <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight">
               ¿Listo para modernizar
               <br />
-              <span className="bg-gradient-to-r from-yellow-400 to-amber-500 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-[#e0938b] to-accent bg-clip-text text-transparent">
                 tu clínica veterinaria?
               </span>
             </h2>
@@ -1176,7 +1176,7 @@ export const Landing: React.FC<{ onGoToLogin?: () => void }> = ({
             <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
               <button
                 onClick={() => scrollTo("pricing")}
-                className="group px-10 py-4 bg-gradient-to-r from-yellow-400 to-amber-500 text-slate-900 font-bold rounded-2xl shadow-xl shadow-yellow-500/25 hover:shadow-2xl hover:shadow-yellow-500/40 hover:scale-105 active:scale-95 transition-all text-lg flex items-center gap-2"
+                className="group px-10 py-4 bg-gradient-to-r from-brand to-brand-strong text-white font-bold rounded-2xl shadow-xl shadow-brand/25 hover:shadow-2xl hover:shadow-brand/40 hover:scale-105 active:scale-95 transition-all text-lg flex items-center gap-2"
               >
                 Empezar Gratis
                 <Sparkles
@@ -1186,7 +1186,7 @@ export const Landing: React.FC<{ onGoToLogin?: () => void }> = ({
               </button>
               <button
                 onClick={() => scrollTo("contact")}
-                className="px-10 py-4 border-2 border-slate-700 text-white rounded-2xl font-bold text-lg hover:border-yellow-500/50 hover:bg-white/5 transition-all"
+                className="px-10 py-4 border-2 border-slate-700 text-white rounded-2xl font-bold text-lg hover:border-accent/50 hover:bg-white/5 transition-all"
               >
                 Hablar con Ventas
               </button>
@@ -1255,17 +1255,17 @@ export const Landing: React.FC<{ onGoToLogin?: () => void }> = ({
                       viewport={{ once: true }}
                       className="flex items-center gap-4 group"
                     >
-                      <div className="h-12 w-12 rounded-xl bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center flex-shrink-0 group-hover:bg-yellow-200 dark:group-hover:bg-yellow-900/50 transition-colors">
+                      <div className="h-12 w-12 rounded-xl bg-brand-soft dark:bg-brand/20 flex items-center justify-center flex-shrink-0 group-hover:bg-[#e8cfc9] dark:group-hover:bg-brand/30 transition-colors">
                         <info.icon
                           size={20}
-                          className="text-yellow-600 dark:text-yellow-400"
+                          className="text-brand-ink"
                         />
                       </div>
                       <div className="min-w-0">
                         <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                           {info.label}
                         </p>
-                        <p className="text-base font-semibold break-words group-hover:text-yellow-600 dark:group-hover:text-yellow-400 transition-colors">
+                        <p className="text-base font-semibold break-words group-hover:text-brand-ink transition-colors">
                           {info.value}
                         </p>
                       </div>
@@ -1314,7 +1314,7 @@ export const Landing: React.FC<{ onGoToLogin?: () => void }> = ({
                       value={contacto.nombre}
                       onChange={(e) => setC("nombre", e.target.value)}
                       placeholder="Tu nombre"
-                      className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-shadow"
+                      className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-shadow"
                     />
                   </div>
                   <div>
@@ -1326,7 +1326,7 @@ export const Landing: React.FC<{ onGoToLogin?: () => void }> = ({
                       value={contacto.apellido}
                       onChange={(e) => setC("apellido", e.target.value)}
                       placeholder="Tu apellido"
-                      className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-shadow"
+                      className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-shadow"
                     />
                   </div>
                 </div>
@@ -1339,7 +1339,7 @@ export const Landing: React.FC<{ onGoToLogin?: () => void }> = ({
                     value={contacto.email}
                     onChange={(e) => setC("email", e.target.value)}
                     placeholder="correo@clinica.com"
-                    className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-shadow"
+                    className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-shadow"
                   />
                 </div>
                 <div>
@@ -1351,7 +1351,7 @@ export const Landing: React.FC<{ onGoToLogin?: () => void }> = ({
                     value={contacto.empresa}
                     onChange={(e) => setC("empresa", e.target.value)}
                     placeholder="Ej: Clínica Veterinaria San Martín"
-                    className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-shadow"
+                    className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-shadow"
                   />
                 </div>
                 <div>
@@ -1363,7 +1363,7 @@ export const Landing: React.FC<{ onGoToLogin?: () => void }> = ({
                     value={contacto.mensaje}
                     onChange={(e) => setC("mensaje", e.target.value)}
                     placeholder="Cuéntanos sobre tu clínica y lo que necesitas..."
-                    className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-shadow resize-none"
+                    className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-shadow resize-none"
                   />
                 </div>
                 {contactoError && (
@@ -1374,7 +1374,7 @@ export const Landing: React.FC<{ onGoToLogin?: () => void }> = ({
                 <button
                   type="submit"
                   disabled={contactoEnviando}
-                  className="w-full py-4 bg-gradient-to-r from-yellow-400 to-amber-500 text-slate-900 font-bold rounded-xl shadow-lg shadow-yellow-500/25 hover:shadow-yellow-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+                  className="w-full py-4 bg-gradient-to-r from-brand to-brand-strong text-white font-bold rounded-xl shadow-lg shadow-brand/25 hover:shadow-brand/40 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-60"
                 >
                   {contactoEnviando ? (
                     <>
@@ -1401,7 +1401,7 @@ export const Landing: React.FC<{ onGoToLogin?: () => void }> = ({
             {/* Brand */}
             <div className="col-span-2 md:col-span-1">
               <div className="flex items-center gap-3 mb-4">
-                <div className="h-10 w-10 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-xl flex items-center justify-center">
+                <div className="h-10 w-10 bg-gradient-to-br from-brand to-brand-strong rounded-xl flex items-center justify-center">
                   <PawPrint size={22} className="text-white" />
                 </div>
                 <span className="text-xl font-black tracking-tighter">
