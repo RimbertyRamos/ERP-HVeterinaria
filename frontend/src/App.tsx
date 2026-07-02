@@ -120,9 +120,9 @@ const NotificationsPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       initial={{ opacity: 0, y: -8, scale: 0.96 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -8, scale: 0.96 }}
-      className="absolute right-0 top-full mt-2 w-80 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 z-50 overflow-hidden"
+      className="absolute right-0 top-full mt-2 w-80 bg-surface rounded-card shadow-2xl border border-line z-50 overflow-hidden"
     >
-      <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+      <div className="p-4 border-b border-line flex items-center justify-between">
         <h3 className="font-black text-sm uppercase tracking-widest">
           Alertas del Sistema
         </h3>
@@ -134,7 +134,7 @@ const NotificationsPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       </div>
 
       {loading ? (
-        <div className="p-8 text-center text-slate-400 text-sm">
+        <div className="p-8 text-center text-muted text-sm">
           Cargando alertas...
         </div>
       ) : total === 0 ? (
@@ -143,28 +143,28 @@ const NotificationsPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           <p className="text-sm font-bold">Todo en orden</p>
         </div>
       ) : (
-        <div className="max-h-80 overflow-y-auto divide-y divide-slate-50 dark:divide-slate-800">
+        <div className="max-h-80 overflow-y-auto divide-y divide-line/30">
           {notis.map((n) => (
             <button
               key={n.id}
               onClick={() => marcarLeida(n.id)}
               title={n.leida ? "Leída" : "Marcar como leída"}
-              className={`w-full text-left p-4 flex items-start gap-3 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800 ${
+              className={`w-full text-left p-4 flex items-start gap-3 transition-colors hover:bg-surface-2/50 ${
                 n.leida ? "opacity-50" : ""
               }`}
             >
               <Icons.Bell
                 size={16}
                 className={`mt-0.5 flex-shrink-0 ${
-                  n.leida ? "text-slate-400" : "text-primary"
+                  n.leida ? "text-muted" : "text-brand-ink"
                 }`}
               />
               <div className="min-w-0">
                 <p className="text-sm font-bold truncate">{n.titulo}</p>
-                <p className="text-xs text-slate-500">{n.mensaje}</p>
+                <p className="text-xs text-muted">{n.mensaje}</p>
               </div>
               {!n.leida && (
-                <span className="ml-auto mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-primary" />
+                <span className="ml-auto mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-brand" />
               )}
             </button>
           ))}
@@ -175,7 +175,7 @@ const NotificationsPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             return (
               <div
                 key={f.id}
-                className="p-4 flex items-start gap-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                className="p-4 flex items-start gap-3 hover:bg-surface-2/50 transition-colors"
               >
                 <Icons.Clock
                   size={16}
@@ -185,7 +185,7 @@ const NotificationsPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                   <p className="text-sm font-bold truncate">
                     {f.mascota.nombre} · {f.cod_ficha}
                   </p>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-muted">
                     {min} min esperando · {f.servicio.nombre}
                   </p>
                 </div>
@@ -195,7 +195,7 @@ const NotificationsPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
           {stockBajo.map((p) => (
             <div
               key={p.id}
-              className="p-4 flex items-start gap-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+              className="p-4 flex items-start gap-3 hover:bg-surface-2/50 transition-colors"
             >
               <Icons.AlertTriangle
                 size={16}
@@ -203,7 +203,7 @@ const NotificationsPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
               />
               <div className="min-w-0">
                 <p className="text-sm font-bold truncate">{p.nombre}</p>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-muted">
                   Stock: {p.stock_actual} / Mínimo: {p.stock_minimo}
                 </p>
               </div>
@@ -239,7 +239,7 @@ const KioskManager: React.FC = () => {
   return (
     <div className="flex h-screen w-full items-center justify-center bg-slate-950 p-6 text-white font-sans">
       <div className="w-full max-w-md space-y-8 text-center">
-        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-primary text-slate-900 shadow-[0_0_40px_rgba(163,230,53,0.3)]">
+        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-brand text-white shadow-[0_0_40px_rgba(112,20,12,0.3)]">
           <Icons.Patients size={48} />
         </div>
         <div>
@@ -258,7 +258,7 @@ const KioskManager: React.FC = () => {
               placeholder="Contraseña del sistema"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className={`w-full rounded-xl bg-white/5 border-2 ${error ? "border-red-500" : "border-white/10"} p-4 text-center text-xl font-bold tracking-widest outline-none transition-all focus:border-primary/50`}
+              className={`w-full rounded-xl bg-white/5 border-2 ${error ? "border-red-500" : "border-white/10"} p-4 text-center text-xl font-bold tracking-widest outline-none transition-all focus:border-brand/50`}
               autoFocus
             />
             {error && (
@@ -269,7 +269,7 @@ const KioskManager: React.FC = () => {
           </div>
           <button
             type="submit"
-            className="w-full rounded-xl bg-primary p-4 text-sm font-black uppercase tracking-[0.2em] text-slate-900 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-primary/20"
+            className="w-full rounded-xl bg-brand p-4 text-sm font-black uppercase tracking-[0.2em] text-white transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-brand/20"
           >
             Activar Visualización
           </button>
@@ -453,7 +453,7 @@ const App: React.FC = () => {
       }
       case "settings":
         return (
-          <div className="flex h-full items-center justify-center text-slate-500">
+          <div className="flex h-full items-center justify-center text-muted">
             <div className="text-center space-y-4">
               <Icons.Agenda size={64} className="mx-auto opacity-20" />
               <h2 className="text-xl font-bold">Módulo de Agenda</h2>
@@ -497,7 +497,7 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
+    <div className="flex h-screen w-full overflow-hidden bg-bg transition-colors duration-300">
       <Toaster
         position="top-right"
         richColors
@@ -512,21 +512,21 @@ const App: React.FC = () => {
       />
 
       <main className="flex flex-1 flex-col overflow-hidden">
-        <header className="flex h-16 items-center justify-between border-b border-slate-200 bg-white px-4 lg:px-8 dark:border-slate-800 dark:bg-slate-900 transition-colors duration-300">
+        <header className="flex h-16 items-center justify-between border-b border-line bg-surface px-4 lg:px-8 transition-colors duration-300">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setMobileMenuOpen(true)}
               title="Abrir menú"
-              className="flex lg:hidden h-10 w-10 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              className="flex lg:hidden h-10 w-10 items-center justify-center rounded-lg text-muted hover:bg-surface-2 transition-colors"
             >
               <Icons.Menu size={22} />
             </button>
-            <div className="hidden md:flex items-center gap-2 rounded-lg bg-slate-100 px-3 py-1.5 dark:bg-slate-800">
-              <Icons.Search size={18} className="text-slate-400" />
+            <div className="hidden md:flex items-center gap-2 rounded-lg bg-surface-2 px-3 py-1.5">
+              <Icons.Search size={18} className="text-muted" />
               <input
                 type="text"
                 placeholder="Buscar en el sistema..."
-                className="bg-transparent text-sm outline-none text-slate-900 dark:text-slate-100 w-40 lg:w-64"
+                className="bg-transparent text-sm outline-none text-ink w-40 lg:w-64"
               />
             </div>
           </div>
@@ -534,14 +534,14 @@ const App: React.FC = () => {
           <div className="flex items-center gap-4">
             <button
               onClick={toggleDarkMode}
-              className="flex h-10 w-10 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              className="flex h-10 w-10 items-center justify-center rounded-full text-muted hover:bg-surface-2 transition-colors"
             >
               {isDarkMode ? <Icons.Sun size={20} /> : <Icons.Moon size={20} />}
             </button>
             <div className="relative">
               <button
                 onClick={() => setShowNotifications((v) => !v)}
-                className="relative flex h-10 w-10 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                className="relative flex h-10 w-10 items-center justify-center rounded-full text-muted hover:bg-surface-2 transition-colors"
               >
                 <Icons.Bell size={20} />
                 {notifCount > 0 && (
@@ -558,21 +558,21 @@ const App: React.FC = () => {
                 )}
               </AnimatePresence>
             </div>
-            <div className="hidden sm:block h-8 w-px bg-slate-200 dark:bg-slate-800"></div>
+            <div className="hidden sm:block h-8 w-px bg-line"></div>
             <div className="flex items-center gap-3 pl-0 sm:pl-2">
               <div className="hidden sm:flex flex-col items-end">
-                <p className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                <p className="text-sm font-bold text-ink">
                   {JSON.parse(localStorage.getItem("user") || "{}").nombre ??
                     "Usuario"}
                 </p>
-                <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">
+                <p className="text-[10px] uppercase tracking-wider text-muted font-bold">
                   Sistema
                 </p>
               </div>
               <button
                 onClick={handleLogout}
                 title="Cerrar sesión"
-                className="flex h-10 w-10 items-center justify-center rounded-full text-slate-500 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20 transition-colors"
+                className="flex h-10 w-10 items-center justify-center rounded-full text-muted hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20 transition-colors"
               >
                 <Icons.ArrowRight size={18} className="rotate-180" />
               </button>

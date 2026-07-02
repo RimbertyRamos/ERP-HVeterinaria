@@ -32,11 +32,6 @@ const diaLabel = (isoDay: string) =>
     month: "short",
   });
 
-/**
- * Programación horaria: asignación de doctor a consultorio por franjas. Vista solo
- * admin (permiso "gestionar_horarios"). El backend rechaza solapamientos (409:
- * misma sala o mismo doctor a la vez).
- */
 export const Horarios: React.FC = () => {
   const [salas, setSalas] = useState<SalaOpt[]>([]);
   const [doctores, setDoctores] = useState<DocOpt[]>([]);
@@ -102,7 +97,6 @@ export const Horarios: React.FC = () => {
       setForm((f) => ({ ...f, horaInicio: "", horaFin: "", nota: "" }));
       cargar();
     } catch (e: any) {
-      // 409 → solapamiento (mensaje del backend con la causa)
       toast.error(e.message ?? "No se pudo asignar la franja");
     } finally {
       setSaving(false);
@@ -125,7 +119,6 @@ export const Horarios: React.FC = () => {
     }
   };
 
-  // Agrupa por día (fecha del inicio).
   const porDia = horarios.reduce<Record<string, Horario[]>>((acc, h) => {
     const dia = new Date(h.inicio).toISOString().slice(0, 10);
     (acc[dia] ??= []).push(h);
@@ -134,25 +127,24 @@ export const Horarios: React.FC = () => {
   const dias = Object.keys(porDia).sort();
 
   const inputCls =
-    "h-10 px-3 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-primary transition-colors";
+    "h-10 px-3 rounded-lg bg-bg border border-line text-sm text-ink outline-none focus:border-brand transition-colors";
 
   return (
     <div className="p-4 lg:p-8 space-y-6">
       <div>
-        <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100">
+        <h1 className="text-2xl font-black text-ink">
           Programación de consultorios
         </h1>
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-muted">
           Asigna doctores a consultorios por franjas horarias
         </p>
       </div>
 
-      {/* Alta de franja */}
       <form
         onSubmit={crear}
-        className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 items-end bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800"
+        className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 items-end bg-surface p-4 rounded-card border border-line"
       >
-        <label className="flex flex-col gap-1 text-xs font-bold text-slate-500">
+        <label className="flex flex-col gap-1 text-xs font-bold text-muted">
           Consultorio
           <select
             value={form.consultorio_id}
@@ -167,7 +159,7 @@ export const Horarios: React.FC = () => {
             ))}
           </select>
         </label>
-        <label className="flex flex-col gap-1 text-xs font-bold text-slate-500">
+        <label className="flex flex-col gap-1 text-xs font-bold text-muted">
           Doctor
           <select
             value={form.doctor_id}
@@ -182,7 +174,7 @@ export const Horarios: React.FC = () => {
             ))}
           </select>
         </label>
-        <label className="flex flex-col gap-1 text-xs font-bold text-slate-500">
+        <label className="flex flex-col gap-1 text-xs font-bold text-muted">
           Fecha
           <input
             type="date"
@@ -191,7 +183,7 @@ export const Horarios: React.FC = () => {
             className={inputCls}
           />
         </label>
-        <label className="flex flex-col gap-1 text-xs font-bold text-slate-500">
+        <label className="flex flex-col gap-1 text-xs font-bold text-muted">
           Desde
           <input
             type="time"
@@ -200,7 +192,7 @@ export const Horarios: React.FC = () => {
             className={inputCls}
           />
         </label>
-        <label className="flex flex-col gap-1 text-xs font-bold text-slate-500">
+        <label className="flex flex-col gap-1 text-xs font-bold text-muted">
           Hasta
           <input
             type="time"
@@ -212,11 +204,11 @@ export const Horarios: React.FC = () => {
         <button
           type="submit"
           disabled={saving}
-          className="h-10 px-4 rounded-lg bg-primary text-sm font-black text-slate-900 hover:opacity-90 disabled:opacity-50 transition-opacity"
+          className="h-10 px-4 rounded-lg bg-brand text-sm font-black text-white hover:bg-brand-strong disabled:opacity-50 transition-colors"
         >
           {saving ? "Guardando…" : "Asignar"}
         </button>
-        <label className="flex flex-col gap-1 text-xs font-bold text-slate-500 col-span-2 md:col-span-3 xl:col-span-6">
+        <label className="flex flex-col gap-1 text-xs font-bold text-muted col-span-2 md:col-span-3 xl:col-span-6">
           Nota (opcional)
           <input
             type="text"
@@ -228,18 +220,15 @@ export const Horarios: React.FC = () => {
         </label>
       </form>
 
-      {/* Programación por día */}
       {loading ? (
-        <p className="py-8 text-center text-slate-400">Cargando…</p>
+        <p className="py-8 text-center text-muted">Cargando…</p>
       ) : dias.length === 0 ? (
-        <p className="py-8 text-center text-slate-400">
-          Sin franjas programadas.
-        </p>
+        <p className="py-8 text-center text-muted">Sin franjas programadas.</p>
       ) : (
         <div className="space-y-5">
           {dias.map((dia) => (
             <section key={dia}>
-              <h2 className="text-sm font-black uppercase tracking-widest text-slate-500 mb-2 capitalize">
+              <h2 className="text-sm font-black uppercase tracking-widest text-muted mb-2 capitalize">
                 {diaLabel(dia)}
               </h2>
               <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-3">
@@ -252,24 +241,24 @@ export const Horarios: React.FC = () => {
                   .map((h) => (
                     <div
                       key={h.id}
-                      className="flex items-start justify-between rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3"
+                      className="flex items-start justify-between rounded-card border border-line bg-surface p-3"
                     >
                       <div>
-                        <p className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                        <p className="text-sm font-bold text-ink">
                           {hhmm(h.inicio)} – {hhmm(h.fin)}
                         </p>
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-muted">
                           {h.consultorio.nombre} · {h.doctor.nombre}
                         </p>
                         {h.nota && (
-                          <p className="text-xs text-slate-400 italic mt-0.5">
+                          <p className="text-xs text-muted/70 italic mt-0.5">
                             {h.nota}
                           </p>
                         )}
                       </div>
                       <button
                         onClick={() => eliminar(h)}
-                        className="p-1.5 text-slate-400 hover:text-red-500 transition-colors"
+                        className="p-1.5 text-muted hover:text-red-500 transition-colors"
                         title="Eliminar franja"
                       >
                         <Icons.Trash2 size={16} />

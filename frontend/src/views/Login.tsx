@@ -45,17 +45,21 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
   };
 
   return (
-    <div className="flex h-screen w-full items-center justify-center bg-slate-50 dark:bg-slate-950 px-4">
-      <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-xl overflow-hidden border border-slate-100 dark:border-slate-800">
-        <div className="bg-primary/10 p-8 flex flex-col items-center justify-center">
-          <div className="h-16 w-16 bg-primary rounded-full flex items-center justify-center text-primary-foreground shadow-lg mb-4 text-white">
-            <Icons.Patients size={32} />
+    <div className="flex h-screen w-full items-center justify-center bg-bg px-4">
+      <div className="w-full max-w-md bg-surface rounded-card shadow-xl overflow-hidden border border-line">
+        <div className="bg-brand p-8 flex flex-col items-center justify-center">
+          <div className="h-16 w-16 overflow-hidden rounded-full bg-white ring-2 ring-white/40 shadow-lg mb-4 flex items-center justify-center">
+            <img
+              src="/logo-hev.png"
+              alt="Hospital Escuela de Veterinaria — UAGRM"
+              className="h-full w-full object-contain"
+            />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-            VET-ERP Login
+          <h1 className="font-display text-2xl font-extrabold tracking-tight text-white">
+            VET-ERP
           </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Sistema Veterinario Integral
+          <p className="text-[11px] font-medium uppercase tracking-widest text-white/55 mt-1">
+            Hospital Veterinario · UAGRM
           </p>
         </div>
 
@@ -68,19 +72,18 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
             )}
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+              <label className="text-sm font-medium text-ink">
                 Correo Electrónico
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                  <Icons.Search size={18} />{" "}
-                  {/* Using Search temporarily if User icon is missing in Icons */}
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted">
+                  <Icons.Search size={18} />
                 </div>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border-none rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary outline-none transition-shadow"
+                  className="w-full pl-10 pr-4 py-2 bg-bg border border-line rounded-lg text-ink focus:ring-2 focus:ring-brand outline-none transition-shadow"
                   placeholder="admin@vetcare.com"
                   required
                 />
@@ -89,22 +92,22 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
             <div className="space-y-2">
               <div className="flex justify-between">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                <label className="text-sm font-medium text-ink">
                   Contraseña
                 </label>
-                <a href="#" className="text-xs text-primary hover:underline">
+                <a href="#" className="text-xs text-brand-ink hover:underline">
                   ¿Olvidaste tu contraseña?
                 </a>
               </div>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted">
                   <Icons.Clinical size={18} />
                 </div>
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border-none rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary outline-none transition-shadow"
+                  className="w-full pl-10 pr-4 py-2 bg-bg border border-line rounded-lg text-ink focus:ring-2 focus:ring-brand outline-none transition-shadow"
                   placeholder="••••••••"
                   required
                 />
@@ -114,10 +117,10 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-primary hover:bg-primary-dark text-slate-900 font-bold py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full bg-brand hover:bg-brand-strong text-white font-bold py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {isLoading ? (
-                <div className="w-5 h-5 border-2 border-slate-900 border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               ) : (
                 "Iniciar Sesión"
               )}

@@ -2,12 +2,6 @@ import React, { useState } from "react";
 import { toast } from "sonner";
 import { api } from "../utils/api";
 
-/**
- * Pantalla BLOQUEANTE que se muestra tras el login cuando el usuario tiene
- * `debe_cambiar_password = true` (contraseña temporal). No se puede cerrar ni
- * usar el sistema hasta cambiarla. Reutiliza el endpoint /perfil/password
- * (api.changePassword) y la misma política de seguridad (8+, mayús/minús/número).
- */
 export const ForcePasswordChange: React.FC<{ onDone: () => void }> = ({
   onDone,
 }) => {
@@ -32,7 +26,6 @@ export const ForcePasswordChange: React.FC<{ onDone: () => void }> = ({
     setSaving(true);
     try {
       await api.changePassword(actual, nueva);
-      // Refleja el cambio en el usuario almacenado para no volver a pedirlo.
       try {
         const u = JSON.parse(localStorage.getItem("user") || "{}");
         u.debe_cambiar_password = false;
@@ -50,22 +43,20 @@ export const ForcePasswordChange: React.FC<{ onDone: () => void }> = ({
   };
 
   const inputCls =
-    "w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary outline-none text-slate-900 dark:text-white";
+    "w-full bg-bg border border-line rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-brand outline-none text-ink";
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-950 p-4">
-      <div className="w-full max-w-md rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-2xl">
-        <h2 className="text-lg font-black text-slate-900 dark:text-slate-100">
-          Cambia tu contraseña
-        </h2>
-        <p className="mt-1 mb-4 text-sm text-slate-500">
+      <div className="w-full max-w-md rounded-card border border-line bg-surface p-6 shadow-2xl">
+        <h2 className="text-lg font-black text-ink">Cambia tu contraseña</h2>
+        <p className="mt-1 mb-4 text-sm text-muted">
           Por seguridad, debes reemplazar la contraseña temporal antes de
           continuar.
         </p>
 
         <form onSubmit={submit} autoComplete="off" className="space-y-3">
           <div>
-            <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">
+            <label className="mb-1 block text-xs font-medium text-muted">
               Contraseña actual (temporal)
             </label>
             <input
@@ -77,7 +68,7 @@ export const ForcePasswordChange: React.FC<{ onDone: () => void }> = ({
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">
+            <label className="mb-1 block text-xs font-medium text-muted">
               Nueva contraseña
             </label>
             <input
@@ -89,7 +80,7 @@ export const ForcePasswordChange: React.FC<{ onDone: () => void }> = ({
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">
+            <label className="mb-1 block text-xs font-medium text-muted">
               Repetir nueva contraseña
             </label>
             <input
@@ -108,7 +99,7 @@ export const ForcePasswordChange: React.FC<{ onDone: () => void }> = ({
                 className={
                   r.ok
                     ? "text-emerald-600 dark:text-emerald-400"
-                    : "text-slate-400"
+                    : "text-muted"
                 }
               >
                 {r.ok ? "✓" : "○"} {r.label}
@@ -118,7 +109,7 @@ export const ForcePasswordChange: React.FC<{ onDone: () => void }> = ({
               className={
                 coinciden
                   ? "text-emerald-600 dark:text-emerald-400"
-                  : "text-slate-400"
+                  : "text-muted"
               }
             >
               {coinciden ? "✓" : "○"} Las contraseñas coinciden
@@ -128,7 +119,7 @@ export const ForcePasswordChange: React.FC<{ onDone: () => void }> = ({
           <button
             type="submit"
             disabled={!puedeEnviar}
-            className="mt-2 w-full rounded-lg bg-primary px-4 py-2 text-sm font-bold text-slate-900 disabled:opacity-50"
+            className="mt-2 w-full rounded-lg bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-strong disabled:opacity-50 transition-colors"
           >
             {saving ? "Guardando…" : "Guardar y continuar"}
           </button>

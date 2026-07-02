@@ -212,7 +212,7 @@ export const Dashboard: React.FC = () => {
             {[...Array(3)].map((_, i) => (
               <div
                 key={i}
-                className="h-24 bg-slate-100 dark:bg-slate-700 rounded-lg animate-pulse"
+                className="h-24 bg-surface-2 rounded-lg animate-pulse"
               />
             ))}
           </div>
@@ -221,7 +221,7 @@ export const Dashboard: React.FC = () => {
             {misMascotas.map((mascota) => (
               <div
                 key={mascota.id}
-                className="rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800 p-4 hover:shadow-md transition-shadow"
+                className="rounded-lg border border-line bg-surface p-4 transition-shadow"
               >
                 <div className="flex items-start justify-between mb-3">
                   <div>
@@ -229,7 +229,7 @@ export const Dashboard: React.FC = () => {
                       <span className="text-2xl">
                         {speciesEmojis[mascota.especie?.nombre] || "🐾"}
                       </span>
-                      <h4 className="font-bold text-slate-900 dark:text-slate-100">
+                      <h4 className="font-bold text-ink">
                         {mascota.nombre}
                       </h4>
                     </div>
@@ -297,7 +297,7 @@ export const Dashboard: React.FC = () => {
               {[...Array(4)].map((_, i) => (
                 <div
                   key={i}
-                  className="h-20 bg-slate-100 dark:bg-slate-700 rounded-lg animate-pulse"
+                  className="h-20 bg-surface-2 rounded-lg animate-pulse"
                 />
               ))}
             </div>
@@ -306,7 +306,7 @@ export const Dashboard: React.FC = () => {
               {todasLasFichas.map((ficha) => (
                 <div
                   key={ficha.id}
-                  className="rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800 p-4 hover:shadow-md transition-shadow"
+                  className="rounded-lg border border-line bg-surface p-4 transition-shadow"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
@@ -314,7 +314,7 @@ export const Dashboard: React.FC = () => {
                         <span className="text-lg">
                           {speciesEmojis[ficha.mascotaEspecie] || "🐾"}
                         </span>
-                        <h4 className="font-bold text-slate-900 dark:text-slate-100">
+                        <h4 className="font-bold text-ink">
                           {ficha.mascotaNombre}
                         </h4>
                         <span
@@ -463,7 +463,7 @@ export const Dashboard: React.FC = () => {
                 {[...Array(3)].map((_, i) => (
                   <div
                     key={i}
-                    className="h-16 bg-slate-100 dark:bg-slate-700 rounded-lg animate-pulse"
+                    className="h-16 bg-surface-2 rounded-lg animate-pulse"
                   />
                 ))}
               </div>
@@ -471,10 +471,10 @@ export const Dashboard: React.FC = () => {
               todosLosRecibos.map((recibo: any) => (
                 <div
                   key={recibo.id}
-                  className="rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800 p-4 flex items-center justify-between hover:shadow-md transition-shadow"
+                  className="rounded-lg border border-line bg-surface p-4 flex items-center justify-between transition-shadow"
                 >
                   <div className="flex-1">
-                    <h4 className="font-bold text-slate-900 dark:text-slate-100">
+                    <h4 className="font-bold text-ink">
                       Recibo #{recibo.num_recibo}
                     </h4>
                     <p className="text-sm text-slate-500">
@@ -486,7 +486,7 @@ export const Dashboard: React.FC = () => {
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-slate-900 dark:text-slate-100">
+                    <p className="font-bold text-ink">
                       Bs.{Number(recibo.total).toFixed(2)}
                     </p>
                     <span
@@ -527,16 +527,16 @@ export const Dashboard: React.FC = () => {
       >
         <header className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+            <h2 className="font-display text-2xl font-bold tracking-tight text-ink">
               {nombre ? `Bienvenido, ${nombre}` : "Bienvenido"}
             </h2>
-            <p className="text-slate-500 dark:text-slate-400">
+            <p className="text-muted">
               Portal del Propietario
             </p>
           </div>
         </header>
 
-        <div className="flex gap-2 border-b border-slate-200 dark:border-slate-700">
+        <div className="flex gap-2 border-b border-line">
           {(["mascotas", "historial", "pagos"] as ClienteTab[]).map((tab) => (
             <button
               key={tab}
@@ -544,8 +544,8 @@ export const Dashboard: React.FC = () => {
               className={cn(
                 "px-4 py-2 font-medium text-sm transition-all border-b-2",
                 clienteTab === tab
-                  ? "border-primary text-primary"
-                  : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300",
+                  ? "border-brand text-brand-ink"
+                  : "border-transparent text-muted hover:text-ink",
               )}
             >
               {tab === "mascotas" && "🐾 Mis Mascotas"}
@@ -582,10 +582,10 @@ export const Dashboard: React.FC = () => {
       >
         <header className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+            <h2 className="font-display text-2xl font-bold tracking-tight text-ink">
               {nombre ? `Bienvenido, ${nombre}` : "Bienvenido"}
             </h2>
-            <p className="text-slate-500 dark:text-slate-400">{roleDisplay}</p>
+            <p className="text-muted">{roleDisplay}</p>
           </div>
         </header>
 
@@ -594,7 +594,7 @@ export const Dashboard: React.FC = () => {
             {[...Array(3)].map((_, i) => (
               <div
                 key={i}
-                className="h-28 rounded-xl border border-slate-200 bg-slate-100 dark:border-slate-700 dark:bg-slate-800 animate-pulse"
+                className="h-28 rounded-card border border-line bg-surface-2 animate-pulse"
               />
             ))}
           </div>
@@ -603,7 +603,7 @@ export const Dashboard: React.FC = () => {
             {stats.slice(0, 3).map((stat, i) => (
               <div
                 key={i}
-                className="flex flex-col rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800"
+                className="flex flex-col rounded-card border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800"
               >
                 <div className="flex items-center justify-between mb-4">
                   <p className="text-sm font-medium text-slate-500">
@@ -613,17 +613,17 @@ export const Dashboard: React.FC = () => {
                     className={cn(
                       "flex h-8 w-8 items-center justify-center rounded-full",
                       stat.color === "purple" &&
-                        "bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400",
+                        "bg-surface-2 text-brand-ink",
                       stat.color === "amber" &&
-                        "bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400",
+                        "bg-surface-2 text-brand-ink",
                       stat.color === "blue" &&
-                        "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400",
+                        "bg-surface-2 text-brand-ink",
                     )}
                   >
                     <stat.icon size={18} />
                   </span>
                 </div>
-                <h3 className="text-3xl font-bold text-slate-900 dark:text-slate-100">
+                <h3 className="text-3xl font-bold text-ink tnum">
                   {stat.value}
                 </h3>
               </div>
@@ -632,31 +632,31 @@ export const Dashboard: React.FC = () => {
         )}
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          <div className="rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800 p-6 space-y-3">
+          <div className="rounded-card border border-line bg-surface p-6 space-y-3">
             <div className="flex items-center gap-3">
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-2 text-brand-ink">
                 <Icons.Bell size={20} />
               </span>
-              <h4 className="font-bold text-slate-900 dark:text-slate-100">
+              <h4 className="font-bold text-ink">
                 Acceso Rápido
               </h4>
             </div>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
+            <p className="text-sm text-muted">
               Accede a tu módulo desde el menú lateral para continuar con tus
               tareas.
             </p>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800 p-6 space-y-3">
+          <div className="rounded-card border border-line bg-surface p-6 space-y-3">
             <div className="flex items-center gap-3">
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-2 text-brand-ink">
                 <Icons.CheckCircle2 size={20} />
               </span>
-              <h4 className="font-bold text-slate-900 dark:text-slate-100">
+              <h4 className="font-bold text-ink">
                 Estado del Sistema
               </h4>
             </div>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
+            <p className="text-sm text-muted">
               Todo está funcionando correctamente.
             </p>
           </div>
@@ -674,10 +674,10 @@ export const Dashboard: React.FC = () => {
     >
       <header className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+          <h2 className="font-display text-2xl font-bold tracking-tight text-ink">
             Dashboard Administrativo
           </h2>
-          <p className="text-slate-500 dark:text-slate-400">
+          <p className="text-muted">
             Resumen operacional de la clínica
           </p>
         </div>
@@ -686,14 +686,14 @@ export const Dashboard: React.FC = () => {
             <button
               onClick={() => exportarFinanzas("csv")}
               disabled={descargandoFin}
-              className="h-9 px-3 rounded-lg bg-slate-200 dark:bg-slate-700 text-xs font-bold text-slate-800 dark:text-slate-100 hover:opacity-90 disabled:opacity-50 transition-opacity"
+              className="h-9 px-3 rounded-lg bg-surface-2 border border-line text-xs font-bold text-ink hover:bg-line disabled:opacity-50 transition-colors"
             >
               Exportar CSV
             </button>
             <button
               onClick={() => exportarFinanzas("pdf")}
               disabled={descargandoFin}
-              className="h-9 px-3 rounded-lg bg-primary text-xs font-bold text-slate-900 hover:opacity-90 disabled:opacity-50 transition-opacity"
+              className="h-9 px-3 rounded-lg bg-brand text-xs font-bold text-white hover:bg-brand-strong disabled:opacity-50 transition-colors"
             >
               Exportar PDF
             </button>
@@ -702,7 +702,7 @@ export const Dashboard: React.FC = () => {
             <Icons.Agenda size={18} />
             <span>
               Consultorios:{" "}
-              <strong className="text-slate-900 dark:text-slate-100">
+              <strong className="text-ink">
                 {kpis?.consultorios.length ?? "—"}
               </strong>
             </span>
@@ -721,7 +721,7 @@ export const Dashboard: React.FC = () => {
           {[...Array(4)].map((_, i) => (
             <div
               key={i}
-              className="h-28 rounded-xl border border-slate-200 bg-slate-100 dark:border-slate-700 dark:bg-slate-800 animate-pulse"
+              className="h-28 rounded-card border border-line bg-surface-2 animate-pulse"
             />
           ))}
         </div>
@@ -730,7 +730,7 @@ export const Dashboard: React.FC = () => {
           {stats.map((stat, i) => (
             <div
               key={i}
-              className="flex flex-col rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800 transition-all hover:shadow-md"
+              className="flex flex-col rounded-card border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800 transition-all"
             >
               <div className="flex items-center justify-between mb-4">
                 <p className="text-sm font-medium text-slate-500">
@@ -740,20 +740,20 @@ export const Dashboard: React.FC = () => {
                   className={cn(
                     "flex h-8 w-8 items-center justify-center rounded-full",
                     stat.color === "emerald" &&
-                      "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400",
+                      "bg-surface-2 text-brand-ink",
                     stat.color === "amber" &&
-                      "bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400",
+                      "bg-surface-2 text-brand-ink",
                     stat.color === "blue" &&
-                      "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400",
+                      "bg-surface-2 text-brand-ink",
                     stat.color === "purple" &&
-                      "bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400",
+                      "bg-surface-2 text-brand-ink",
                   )}
                 >
                   <stat.icon size={18} />
                 </span>
               </div>
               <div className="flex items-end gap-2">
-                <h3 className="text-3xl font-bold text-slate-900 dark:text-slate-100">
+                <h3 className="text-3xl font-bold text-ink tnum">
                   {stat.value}
                 </h3>
                 <span className="mb-1 text-xs font-medium text-slate-500">
@@ -766,17 +766,17 @@ export const Dashboard: React.FC = () => {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm p-6">
+        <div className="lg:col-span-2 bg-surface rounded-card border border-line p-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="font-bold text-slate-900 dark:text-slate-100">
+              <h3 className="font-bold text-ink">
                 Ingresos — Últimos 7 días
               </h3>
               <p className="text-xs text-slate-500 mt-0.5">
                 Cobros registrados por día (Bs.)
               </p>
             </div>
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-2 text-brand-ink">
               <Icons.TrendingUp size={16} />
             </span>
           </div>
@@ -811,18 +811,22 @@ export const Dashboard: React.FC = () => {
                   fontSize: 12,
                 }}
               />
-              <Bar dataKey="ingresos" fill="#a3e635" radius={[4, 4, 0, 0]} />
+              <Bar
+                dataKey="ingresos"
+                fill="var(--color-brand-ink)"
+                radius={[4, 4, 0, 0]}
+              />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
         <div className="flex flex-col gap-6">
-          <div className="flex-1 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm p-6">
+          <div className="flex-1 bg-surface rounded-card border border-line p-6">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-bold text-slate-900 dark:text-slate-100">
+              <h3 className="font-bold text-ink">
                 Atenciones / día
               </h3>
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-2 text-brand-ink">
                 <Icons.Clinical size={16} />
               </span>
             </div>
@@ -830,8 +834,8 @@ export const Dashboard: React.FC = () => {
               <AreaChart data={kpis?.semana ?? []}>
                 <defs>
                   <linearGradient id="fichasGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#60a5fa" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#60a5fa" stopOpacity={0} />
+                    <stop offset="5%" stopColor="var(--color-brand-ink)" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="var(--color-brand-ink)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <XAxis dataKey="dia" hide />
@@ -848,13 +852,13 @@ export const Dashboard: React.FC = () => {
                 <Area
                   type="monotone"
                   dataKey="fichas"
-                  stroke="#60a5fa"
+                  stroke="var(--color-brand-ink)"
                   strokeWidth={2}
                   fill="url(#fichasGrad)"
                 />
               </AreaChart>
             </ResponsiveContainer>
-            <p className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-2">
+            <p className="text-2xl font-bold text-ink tnum mt-2">
               {(kpis?.semana ?? []).reduce((s, d) => s + d.fichas, 0)}
               <span className="text-sm font-normal text-slate-500 ml-1">
                 esta semana
@@ -862,15 +866,15 @@ export const Dashboard: React.FC = () => {
             </p>
           </div>
 
-          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm p-6 flex items-center gap-4">
-            <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400">
+          <div className="bg-surface rounded-card border border-line p-6 flex items-center gap-4">
+            <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-surface-2 text-brand-ink">
               <Icons.Patients size={24} />
             </span>
             <div>
               <p className="text-xs font-medium text-slate-500">
                 Pacientes Registrados
               </p>
-              <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">
+              <p className="text-3xl font-bold text-ink tnum">
                 {kpis?.total_mascotas ?? 0}
               </p>
             </div>
@@ -879,14 +883,14 @@ export const Dashboard: React.FC = () => {
       </div>
 
       <div className="space-y-4">
-        <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+        <h3 className="font-display text-xl font-bold tracking-tight text-ink">
           Estado de Consultorios
         </h3>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {(kpis?.consultorios ?? []).map((room) => (
             <div
               key={room.id}
-              className="group relative flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all hover:shadow-md dark:border-slate-700 dark:bg-slate-800"
+              className="group relative flex flex-col overflow-hidden rounded-card border border-slate-200 bg-white transition-all dark:border-slate-700 dark:bg-slate-800"
             >
               <div
                 className={cn(
@@ -894,9 +898,9 @@ export const Dashboard: React.FC = () => {
                   room.estado === "OCUPADO" &&
                     "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400",
                   room.estado === "LIBRE" &&
-                    "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400",
+                    "bg-surface-2 text-brand-ink",
                   room.estado === "LIMPIEZA" &&
-                    "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400",
+                    "bg-surface-2 text-brand-ink",
                 )}
               >
                 {estadoLabel[room.estado]}
@@ -924,7 +928,7 @@ export const Dashboard: React.FC = () => {
 
               <div className="flex flex-1 flex-col p-5">
                 <div className="mb-3">
-                  <h4 className="text-base font-bold text-slate-900 dark:text-slate-100">
+                  <h4 className="text-base font-bold text-ink">
                     {room.nombre}
                   </h4>
                   {room.especialidad && (
@@ -962,21 +966,21 @@ export const Dashboard: React.FC = () => {
       </div>
 
       {kpis && kpis.recibos_recientes.length > 0 && (
-        <div className="rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800 overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700">
-            <h3 className="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-              <Icons.History className="text-primary" size={18} />
+        <div className="rounded-card border border-line bg-surface overflow-hidden">
+          <div className="px-6 py-4 border-b border-line">
+            <h3 className="font-bold text-ink flex items-center gap-2">
+              <Icons.History className="text-brand-ink" size={18} />
               Últimos Cobros
             </h3>
           </div>
-          <div className="divide-y divide-slate-100 dark:divide-slate-700">
+          <div className="divide-y divide-line">
             {kpis.recibos_recientes.slice(0, 5).map((r) => (
               <div
                 key={r.id}
                 className="flex items-center justify-between px-6 py-3 text-sm"
               >
                 <div>
-                  <span className="font-bold text-slate-900 dark:text-slate-100 mr-2">
+                  <span className="font-bold text-ink mr-2">
                     {r.num_recibo}
                   </span>
                   <span className="text-slate-500">

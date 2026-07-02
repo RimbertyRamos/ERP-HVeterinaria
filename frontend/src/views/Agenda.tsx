@@ -180,16 +180,16 @@ export const Agenda: React.FC = () => {
     >
       <header className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+          <h2 className="text-2xl font-bold text-ink">
             Agenda Médica
           </h2>
-          <p className="text-slate-500 dark:text-slate-400">
+          <p className="text-muted">
             Gestión de citas y programación de servicios
           </p>
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-slate-900 hover:bg-primary-dark transition-all shadow-lg shadow-primary/20"
+          className="flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-strong transition-all"
         >
           <Icons.Plus size={20} />
           Nueva Cita
@@ -199,24 +199,24 @@ export const Agenda: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 flex-1 overflow-hidden">
         {/* Calendario lateral y filtros */}
         <div className="lg:col-span-1 space-y-6">
-          <section className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
-            <h3 className="font-bold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
-              <Icons.Agenda size={18} className="text-primary" />
+          <section className="bg-surface rounded-card border border-line p-6">
+            <h3 className="font-bold text-ink mb-4 flex items-center gap-2">
+              <Icons.Agenda size={18} className="text-brand-ink" />
               Seleccionar Fecha
             </h3>
             <input
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-primary outline-none transition-all"
+              className="w-full bg-bg border border-line rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-brand text-ink outline-none transition-all"
             />
             <div className="mt-6 space-y-2">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">
+              <p className="text-[10px] font-black text-muted uppercase tracking-widest px-1">
                 Atajos
               </p>
               <button
                 onClick={() => setSelectedDate(fmtISO(new Date()))}
-                className="w-full text-left px-3 py-2 rounded-lg text-xs font-bold hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                className="w-full text-left px-3 py-2 rounded-lg text-xs font-bold hover:bg-surface-2 transition-colors"
               >
                 Hoy
               </button>
@@ -226,20 +226,20 @@ export const Agenda: React.FC = () => {
                   tomorrow.setDate(tomorrow.getDate() + 1);
                   setSelectedDate(fmtISO(tomorrow));
                 }}
-                className="w-full text-left px-3 py-2 rounded-lg text-xs font-bold hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                className="w-full text-left px-3 py-2 rounded-lg text-xs font-bold hover:bg-surface-2 transition-colors"
               >
                 Mañana
               </button>
             </div>
           </section>
 
-          <section className="bg-primary/5 border border-primary/20 rounded-2xl p-6">
-            <h4 className="text-xs font-black text-primary uppercase tracking-widest mb-2">
+          <section className="bg-brand-soft/20 border border-brand/20 rounded-card p-6">
+            <h4 className="text-xs font-black text-brand-ink uppercase tracking-widest mb-2">
               Resumen del Día
             </h4>
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">
+                <span className="text-xs text-muted font-bold uppercase tracking-wider">
                   Total Citas
                 </span>
                 <span className="text-lg font-black">{citas.length}</span>
@@ -257,9 +257,9 @@ export const Agenda: React.FC = () => {
         </div>
 
         {/* Lista de Citas */}
-        <div className="lg:col-span-3 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col">
-          <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex flex-wrap gap-3 justify-between items-center">
-            <h3 className="font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest text-sm">
+        <div className="lg:col-span-3 bg-surface rounded-card border border-line overflow-hidden flex flex-col">
+          <div className="p-6 border-b border-line flex flex-wrap gap-3 justify-between items-center">
+            <h3 className="font-black text-ink uppercase tracking-widest text-sm">
               {viewMode === "dia"
                 ? `Citas — ${new Date(
                     selectedDate + "T00:00:00",
@@ -281,28 +281,28 @@ export const Agenda: React.FC = () => {
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => shiftWeek(-7)}
-                    className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                    className="p-1.5 rounded-lg text-ink hover:bg-surface-2"
                     title="Semana anterior"
                   >
                     <Icons.ChevronRight size={16} className="rotate-180" />
                   </button>
                   <button
                     onClick={() => shiftWeek(7)}
-                    className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                    className="p-1.5 rounded-lg text-ink hover:bg-surface-2"
                     title="Semana siguiente"
                   >
                     <Icons.ChevronRight size={16} />
                   </button>
                 </div>
               )}
-              <div className="flex rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
+              <div className="flex rounded-lg border border-line overflow-hidden">
                 <button
                   onClick={() => setViewMode("dia")}
                   className={cn(
                     "px-3 py-1.5 text-xs font-bold transition-colors",
                     viewMode === "dia"
-                      ? "bg-primary text-slate-900"
-                      : "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800",
+                      ? "bg-brand text-white shadow-sm"
+                      : "text-muted hover:bg-surface-2",
                   )}
                 >
                   Día
@@ -312,8 +312,8 @@ export const Agenda: React.FC = () => {
                   className={cn(
                     "px-3 py-1.5 text-xs font-bold transition-colors",
                     viewMode === "semana"
-                      ? "bg-primary text-slate-900"
-                      : "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800",
+                      ? "bg-brand text-white shadow-sm"
+                      : "text-muted hover:bg-surface-2",
                   )}
                 >
                   Semana
@@ -331,16 +331,16 @@ export const Agenda: React.FC = () => {
                 {solicitudes.map((s) => (
                   <div
                     key={s.id}
-                    className="rounded-xl border border-violet-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4"
+                    className="rounded-card border border-violet-100 bg-surface p-4"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <h5 className="text-sm font-black truncate text-slate-900 dark:text-white">
+                          <h5 className="text-sm font-black truncate text-ink">
                             {s.mascota.nombre}
                           </h5>
                           {s.mascota.especie?.nombre && (
-                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-bold">
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-brand-soft text-brand-ink font-bold">
                               {s.mascota.especie.nombre}
                             </span>
                           )}
@@ -350,7 +350,7 @@ export const Agenda: React.FC = () => {
                             </span>
                           )}
                         </div>
-                        <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                        <p className="text-xs text-muted mt-1 flex items-center gap-1">
                           <Icons.User size={12} />
                           {s.mascota.propietario?.nombre}
                           {s.mascota.propietario?.telefono
@@ -358,7 +358,7 @@ export const Agenda: React.FC = () => {
                             : ""}
                         </p>
                         {s.mascota.propietario?.email && (
-                          <p className="text-xs text-slate-400 truncate">
+                          <p className="text-xs text-muted truncate">
                             ✉ {s.mascota.propietario.email}
                           </p>
                         )}
@@ -380,7 +380,7 @@ export const Agenda: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-600 dark:text-slate-300">
+                    <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink">
                       <span className="inline-flex items-center gap-1 capitalize">
                         <Icons.Agenda size={12} className="text-violet-500" />
                         {new Date(s.fecha_hora).toLocaleDateString("es-ES", {
@@ -400,11 +400,11 @@ export const Agenda: React.FC = () => {
                     </div>
 
                     {s.motivo && (
-                      <p className="mt-1.5 text-xs italic text-slate-500">
+                      <p className="mt-1.5 text-xs italic text-muted">
                         📝 {s.motivo}
                       </p>
                     )}
-                    <p className="mt-1 text-[10px] text-slate-400">
+                    <p className="mt-1 text-[10px] text-muted">
                       Solicitada el{" "}
                       {new Date(s.created_at).toLocaleString("es-ES", {
                         day: "numeric",
@@ -421,7 +421,7 @@ export const Agenda: React.FC = () => {
 
           <div className="flex-1 overflow-y-auto p-6">
             {loading ? (
-              <div className="h-full flex items-center justify-center text-slate-400 italic">
+              <div className="h-full flex items-center justify-center text-muted italic">
                 Cargando agenda...
               </div>
             ) : viewMode === "semana" ? (
@@ -446,12 +446,12 @@ export const Agenda: React.FC = () => {
                           className={cn(
                             "mb-2 rounded-lg py-1.5 text-center transition-colors",
                             esHoy
-                              ? "bg-primary/10 text-primary"
-                              : "hover:bg-slate-100 dark:hover:bg-slate-800",
+                              ? "bg-brand-soft text-brand-ink"
+                              : "hover:bg-surface-2",
                           )}
                           title="Ver el día"
                         >
-                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                          <p className="text-[10px] font-black uppercase tracking-widest text-muted">
                             {dia.toLocaleDateString("es-ES", {
                               weekday: "short",
                             })}
@@ -460,7 +460,7 @@ export const Agenda: React.FC = () => {
                         </button>
                         <div className="space-y-1.5">
                           {delDia.length === 0 ? (
-                            <p className="text-center text-[10px] text-slate-300 dark:text-slate-700 py-2">
+                            <p className="text-center text-[10px] text-muted py-2">
                               —
                             </p>
                           ) : (
@@ -517,17 +517,17 @@ export const Agenda: React.FC = () => {
                   <div
                     key={cita.id}
                     className={cn(
-                      "group flex items-center gap-6 p-5 rounded-2xl border-2 transition-all hover:shadow-md",
+                      "group flex items-center gap-6 p-5 rounded-card border-2 transition-all",
                       cita.estado === "COMPLETADA"
                         ? "bg-slate-50 dark:bg-slate-800/50 border-transparent opacity-60"
                         : cita.estado === "CANCELADA"
                           ? "bg-red-50 dark:bg-red-900/10 border-transparent opacity-40"
                           : cita.estado === "NO_ASISTIO"
                             ? "bg-rose-50 dark:bg-rose-900/10 border-transparent opacity-50"
-                            : "bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 hover:border-primary/30",
+                            : "bg-surface border-line hover:border-brand/30",
                     )}
                   >
-                    <div className="flex flex-col items-center justify-center w-20 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 font-black">
+                    <div className="flex flex-col items-center justify-center w-20 py-2 rounded-xl bg-surface-2 font-black">
                       <span className="text-lg leading-none">
                         {new Date(cita.fecha_hora).toLocaleTimeString([], {
                           hour: "2-digit",
@@ -538,27 +538,27 @@ export const Agenda: React.FC = () => {
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-black text-slate-900 dark:text-white uppercase truncate">
+                        <h4 className="font-black text-ink uppercase truncate">
                           {cita.mascota.nombre}
                         </h4>
                         {cita.mascota.especie?.nombre && (
-                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-bold">
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-brand-soft text-brand-ink font-bold">
                             {cita.mascota.especie.nombre}
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-slate-500 font-bold flex items-center gap-1">
+                      <p className="text-xs text-muted font-bold flex items-center gap-1">
                         <Icons.User size={12} />
                         {cita.mascota.propietario?.nombre}
                       </p>
-                      <p className="text-xs text-slate-400 mt-2 italic truncate">
+                      <p className="text-xs text-muted mt-2 italic truncate">
                         {cita.motivo}
                       </p>
                     </div>
 
                     <div className="flex-shrink-0 flex items-center gap-4">
                       <div className="text-right hidden sm:block">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
+                        <p className="text-[10px] font-black text-muted uppercase tracking-widest mb-1">
                           Estado
                         </p>
                         <span
@@ -574,7 +574,7 @@ export const Agenda: React.FC = () => {
                                     ? "bg-emerald-50 text-emerald-600 border-emerald-200"
                                     : cita.estado === "NO_ASISTIO"
                                       ? "bg-rose-50 text-rose-600 border-rose-200"
-                                      : "bg-slate-100 text-slate-500 border-slate-200",
+                                      : "bg-surface-2 text-muted border-line",
                           )}
                         >
                           {cita.estado.replace("_", " ")}
@@ -625,9 +625,9 @@ export const Agenda: React.FC = () => {
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-3xl shadow-2xl flex flex-col max-h-[90vh]"
+              className="relative w-full max-w-lg bg-surface rounded-card shadow-2xl flex flex-col max-h-[90vh]"
             >
-              <header className="p-6 bg-slate-900 text-white flex items-center justify-between">
+              <header className="p-6 bg-brand text-white flex items-center justify-between">
                 <h3 className="text-xl font-bold">Programar Nueva Cita</h3>
                 <button
                   onClick={() => setIsModalOpen(false)}
@@ -643,7 +643,7 @@ export const Agenda: React.FC = () => {
               >
                 {/* Buscador de mascota */}
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-slate-500 uppercase tracking-widest">
+                  <label className="text-xs font-black text-muted uppercase tracking-widest">
                     Mascota *
                   </label>
                   <div className="flex gap-2">
@@ -656,12 +656,12 @@ export const Agenda: React.FC = () => {
                         e.key === "Enter" &&
                         (e.preventDefault(), handleSearchMascota())
                       }
-                      className="flex-1 h-12 px-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 outline-none focus:ring-2 focus:ring-primary"
+                      className="flex-1 h-12 px-4 rounded-xl bg-bg border border-line outline-none focus:ring-2 focus:ring-brand text-ink"
                     />
                     <button
                       type="button"
                       onClick={handleSearchMascota}
-                      className="h-12 w-12 flex items-center justify-center bg-slate-100 dark:bg-slate-800 rounded-xl text-slate-500"
+                      className="h-12 w-12 flex items-center justify-center bg-surface-2 rounded-xl text-muted"
                     >
                       <Icons.Search size={20} />
                     </button>
@@ -672,7 +672,7 @@ export const Agenda: React.FC = () => {
                       setForm({ ...form, mascota_id: e.target.value })
                     }
                     required
-                    className="w-full h-12 px-4 rounded-xl bg-primary/5 border-2 border-primary/20 outline-none font-bold text-sm"
+                    className="w-full h-12 px-4 rounded-xl bg-brand-soft/30 border-2 border-brand/20 outline-none font-bold text-sm text-ink"
                   >
                     <option value="">— Seleccionar mascota —</option>
                     {mascotas.map((m) => (
@@ -684,7 +684,7 @@ export const Agenda: React.FC = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-slate-500 uppercase tracking-widest">
+                  <label className="text-xs font-black text-muted uppercase tracking-widest">
                     Fecha
                   </label>
                   <input
@@ -693,13 +693,13 @@ export const Agenda: React.FC = () => {
                     value={form.fecha}
                     onChange={(e) => setForm({ ...form, fecha: e.target.value })}
                     required
-                    className="w-full h-12 px-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 outline-none"
+                    className="w-full h-12 px-4 rounded-xl bg-bg border border-line outline-none text-ink"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-xs font-black text-slate-500 uppercase tracking-widest">
+                    <label className="text-xs font-black text-muted uppercase tracking-widest">
                       Tipo de cita
                     </label>
                     <select
@@ -707,7 +707,7 @@ export const Agenda: React.FC = () => {
                       onChange={(e) =>
                         setForm({ ...form, tipo: e.target.value })
                       }
-                      className="w-full h-12 px-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 outline-none"
+                      className="w-full h-12 px-4 rounded-xl bg-bg border border-line outline-none text-ink"
                     >
                       <option value="CONSULTA">Consulta</option>
                       <option value="CONTROL">Control</option>
@@ -718,7 +718,7 @@ export const Agenda: React.FC = () => {
                     </select>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-black text-slate-500 uppercase tracking-widest">
+                    <label className="text-xs font-black text-muted uppercase tracking-widest">
                       Duración
                     </label>
                     <select
@@ -726,7 +726,7 @@ export const Agenda: React.FC = () => {
                       onChange={(e) =>
                         setForm({ ...form, duracion: e.target.value })
                       }
-                      className="w-full h-12 px-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 outline-none"
+                      className="w-full h-12 px-4 rounded-xl bg-bg border border-line outline-none text-ink"
                     >
                       <option value="15">15 min</option>
                       <option value="30">30 min</option>
@@ -737,7 +737,7 @@ export const Agenda: React.FC = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-slate-500 uppercase tracking-widest">
+                  <label className="text-xs font-black text-muted uppercase tracking-widest">
                     Veterinario Asignado
                   </label>
                   <select
@@ -745,7 +745,7 @@ export const Agenda: React.FC = () => {
                     onChange={(e) =>
                       setForm({ ...form, doctor_id: e.target.value })
                     }
-                    className="w-full h-12 px-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 outline-none"
+                    className="w-full h-12 px-4 rounded-xl bg-bg border border-line outline-none text-ink"
                   >
                     <option value="">— Cualquier doctor disponible —</option>
                     {doctores.map((doc) => (
@@ -759,7 +759,7 @@ export const Agenda: React.FC = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-slate-500 uppercase tracking-widest">
+                  <label className="text-xs font-black text-muted uppercase tracking-widest">
                     Consultorio (opcional)
                   </label>
                   <select
@@ -767,7 +767,7 @@ export const Agenda: React.FC = () => {
                     onChange={(e) =>
                       setForm({ ...form, consultorio_id: e.target.value })
                     }
-                    className="w-full h-12 px-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 outline-none"
+                    className="w-full h-12 px-4 rounded-xl bg-bg border border-line outline-none text-ink"
                   >
                     <option value="">— Sin asignar —</option>
                     {consultorios.map((c: any) => (
@@ -779,7 +779,7 @@ export const Agenda: React.FC = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-slate-500 uppercase tracking-widest">
+                  <label className="text-xs font-black text-muted uppercase tracking-widest">
                     Hora (elige un horario libre)
                   </label>
                   <SlotPicker
@@ -792,7 +792,7 @@ export const Agenda: React.FC = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-slate-500 uppercase tracking-widest">
+                  <label className="text-xs font-black text-muted uppercase tracking-widest">
                     Motivo
                   </label>
                   <input
@@ -803,13 +803,13 @@ export const Agenda: React.FC = () => {
                     }
                     required
                     placeholder="Ej: Vacunación Séxtuple, Control post-operatorio..."
-                    className="w-full h-12 px-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 outline-none"
+                    className="w-full h-12 px-4 rounded-xl bg-bg border border-line outline-none text-ink"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full py-4 rounded-2xl bg-primary text-slate-900 font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-[1.02] transition-all"
+                  className="w-full py-4 rounded-card bg-brand text-white font-black uppercase tracking-widest hover:bg-brand-strong hover:scale-[1.02] transition-all"
                 >
                   Programar Cita
                 </button>

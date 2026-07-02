@@ -173,10 +173,10 @@ export const Financial: React.FC = () => {
     >
       <header className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+          <h2 className="text-2xl font-bold text-ink">
             Finanzas y Reportes
           </h2>
-          <p className="text-slate-500 dark:text-slate-400">
+          <p className="text-muted">
             Análisis de ingresos y cobros
           </p>
         </div>
@@ -184,18 +184,18 @@ export const Financial: React.FC = () => {
           <button
             onClick={() => exportar("csv")}
             disabled={descargando}
-            className="h-9 px-3 rounded-lg bg-slate-200 dark:bg-slate-700 text-xs font-bold text-slate-800 dark:text-slate-100 hover:opacity-90 disabled:opacity-50 transition-opacity"
+            className="h-9 px-3 rounded-lg bg-surface-2 border border-line text-xs font-bold text-ink hover:opacity-90 disabled:opacity-50 transition-opacity"
           >
             Exportar CSV
           </button>
           <button
             onClick={() => exportar("pdf")}
             disabled={descargando}
-            className="h-9 px-3 rounded-lg bg-primary text-xs font-bold text-slate-900 hover:opacity-90 disabled:opacity-50 transition-opacity"
+            className="h-9 px-3 rounded-lg bg-brand text-xs font-bold text-white hover:bg-brand-strong disabled:opacity-50 transition-colors"
           >
             Exportar PDF
           </button>
-          <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
+          <div className="flex bg-surface-2 p-1 rounded-lg">
             {(["Semana", "Mes", "Año"] as Periodo[]).map((p) => (
               <button
                 key={p}
@@ -203,8 +203,8 @@ export const Financial: React.FC = () => {
                 className={cn(
                   "px-4 py-1.5 text-xs font-bold rounded-md transition-all",
                   periodo === p
-                    ? "bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-100"
-                    : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-300",
+                    ? "bg-surface text-ink shadow-sm"
+                    : "text-muted hover:text-ink",
                 )}
               >
                 {p}
@@ -250,16 +250,16 @@ export const Financial: React.FC = () => {
           </p>
         </div>
 
-        <div className="bg-purple-50 dark:bg-purple-900/10 p-6 rounded-2xl border border-purple-100 dark:border-purple-900/30">
+        <div className="bg-surface p-6 rounded-card border border-line">
           <div className="flex justify-between items-center mb-4">
-            <div className="p-2 bg-purple-500 text-white rounded-lg">
+            <div className="p-2 bg-surface-2 text-brand-ink rounded-lg">
               <Icons.History size={20} />
             </div>
           </div>
-          <p className="text-purple-700 dark:text-purple-400 text-sm font-bold">
+          <p className="text-muted text-sm font-bold">
             Total Recibos Emitidos
           </p>
-          <p className="text-3xl font-black text-purple-900 dark:text-purple-100 mt-1">
+          <p className="text-3xl font-black text-ink mt-1">
             {loading ? "—" : recibosPagados.length}
           </p>
         </div>
@@ -268,18 +268,18 @@ export const Financial: React.FC = () => {
       {/* Chart + Transactions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Area Chart */}
-        <div className="lg:col-span-2 bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div className="lg:col-span-2 bg-surface p-8 rounded-card border border-line">
           <div className="flex justify-between items-center mb-8">
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+            <h3 className="text-lg font-bold text-ink">
               Flujo de Ingresos
             </h3>
             <div className="flex items-center gap-2 text-xs font-bold">
-              <div className="size-3 rounded-full bg-primary" />
-              <span className="text-slate-500">Ingresos (Bs.)</span>
+              <div className="size-3 rounded-full bg-brand-ink" />
+              <span className="text-muted">Ingresos (Bs.)</span>
             </div>
           </div>
           {loading ? (
-            <div className="h-[280px] bg-slate-100 dark:bg-slate-800 rounded-xl animate-pulse" />
+            <div className="h-[280px] bg-surface-2 rounded-card animate-pulse" />
           ) : (
             <div className="h-[280px] w-full">
               <ResponsiveContainer width="100%" height="100%">
@@ -292,8 +292,8 @@ export const Financial: React.FC = () => {
                       x2="0"
                       y2="1"
                     >
-                      <stop offset="5%" stopColor="#a3e635" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#a3e635" stopOpacity={0} />
+                      <stop offset="5%" stopColor="var(--color-brand-ink)" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="var(--color-brand-ink)" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid
@@ -329,7 +329,7 @@ export const Financial: React.FC = () => {
                   <Area
                     type="monotone"
                     dataKey="ingresos"
-                    stroke="#a3e635"
+                    stroke="var(--color-brand-ink)"
                     strokeWidth={3}
                     fillOpacity={1}
                     fill="url(#gradIngresos)"
@@ -341,8 +341,8 @@ export const Financial: React.FC = () => {
         </div>
 
         {/* Transactions */}
-        <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col">
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">
+        <div className="bg-surface p-8 rounded-card border border-line flex flex-col">
+          <h3 className="text-lg font-bold text-ink mb-6">
             Últimos Cobros
           </h3>
           {loading ? (
@@ -350,13 +350,13 @@ export const Financial: React.FC = () => {
               {[...Array(5)].map((_, i) => (
                 <div
                   key={i}
-                  className="h-12 bg-slate-100 dark:bg-slate-800 rounded-xl animate-pulse"
+                  className="h-12 bg-surface-2 rounded-card animate-pulse"
                 />
               ))}
             </div>
           ) : ultimos.length === 0 ? (
             <div className="flex-1 flex items-center justify-center">
-              <p className="text-sm text-slate-400 text-center">
+              <p className="text-sm text-muted text-center">
                 Sin cobros en este período
               </p>
             </div>
@@ -377,10 +377,10 @@ export const Financial: React.FC = () => {
                         <Icons.ArrowUpRight size={16} />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-sm font-bold text-slate-900 dark:text-white truncate">
+                        <p className="text-sm font-bold text-ink truncate">
                           {descripcion}
                         </p>
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-muted">
                           {formatFecha(r.fecha_pago)} ·{" "}
                           {METODO_LABEL[r.metodo_pago] ?? r.metodo_pago}
                         </p>

@@ -35,12 +35,13 @@ const fecha = (s: string) =>
   });
 
 const estadoCls: Record<string, string> = {
-  PAGADO: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
-  PENDIENTE: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+  PAGADO:
+    "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
+  PENDIENTE:
+    "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
   CANCELADO: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
 };
 
-/** Panel de administración: suscripciones de planes (pagos) y leads de contacto. */
 export const Solicitudes: React.FC = () => {
   const [subs, setSubs] = useState<Suscripcion[]>([]);
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -70,13 +71,13 @@ export const Solicitudes: React.FC = () => {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="p-6 md:p-8 h-full overflow-y-auto bg-slate-50 dark:bg-slate-950"
+      className="p-6 md:p-8 h-full overflow-y-auto bg-bg"
     >
       <header className="mb-6">
-        <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+        <h2 className="text-2xl font-bold text-ink">
           Suscripciones y Solicitudes
         </h2>
-        <p className="text-sm text-slate-500 mt-1">
+        <p className="text-sm text-muted mt-1">
           Pagos de planes desde la landing y mensajes de contacto/demo.
         </p>
       </header>
@@ -87,8 +88,8 @@ export const Solicitudes: React.FC = () => {
           className={cn(
             "px-4 py-2 text-sm font-bold rounded-lg transition-colors",
             tab === "subs"
-              ? "bg-primary text-slate-900"
-              : "bg-white dark:bg-slate-900 text-slate-500 border border-slate-200 dark:border-slate-800",
+              ? "bg-brand text-white"
+              : "bg-surface text-muted border border-line",
           )}
         >
           Suscripciones ({subs.length})
@@ -98,8 +99,8 @@ export const Solicitudes: React.FC = () => {
           className={cn(
             "px-4 py-2 text-sm font-bold rounded-lg transition-colors",
             tab === "leads"
-              ? "bg-primary text-slate-900"
-              : "bg-white dark:bg-slate-900 text-slate-500 border border-slate-200 dark:border-slate-800",
+              ? "bg-brand text-white"
+              : "bg-surface text-muted border border-line",
           )}
         >
           Solicitudes ({leads.length})
@@ -107,16 +108,16 @@ export const Solicitudes: React.FC = () => {
       </div>
 
       {loading ? (
-        <p className="text-slate-400 italic">Cargando…</p>
+        <p className="text-muted italic">Cargando…</p>
       ) : tab === "subs" ? (
         <>
-          <p className="text-xs text-slate-500 mb-3">
+          <p className="text-xs text-muted mb-3">
             {pagadas} pagada(s) de {subs.length} registrada(s).
           </p>
-          <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+          <div className="overflow-x-auto rounded-card border border-line bg-surface">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-xs uppercase tracking-wider text-slate-400 border-b border-slate-100 dark:border-slate-800">
+                <tr className="text-left text-xs uppercase tracking-wider text-muted border-b border-line">
                   <th className="px-4 py-3 font-bold">Plan</th>
                   <th className="px-4 py-3 font-bold">Cliente</th>
                   <th className="px-4 py-3 font-bold">Estado</th>
@@ -128,7 +129,10 @@ export const Solicitudes: React.FC = () => {
               <tbody>
                 {subs.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-4 py-8 text-center text-slate-400 italic">
+                    <td
+                      colSpan={6}
+                      className="px-4 py-8 text-center text-muted italic"
+                    >
                       Aún no hay suscripciones.
                     </td>
                   </tr>
@@ -136,34 +140,38 @@ export const Solicitudes: React.FC = () => {
                 {subs.map((s) => (
                   <tr
                     key={s.id}
-                    className="border-b border-slate-50 dark:border-slate-800/50 last:border-0"
+                    className="border-b border-line/50 last:border-0"
                   >
-                    <td className="px-4 py-3 font-bold">{s.plan}</td>
+                    <td className="px-4 py-3 font-bold text-ink">{s.plan}</td>
                     <td className="px-4 py-3">
-                      <p className="font-medium text-slate-700 dark:text-slate-200">
-                        {s.nombre || "—"}
+                      <p className="font-medium text-ink">{s.nombre || "—"}</p>
+                      <p className="text-xs text-muted">
+                        {s.email || "(sin correo)"}
                       </p>
-                      <p className="text-xs text-slate-400">{s.email || "(sin correo)"}</p>
                     </td>
                     <td className="px-4 py-3">
                       <span
                         className={cn(
                           "px-2.5 py-1 rounded-full text-xs font-bold",
-                          estadoCls[s.estado] ?? "bg-slate-100 text-slate-600",
+                          estadoCls[s.estado] ?? "bg-surface-2 text-muted",
                         )}
                       >
                         {s.estado}
                       </span>
                     </td>
-                    <td className="px-4 py-3 font-bold">{money(s.monto)}</td>
+                    <td className="px-4 py-3 font-bold text-ink">
+                      {money(s.monto)}
+                    </td>
                     <td className="px-4 py-3">
                       {s.cuenta_provisionada ? (
-                        <span className="text-emerald-600 text-xs font-bold">✓ creada</span>
+                        <span className="text-emerald-600 text-xs font-bold">
+                          ✓ creada
+                        </span>
                       ) : (
-                        <span className="text-slate-400 text-xs">—</span>
+                        <span className="text-muted text-xs">—</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-slate-500 whitespace-nowrap">
+                    <td className="px-4 py-3 text-muted whitespace-nowrap">
                       {fecha(s.created_at)}
                     </td>
                   </tr>
@@ -173,10 +181,10 @@ export const Solicitudes: React.FC = () => {
           </div>
         </>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+        <div className="overflow-x-auto rounded-card border border-line bg-surface">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-xs uppercase tracking-wider text-slate-400 border-b border-slate-100 dark:border-slate-800">
+              <tr className="text-left text-xs uppercase tracking-wider text-muted border-b border-line">
                 <th className="px-4 py-3 font-bold">Nombre</th>
                 <th className="px-4 py-3 font-bold">Contacto</th>
                 <th className="px-4 py-3 font-bold">Origen</th>
@@ -187,7 +195,10 @@ export const Solicitudes: React.FC = () => {
             <tbody>
               {leads.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-slate-400 italic">
+                  <td
+                    colSpan={5}
+                    className="px-4 py-8 text-center text-muted italic"
+                  >
                     Aún no hay solicitudes de contacto.
                   </td>
                 </tr>
@@ -195,23 +206,29 @@ export const Solicitudes: React.FC = () => {
               {leads.map((l) => (
                 <tr
                   key={l.id}
-                  className="border-b border-slate-50 dark:border-slate-800/50 last:border-0 align-top"
+                  className="border-b border-line/50 last:border-0 align-top"
                 >
                   <td className="px-4 py-3">
-                    <p className="font-medium text-slate-700 dark:text-slate-200">{l.nombre}</p>
-                    {l.empresa && <p className="text-xs text-slate-400">{l.empresa}</p>}
+                    <p className="font-medium text-ink">{l.nombre}</p>
+                    {l.empresa && (
+                      <p className="text-xs text-muted">{l.empresa}</p>
+                    )}
                   </td>
                   <td className="px-4 py-3">
-                    <p className="text-slate-600 dark:text-slate-300">{l.email}</p>
-                    {l.telefono && <p className="text-xs text-slate-400">{l.telefono}</p>}
+                    <p className="text-ink">{l.email}</p>
+                    {l.telefono && (
+                      <p className="text-xs text-muted">{l.telefono}</p>
+                    )}
                   </td>
                   <td className="px-4 py-3">
-                    <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                    <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-surface-2 text-muted">
                       {l.origen}
                     </span>
                   </td>
-                  <td className="px-4 py-3 max-w-xs text-slate-500">{l.mensaje || "—"}</td>
-                  <td className="px-4 py-3 text-slate-500 whitespace-nowrap">
+                  <td className="px-4 py-3 max-w-xs text-muted">
+                    {l.mensaje || "—"}
+                  </td>
+                  <td className="px-4 py-3 text-muted whitespace-nowrap">
                     {fecha(l.created_at)}
                   </td>
                 </tr>

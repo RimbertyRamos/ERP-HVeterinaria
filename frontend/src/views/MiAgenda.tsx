@@ -13,7 +13,6 @@ interface MascotaResumen {
   especie?: { nombre: string };
 }
 
-/** Vista del propietario (rol CLIENTE): solicitar y ver sus citas. */
 export const MiAgenda: React.FC = () => {
   const [mascotas, setMascotas] = useState<MascotaResumen[]>([]);
   const [citas, setCitas] = useState<Cita[]>([]);
@@ -77,7 +76,7 @@ export const MiAgenda: React.FC = () => {
   };
 
   const inputCls =
-    "w-full h-12 px-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 outline-none focus:ring-2 focus:ring-primary";
+    "w-full h-12 px-4 rounded-xl bg-bg border border-line outline-none focus:ring-2 focus:ring-brand text-ink";
 
   return (
     <motion.div
@@ -86,23 +85,21 @@ export const MiAgenda: React.FC = () => {
       className="p-8 space-y-8"
     >
       <header>
-        <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-          Mis Citas
-        </h2>
-        <p className="text-slate-500 dark:text-slate-400">
+        <h2 className="text-2xl font-bold text-ink">Mis Citas</h2>
+        <p className="text-muted">
           Solicita una cita para tus mascotas. Recepción la confirmará.
         </p>
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Formulario de solicitud */}
-        <section className="lg:col-span-1 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm h-fit">
-          <h3 className="font-bold mb-4 flex items-center gap-2">
-            <Icons.Plus size={18} className="text-primary" /> Solicitar cita
+        <section className="lg:col-span-1 bg-surface rounded-card border border-line p-6 h-fit">
+          <h3 className="font-bold mb-4 flex items-center gap-2 text-ink">
+            <Icons.Plus size={18} className="text-brand-ink" /> Solicitar cita
           </h3>
           <form onSubmit={submit} className="space-y-4">
             <div className="space-y-1">
-              <label className="text-xs font-black text-slate-500 uppercase tracking-widest">
+              <label className="text-xs font-black text-muted uppercase tracking-widest">
                 Mascota
               </label>
               <select
@@ -124,7 +121,7 @@ export const MiAgenda: React.FC = () => {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-black text-slate-500 uppercase tracking-widest">
+              <label className="text-xs font-black text-muted uppercase tracking-widest">
                 Tipo
               </label>
               <select
@@ -139,7 +136,7 @@ export const MiAgenda: React.FC = () => {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-black text-slate-500 uppercase tracking-widest">
+              <label className="text-xs font-black text-muted uppercase tracking-widest">
                 Fecha
               </label>
               <input
@@ -153,7 +150,7 @@ export const MiAgenda: React.FC = () => {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-black text-slate-500 uppercase tracking-widest">
+              <label className="text-xs font-black text-muted uppercase tracking-widest">
                 Hora (elige un horario libre)
               </label>
               <SlotPicker
@@ -165,7 +162,7 @@ export const MiAgenda: React.FC = () => {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-black text-slate-500 uppercase tracking-widest">
+              <label className="text-xs font-black text-muted uppercase tracking-widest">
                 Motivo (opcional)
               </label>
               <input
@@ -177,7 +174,7 @@ export const MiAgenda: React.FC = () => {
               />
             </div>
 
-            <p className="text-[11px] text-slate-500">
+            <p className="text-[11px] text-muted">
               Horario de atención: 08:00 a 20:00. No se pueden agendar fechas
               pasadas.
             </p>
@@ -185,7 +182,7 @@ export const MiAgenda: React.FC = () => {
             <button
               type="submit"
               disabled={saving}
-              className="w-full py-3 rounded-xl bg-primary text-slate-900 font-black uppercase tracking-widest disabled:opacity-50"
+              className="w-full py-3 rounded-xl bg-brand text-white font-black uppercase tracking-widest disabled:opacity-50 hover:bg-brand-strong transition-colors"
             >
               {saving ? "Enviando…" : "Solicitar cita"}
             </button>
@@ -193,10 +190,10 @@ export const MiAgenda: React.FC = () => {
         </section>
 
         {/* Historial */}
-        <section className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
-          <h3 className="font-bold mb-4">Historial de citas</h3>
+        <section className="lg:col-span-2 bg-surface rounded-card border border-line p-6">
+          <h3 className="font-bold mb-4 text-ink">Historial de citas</h3>
           {loading ? (
-            <p className="text-slate-400 italic">Cargando…</p>
+            <p className="text-muted italic">Cargando…</p>
           ) : citas.length === 0 ? (
             <div className="text-center py-12 opacity-40">
               <Icons.Agenda size={48} className="mx-auto" />
@@ -207,16 +204,16 @@ export const MiAgenda: React.FC = () => {
               {citas.map((c) => (
                 <div
                   key={c.id}
-                  className="flex items-center gap-4 p-4 rounded-xl border border-slate-100 dark:border-slate-800"
+                  className="flex items-center gap-4 p-4 rounded-xl border border-line"
                 >
-                  <div className="flex flex-col items-center justify-center w-24 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-center">
-                    <span className="text-xs font-bold">
+                  <div className="flex flex-col items-center justify-center w-24 py-2 rounded-lg bg-surface-2 text-center">
+                    <span className="text-xs font-bold text-ink">
                       {new Date(c.fecha_hora).toLocaleDateString("es-ES", {
                         day: "2-digit",
                         month: "short",
                       })}
                     </span>
-                    <span className="text-sm font-black">
+                    <span className="text-sm font-black text-ink">
                       {new Date(c.fecha_hora).toLocaleTimeString([], {
                         hour: "2-digit",
                         minute: "2-digit",
@@ -224,10 +221,10 @@ export const MiAgenda: React.FC = () => {
                     </span>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold truncate">{c.mascota.nombre}</p>
-                    <p className="text-xs text-slate-500 truncate">
-                      {c.motivo}
+                    <p className="font-bold truncate text-ink">
+                      {c.mascota.nombre}
                     </p>
+                    <p className="text-xs text-muted truncate">{c.motivo}</p>
                   </div>
                   <span
                     className={cn(
@@ -242,7 +239,7 @@ export const MiAgenda: React.FC = () => {
                               ? "bg-emerald-50 text-emerald-600 border-emerald-200"
                               : c.estado === "NO_ASISTIO"
                                 ? "bg-rose-50 text-rose-600 border-rose-200"
-                                : "bg-slate-100 text-slate-500 border-slate-200",
+                                : "bg-surface-2 text-muted border-line",
                     )}
                   >
                     {c.estado.replace("_", " ")}

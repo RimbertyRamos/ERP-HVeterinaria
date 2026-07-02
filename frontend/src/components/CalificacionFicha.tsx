@@ -8,12 +8,6 @@ interface CalificacionExistente {
   comentario?: string | null;
 }
 
-/**
- * Control de calificación (CU20) para una ficha COMPLETADA en el portal del
- * cliente. Si la ficha ya fue calificada (o se acaba de calificar), muestra la
- * calificación en solo lectura y no permite repetir. Se gatea por el permiso
- * `calificar_servicio` desde el componente padre (puedeCalificar).
- */
 export const CalificacionFicha: React.FC<{
   fichaId: string;
   servicioId?: string;
@@ -59,7 +53,6 @@ export const CalificacionFicha: React.FC<{
       toast.success("¡Gracias por tu calificación!");
     } catch (e: any) {
       const msg = e?.message ?? "";
-      // 409 → ya fue calificada: bloqueamos el doble intento.
       if (/calific/i.test(msg)) {
         setHecha({ puntaje: rating, comentario: comentario.trim() || null });
       }
@@ -70,23 +63,23 @@ export const CalificacionFicha: React.FC<{
   };
 
   return (
-    <div className="mt-3 border-t border-slate-100 dark:border-slate-700 pt-3">
+    <div className="mt-3 border-t border-line pt-3">
       {hecha ? (
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs font-medium text-slate-500">
+          <span className="text-xs font-medium text-muted">
             Tu calificación:
           </span>
           <StarRating value={hecha.puntaje} readOnly size={18} />
           {hecha.comentario && (
-            <span className="text-xs italic text-slate-400">
-              “{hecha.comentario}”
+            <span className="text-xs italic text-muted">
+              "{hecha.comentario}"
             </span>
           )}
         </div>
       ) : (
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-medium text-slate-500">
+            <span className="text-xs font-medium text-muted">
               Califica la atención:
             </span>
             <StarRating value={rating} onChange={setRating} />
@@ -97,20 +90,20 @@ export const CalificacionFicha: React.FC<{
             placeholder="Comentario (opcional)"
             rows={2}
             maxLength={1000}
-            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-primary dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            className="w-full rounded-lg border border-line bg-bg px-3 py-2 text-sm outline-none focus:border-brand text-ink"
           />
           <button
             type="button"
             onClick={enviar}
             disabled={saving}
-            className="rounded-lg bg-primary px-4 py-1.5 text-sm font-bold text-slate-900 hover:opacity-90 disabled:opacity-50"
+            className="rounded-lg bg-brand px-4 py-1.5 text-sm font-bold text-white hover:bg-brand-strong disabled:opacity-50 transition-colors"
           >
             {saving ? "Enviando…" : "Enviar calificación"}
           </button>
         </div>
       )}
       {promedio && promedio.total > 0 && (
-        <p className="mt-2 text-[11px] text-slate-400">
+        <p className="mt-2 text-[11px] text-muted">
           Promedio del servicio: {promedio.promedio.toFixed(1)}★ (
           {promedio.total} calificacion{promedio.total === 1 ? "" : "es"})
         </p>

@@ -7,11 +7,6 @@ interface Slot {
   libre: boolean;
 }
 
-/**
- * Muestra los horarios del día como botones y permite elegir un hueco LIBRE.
- * Los ocupados/pasados salen deshabilitados. Vuelve a consultar al cambiar
- * fecha, doctor o duración.
- */
 export const SlotPicker: React.FC<{
   fecha: string;
   doctorId?: string;
@@ -43,12 +38,10 @@ export const SlotPicker: React.FC<{
   }, [fecha, doctorId, duracion]);
 
   if (loading)
-    return (
-      <p className="text-xs text-slate-400 italic">Cargando horarios…</p>
-    );
+    return <p className="text-xs text-muted italic">Cargando horarios…</p>;
   if (slots.length === 0)
     return (
-      <p className="text-xs text-slate-400 italic">
+      <p className="text-xs text-muted italic">
         No hay horarios disponibles para esta fecha.
       </p>
     );
@@ -64,10 +57,10 @@ export const SlotPicker: React.FC<{
           className={cn(
             "py-2 rounded-lg text-xs font-bold border transition-colors",
             !s.libre
-              ? "bg-slate-100 dark:bg-slate-800 text-slate-300 dark:text-slate-600 border-transparent cursor-not-allowed line-through"
+              ? "bg-surface-2 text-muted/40 border-transparent cursor-not-allowed line-through"
               : value === s.hora
-                ? "bg-primary text-slate-900 border-primary"
-                : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-primary",
+                ? "bg-brand text-white border-brand"
+                : "bg-surface text-ink border-line hover:border-brand",
           )}
         >
           {s.hora}

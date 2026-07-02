@@ -28,7 +28,7 @@ export const StarRating: React.FC<{
             className={
               n <= activo
                 ? "text-amber-400"
-                : "text-slate-300 dark:text-slate-600"
+                : "text-muted/40"
             }
           >
             ★

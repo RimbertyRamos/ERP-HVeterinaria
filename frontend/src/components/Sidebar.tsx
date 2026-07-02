@@ -133,7 +133,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       <aside
         className={cn(
-          "flex flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 transition-all duration-300",
+          "flex flex-col border-r border-brand-strong bg-brand dark:bg-brand-strong text-white transition-all duration-300",
           // Cajón deslizable en móvil; fijo en su lugar en escritorio.
           "fixed inset-y-0 left-0 z-50 lg:static lg:translate-x-0",
           mobileOpen ? "translate-x-0" : "-translate-x-full",
@@ -147,16 +147,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
             colapsado ? "justify-center" : "gap-3",
           )}
         >
-          <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-primary/20 flex items-center justify-center text-primary">
-            <Icons.Patients size={24} />
+          <div className="h-11 w-11 shrink-0 overflow-hidden rounded-full bg-white flex items-center justify-center ring-1 ring-white/40">
+            <img
+              src="/logo-hev.png"
+              alt="Hospital Escuela de Veterinaria — UAGRM"
+              className="h-full w-full object-contain"
+            />
           </div>
           {!colapsado && (
             <>
               <div className="flex flex-1 flex-col overflow-hidden">
-                <h1 className="text-base font-bold text-slate-900 dark:text-slate-100">
+                <h1 className="font-display text-lg font-extrabold tracking-tight text-white">
                   VET-ERP
                 </h1>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-[11px] font-medium uppercase tracking-widest text-white/55">
                   Hospital Veterinario
                 </p>
               </div>
@@ -164,7 +168,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <button
                 onClick={toggleCollapsed}
                 title="Colapsar menú"
-                className="hidden lg:flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition-colors"
+                className="hidden lg:flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white/60 hover:bg-white/10 hover:text-white transition-colors"
               >
                 <Icons.ChevronRight size={18} className="rotate-180" />
               </button>
@@ -172,7 +176,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <button
                 onClick={onClose}
                 title="Cerrar menú"
-                className="flex lg:hidden h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition-colors"
+                className="flex lg:hidden h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white/60 hover:bg-white/10 hover:text-white transition-colors"
               >
                 <Icons.X size={18} />
               </button>
@@ -184,7 +188,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <button
             onClick={toggleCollapsed}
             title="Expandir menú"
-            className="mx-auto mb-2 flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200 transition-colors"
+            className="mx-auto mb-2 flex h-8 w-8 items-center justify-center rounded-lg text-white/60 hover:bg-white/10 hover:text-white transition-colors"
           >
             <Icons.ChevronRight size={18} />
           </button>
@@ -200,8 +204,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 "flex items-center rounded-lg py-2 text-sm font-medium transition-colors",
                 colapsado ? "justify-center px-2" : "gap-3 px-3",
                 currentView === item.id
-                  ? "bg-primary/10 text-primary font-bold"
-                  : "text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800",
+                  ? "bg-white text-brand-strong font-bold shadow-sm"
+                  : "text-white/70 hover:bg-white/10 hover:text-white",
               )}
             >
               <item.icon size={20} className="shrink-0" />
@@ -216,7 +220,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             onClick={() => setProfileOpen(true)}
             title="Mi perfil — cambiar contraseña"
             className={cn(
-              "flex w-full items-center rounded-xl border border-slate-200 dark:border-slate-700 p-3 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-800",
+              "flex w-full items-center rounded-card border border-white/15 p-3 text-left transition-colors hover:bg-white/10",
               colapsado ? "justify-center" : "gap-3",
             )}
           >
@@ -224,16 +228,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
               title={
                 colapsado ? `${user?.nombre ?? "Usuario"} · ${roleName}` : undefined
               }
-              className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary text-slate-900 font-bold text-sm"
+              className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/15 text-white font-bold text-sm"
             >
               {user?.nombre ? user.nombre.charAt(0).toUpperCase() : "?"}
             </div>
             {!colapsado && (
               <div className="flex flex-col overflow-hidden">
-                <p className="truncate text-sm font-bold text-slate-900 dark:text-slate-100">
+                <p className="truncate text-sm font-bold text-white">
                   {user?.nombre ?? "Usuario"}
                 </p>
-                <p className="truncate text-[10px] font-black uppercase tracking-widest text-slate-400">
+                <p className="truncate text-[10px] font-black uppercase tracking-widest text-white/55">
                   {roleName || "Personal"}
                 </p>
               </div>

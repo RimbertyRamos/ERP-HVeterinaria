@@ -1,12 +1,63 @@
 @import "tailwindcss";
 
-/* Allow manual dark mode toggle using .dark class on html/body */
+/* Modo oscuro manual por clase .dark en <html> */
 @custom-variant dark (&:is(.dark *));
-@theme {
-  --color-primary: #facc15; /* Yellow-400 */
-  --color-primary-dark: #eab308; /* Yellow-500 */
 
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+/* ── Variables mode-aware (cambian en .dark) ──────────────────────────────
+   Neutros CÁLIDOS (hueso/crema), coherentes con el crema del logo HEV-FCV.
+   El guindo como TEXTO/acento (brand-ink) se aclara a rosa/arcilla en oscuro. */
+:root {
+  --bg: #f5f1ea; /* hueso cálido */
+  --surface: #fcfaf6; /* casi blanco cálido */
+  --surface-2: #efe9df; /* superficie secundaria (hover/relleno) */
+  --ink: #241f1c; /* carbón cálido */
+  --muted: #6f675f; /* texto tenue cálido */
+  --line: #e7dfd4; /* borde hairline cálido */
+  --brand-ink: #70140c; /* guindo como texto/acento sobre superficies */
+}
+.dark {
+  --bg: #1a1512; /* casi negro cálido */
+  --surface: #241d19;
+  --surface-2: #2f2621;
+  --ink: #f2eae1;
+  --muted: #a99e92;
+  --line: #3a302a;
+  --brand-ink: #e0938b; /* rosa/arcilla: guindo legible en oscuro */
+}
+
+@theme {
+  /* Marca — guindo del logo HEV-FCV-UAGRM (muestreado del PNG: #70140C).
+     Es un color de FONDO (botones/sidebar) estable en claro y oscuro. */
+  --color-brand: #70140c;
+  --color-brand-strong: #560d07; /* hover/active */
+  --color-brand-soft: #f1e1de; /* tinte muy claro para chips/activos en claro */
+  --color-brand-ink: var(--brand-ink); /* mode-aware: texto/acento de marca */
+
+  /* Neutros cálidos (mode-aware) */
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+
+  /* Acento cálido (uso mínimo) */
+  --color-accent: #c69a4e; /* dorado tenue */
+
+  /* Semánticos — distintos del guindo; peligro más vivo/frío para no
+     confundir "eliminar" con la marca. Legibles sobre crema y sobre oscuro. */
+  --color-success: #2e7d46;
+  --color-warning: #b45309;
+  --color-danger: #dc2626;
+  --color-info: #1d4ed8;
+
+  /* Tipografía: display con carácter (moderación) + UI legible con números limpios */
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+
+  /* Radio deliberado en 2 niveles (no 16px en todo) */
+  --radius-card: 10px;
+  --radius-chip: 6px;
 }
 
 @layer base {
@@ -15,9 +66,6 @@
   #root {
     height: 100%;
   }
-  /* Declaramos explícitamente el esquema de color según el tema activo.
-     Así los navegadores con "modo oscuro forzado" (Brave, Comet, etc.)
-     respetan el tema de la app en vez de oscurecerla por su cuenta. */
   html {
     color-scheme: light;
   }
@@ -25,24 +73,49 @@
     color-scheme: dark;
   }
   body {
-    @apply text-slate-900 bg-slate-50 antialiased;
+    @apply antialiased;
+    background-color: var(--color-bg);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+  }
+  /* Foco de teclado visible (anillo guindo / arcilla en oscuro) */
+  :focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
+  }
+  html.dark :focus-visible {
+    outline-color: var(--brand-ink);
   }
 }
 
-/* Custom Scrollbar */
+/* Cifras tabulares para precios/fechas/tablas alineadas */
+.tnum {
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* Animación mínima: respeta reduce-motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Scrollbar cálido */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
-
 ::-webkit-scrollbar-track {
-  @apply bg-transparent;
+  background: transparent;
 }
-
 ::-webkit-scrollbar-thumb {
-  @apply bg-slate-200 dark:bg-slate-800 rounded-full;
+  background: var(--color-line);
+  border-radius: 9999px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-slate-300 dark:bg-slate-700;
+  background: var(--color-muted);
 }

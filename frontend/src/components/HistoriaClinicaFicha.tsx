@@ -566,7 +566,7 @@ export const HistoriaClinicaFicha = forwardRef<HistoriaFichaHandle, Props>(
           )}
         </div>
         {evoluciones.length === 0 ? (
-          <p className="text-xs text-slate-400">Sin evoluciones registradas.</p>
+          <p className="text-xs text-muted">Sin evoluciones registradas.</p>
         ) : (
           <div className="space-y-1">
             {evoluciones.map((ev, i) => (
@@ -645,7 +645,7 @@ export const HistoriaClinicaFicha = forwardRef<HistoriaFichaHandle, Props>(
       <div className="hc-no-print mt-4 flex justify-end gap-3">
         <button
           onClick={handlePrint}
-          className="px-4 py-2 rounded-lg border border-slate-300 text-sm font-bold text-slate-700 hover:bg-slate-100"
+          className="px-4 py-2 rounded-lg border border-line text-sm font-bold text-muted hover:bg-surface-2"
         >
           Imprimir / PDF
         </button>
@@ -654,7 +654,7 @@ export const HistoriaClinicaFicha = forwardRef<HistoriaFichaHandle, Props>(
             <button
               onClick={guardar}
               disabled={saving}
-              className="px-4 py-2 rounded-lg bg-slate-200 text-slate-800 text-sm font-bold hover:bg-slate-300 disabled:opacity-50"
+              className="px-4 py-2 rounded-lg bg-surface-2 text-ink text-sm font-bold hover:bg-surface-2/80 disabled:opacity-50"
             >
               {saving ? "Guardando…" : "Guardar borrador"}
             </button>

@@ -328,30 +328,30 @@ export const POS: React.FC = () => {
       {arqueoOpen && <ArqueoModal onClose={() => setArqueoOpen(false)} />}
 
       {/* ── Izquierda: Lista ── */}
-      <section className="flex-1 flex flex-col bg-slate-50 dark:bg-slate-950 overflow-y-auto p-8">
+      <section className="flex-1 flex flex-col bg-bg overflow-y-auto p-8">
         <header className="mb-6">
           <div className="flex justify-between items-end">
             <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+              <h2 className="text-2xl font-bold text-ink">
                 Caja Central
               </h2>
               <button
                 onClick={() => setArqueoOpen(true)}
                 title="Arqueo y cierre de caja"
-                className="flex items-center gap-1.5 rounded-lg border border-primary/40 bg-primary/10 px-3 py-1.5 text-xs font-bold text-primary hover:bg-primary/20 transition-colors"
+                className="flex items-center gap-1.5 rounded-lg border border-brand/40 bg-brand/10 px-3 py-1.5 text-xs font-bold text-brand hover:bg-brand/20 transition-colors"
               >
                 <Icons.POS size={16} />
                 Arqueo / Cierre
               </button>
             </div>
-            <div className="flex bg-white dark:bg-slate-900 p-1 rounded-lg border border-slate-200 dark:border-slate-800">
+            <div className="flex bg-surface p-1 rounded-lg border border-line">
               <button
                 onClick={() => setTab("CONSULTAS")}
                 className={cn(
                   "px-4 py-1.5 text-sm font-bold rounded-md transition-colors",
                   tab === "CONSULTAS"
-                    ? "bg-primary text-slate-900"
-                    : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300",
+                    ? "bg-brand text-white"
+                    : "text-muted hover:text-ink",
                 )}
               >
                 Cobrar Consultas
@@ -361,8 +361,8 @@ export const POS: React.FC = () => {
                 className={cn(
                   "px-4 py-1.5 text-sm font-bold rounded-md transition-colors",
                   tab === "VENTA_DIRECTA"
-                    ? "bg-primary text-slate-900"
-                    : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300",
+                    ? "bg-brand text-white"
+                    : "text-muted hover:text-ink",
                 )}
               >
                 Venta Directa
@@ -372,8 +372,8 @@ export const POS: React.FC = () => {
                 className={cn(
                   "px-4 py-1.5 text-sm font-bold rounded-md transition-colors",
                   tab === "HISTORIAL"
-                    ? "bg-primary text-slate-900"
-                    : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300",
+                    ? "bg-brand text-white"
+                    : "text-muted hover:text-ink",
                 )}
               >
                 Historial
@@ -383,11 +383,11 @@ export const POS: React.FC = () => {
 
           <div className="mt-4 relative">
             <Icons.Search
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-muted"
               size={18}
             />
             <input
-              className="w-full pl-11 pr-4 py-3 rounded-xl border-none bg-white dark:bg-slate-900 shadow-sm text-slate-900 dark:text-white placeholder:text-slate-500 focus:ring-2 focus:ring-primary outline-none"
+              className="w-full pl-11 pr-4 py-3 rounded-xl border-none bg-surface text-ink placeholder:text-muted focus:ring-2 focus:ring-brand outline-none"
               placeholder={
                 tab === "CONSULTAS"
                   ? "Buscar por paciente, dueño o código..."
@@ -424,7 +424,7 @@ export const POS: React.FC = () => {
         {/* CONTENIDO SEGUN TAB */}
         {tab === "CONSULTAS" ? (
           <div className="space-y-3">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+            <h3 className="text-xs font-bold text-muted uppercase tracking-wider">
               Fichas Pendientes de Cobro{" "}
               {fichas.length > 0 && `(${fichas.length})`}
             </h3>
@@ -432,11 +432,11 @@ export const POS: React.FC = () => {
               [...Array(3)].map((_, i) => (
                 <div
                   key={i}
-                  className="h-28 rounded-xl bg-white dark:bg-slate-900 animate-pulse"
+                  className="h-28 rounded-card bg-surface-2 animate-pulse"
                 />
               ))
             ) : fichasFiltradas.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-20 text-slate-400 space-y-3">
+              <div className="flex flex-col items-center justify-center py-20 text-muted space-y-3">
                 <Icons.CheckCircle2 size={48} className="opacity-20" />
                 <p className="font-medium">No hay fichas pendientes de cobro</p>
               </div>
@@ -449,10 +449,10 @@ export const POS: React.FC = () => {
                     key={f.id}
                     onClick={() => handleSeleccionarFicha(f)}
                     className={cn(
-                      "bg-white dark:bg-slate-900 rounded-xl p-5 shadow-sm border-2 transition-all cursor-pointer",
+                      "bg-surface rounded-card p-5 border-2 transition-all cursor-pointer",
                       isActive
-                        ? "border-primary shadow-primary/20 shadow-md"
-                        : "border-transparent hover:border-primary/30",
+                        ? "border-brand shadow-brand/20 shadow-md"
+                        : "border-transparent hover:border-brand/30",
                     )}
                   >
                     <div className="flex justify-between items-start mb-3">
@@ -461,19 +461,19 @@ export const POS: React.FC = () => {
                           <Icons.Patients size={18} />
                         </div>
                         <div>
-                          <h4 className="font-bold text-slate-900 dark:text-white">
+                          <h4 className="font-bold text-ink">
                             {f.mascota.nombre}
                           </h4>
-                          <p className="text-xs text-slate-500">
+                          <p className="text-xs text-muted">
                             Dueño: {f.mascota.propietario.nombre}
                           </p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <span className="text-xs text-slate-400 font-mono">
+                        <span className="text-xs text-muted font-mono">
                           {f.cod_ficha}
                         </span>
-                        <p className="text-lg font-extrabold text-slate-900 dark:text-white">
+                        <p className="text-lg font-extrabold text-ink">
                           Bs.{t.toFixed(2)}
                         </p>
                       </div>
@@ -494,14 +494,14 @@ export const POS: React.FC = () => {
               ? [...Array(8)].map((_, i) => (
                   <div
                     key={i}
-                    className="h-32 rounded-xl bg-white dark:bg-slate-900 animate-pulse"
+                    className="h-32 rounded-card bg-surface-2 animate-pulse"
                   />
                 ))
               : productosFiltrados.map((p) => (
                   <div
                     key={p.id}
                     onClick={() => handleAddToCart(p)}
-                    className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 cursor-pointer hover:border-primary/50 hover:shadow-md transition-all flex flex-col h-full text-center group relative overflow-hidden"
+                    className="bg-surface border border-line rounded-card p-4 cursor-pointer hover:border-brand/50 hover:shadow-md transition-all flex flex-col h-full text-center group relative overflow-hidden"
                   >
                     {p.stock_actual <= 0 && (
                       <div className="absolute inset-0 bg-white/60 dark:bg-slate-900/60 backdrop-blur-[1px] flex items-center justify-center z-10">
@@ -513,17 +513,17 @@ export const POS: React.FC = () => {
                     <div className="text-3xl mb-2 group-hover:scale-110 transition-transform">
                       💊
                     </div>
-                    <h4 className="text-sm font-bold text-slate-900 dark:text-white flex-1">
+                    <h4 className="text-sm font-bold text-ink flex-1">
                       {p.nombre}
                     </h4>
-                    <p className="text-xs text-slate-500 font-mono my-1">
+                    <p className="text-xs text-muted font-mono my-1">
                       {p.categoria?.nombre || "General"}
                     </p>
-                    <div className="mt-auto flex justify-between items-center pt-2 border-t border-slate-100 dark:border-slate-800">
-                      <span className="text-xs font-medium text-slate-400">
+                    <div className="mt-auto flex justify-between items-center pt-2 border-t border-line">
+                      <span className="text-xs font-medium text-muted">
                         Stock: {p.stock_actual}
                       </span>
-                      <span className="text-sm font-extrabold text-primary">
+                      <span className="text-sm font-extrabold text-brand-ink">
                         Bs.{Number(p.precio_venta).toFixed(2)}
                       </span>
                     </div>
@@ -538,7 +538,7 @@ export const POS: React.FC = () => {
                 onChange={(e) =>
                   setFiltroPeriodo(e.target.value as FiltroPeriodo)
                 }
-                className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
+                className="rounded-lg border border-line bg-surface px-3 py-2 text-sm"
               >
                 <option value="DIA">Por día</option>
                 <option value="MES">Por mes</option>
@@ -548,18 +548,18 @@ export const POS: React.FC = () => {
                 type="date"
                 value={fechaFiltro}
                 onChange={(e) => setFechaFiltro(e.target.value)}
-                className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm"
+                className="rounded-lg border border-line bg-surface px-3 py-2 text-sm"
               />
             </div>
             {loadingRecibos ? (
               [...Array(3)].map((_, i) => (
                 <div
                   key={i}
-                  className="h-24 rounded-xl bg-white dark:bg-slate-900 animate-pulse"
+                  className="h-24 rounded-card bg-surface-2 animate-pulse"
                 />
               ))
             ) : recibosFiltrados.length === 0 ? (
-              <div className="py-20 text-center text-slate-400">
+              <div className="py-20 text-center text-muted">
                 No hay pagos para ese filtro.
               </div>
             ) : (
@@ -576,19 +576,19 @@ export const POS: React.FC = () => {
                 .map((r) => (
                   <div
                     key={r.id}
-                    className="bg-white dark:bg-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-800 shadow-sm"
+                    className="bg-surface rounded-card p-5 border border-line"
                   >
                     <div className="flex justify-between items-start">
                       <div>
-                        <p className="font-bold text-slate-900 dark:text-white">
+                        <p className="font-bold text-ink">
                           {r.num_recibo}
                         </p>
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-muted">
                           {new Date(r.fecha_pago).toLocaleString()} · Cajero:{" "}
                           {r.cajero?.nombre}
                         </p>
                         {r.nombre_cliente && (
-                          <p className="text-xs text-slate-500">
+                          <p className="text-xs text-muted">
                             Cliente: {r.nombre_cliente}
                           </p>
                         )}
@@ -599,7 +599,7 @@ export const POS: React.FC = () => {
                         </p>
                         <button
                           onClick={() => printRecibo(r)}
-                          className="mt-1 text-xs font-bold text-primary flex items-center gap-1"
+                          className="mt-1 text-xs font-bold text-brand-ink flex items-center gap-1"
                         >
                           <Icons.Printer size={12} /> Imprimir
                         </button>
@@ -613,12 +613,12 @@ export const POS: React.FC = () => {
       </section>
 
       {/* ── Derecha: checkout ── */}
-      <aside className="w-96 bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 flex flex-col shadow-xl z-10">
-        <div className="p-6 border-b border-slate-100 dark:border-slate-800">
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+      <aside className="w-96 bg-surface border-l border-line flex flex-col shadow-xl z-10">
+        <div className="p-6 border-b border-line">
+          <h2 className="text-xl font-bold text-ink">
             Detalle del Cobro
           </h2>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-muted mt-1">
             {tab === "CONSULTAS"
               ? selectedFicha
                 ? `${selectedFicha.cod_ficha} — ${selectedFicha.mascota.nombre}`
@@ -630,7 +630,7 @@ export const POS: React.FC = () => {
         <div className="flex-1 overflow-y-auto p-6 space-y-3">
           {tab === "CONSULTAS" ? (
             !selectedFicha ? (
-              <div className="h-full flex flex-col items-center justify-center text-slate-400 space-y-4">
+              <div className="h-full flex flex-col items-center justify-center text-muted space-y-4">
                 <Icons.POS size={48} className="opacity-20" />
                 <p className="text-sm font-medium text-center">
                   Selecciona una ficha
@@ -642,7 +642,7 @@ export const POS: React.FC = () => {
               buildLineasFicha(selectedFicha).map((l, i) => (
                 <div
                   key={i}
-                  className="flex justify-between items-center py-2 border-b border-slate-50 dark:border-slate-800"
+                  className="flex justify-between items-center py-2 border-b border-line/50"
                 >
                   <div>
                     <span
@@ -658,18 +658,18 @@ export const POS: React.FC = () => {
                     >
                       {l.tipo}
                     </span>
-                    <span className="text-sm text-slate-700 dark:text-slate-300">
+                    <span className="text-sm text-ink">
                       {l.desc}
                     </span>
                   </div>
-                  <span className="text-sm font-bold text-slate-900 dark:text-white">
+                  <span className="text-sm font-bold text-ink">
                     Bs.{l.subtotal.toFixed(2)}
                   </span>
                 </div>
               ))
             )
           ) : cart.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-slate-400 space-y-4">
+            <div className="h-full flex flex-col items-center justify-center text-muted space-y-4">
               <Icons.POS size={48} className="opacity-20" />
               <p className="text-sm font-medium text-center">
                 Agrega productos
@@ -681,11 +681,11 @@ export const POS: React.FC = () => {
             cart.map((item, i) => (
               <div
                 key={i}
-                className="flex justify-between items-center py-2 border-b border-slate-50 dark:border-slate-800 group"
+                className="flex justify-between items-center py-2 border-b border-line/50 group"
               >
                 <div className="flex-1">
                   <div className="flex justify-between">
-                    <span className="text-sm font-bold text-slate-700 dark:text-slate-300 line-clamp-1 pr-2">
+                    <span className="text-sm font-bold text-ink line-clamp-1 pr-2">
                       {item.producto.nombre}
                     </span>
                     <button
@@ -696,11 +696,11 @@ export const POS: React.FC = () => {
                     </button>
                   </div>
                   <div className="flex justify-between mt-1">
-                    <span className="text-[10px] font-mono text-slate-500">
+                    <span className="text-[10px] font-mono text-muted">
                       {item.cantidad} x Bs.
                       {Number(item.producto.precio_venta).toFixed(2)}
                     </span>
-                    <span className="text-sm font-bold text-slate-900 dark:text-white">
+                    <span className="text-sm font-bold text-ink">
                       Bs.
                       {(
                         item.cantidad * Number(item.producto.precio_venta)
@@ -715,10 +715,10 @@ export const POS: React.FC = () => {
 
         {((tab === "CONSULTAS" && selectedFicha) ||
           (tab === "VENTA_DIRECTA" && cart.length > 0)) && (
-          <div className="p-6 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-800 space-y-4">
+          <div className="p-6 bg-surface-2/50 border-t border-line space-y-4">
             {tab === "VENTA_DIRECTA" && (
               <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                <label className="text-xs font-bold text-muted uppercase tracking-wider">
                   Cliente (Opcional)
                 </label>
                 <input
@@ -726,7 +726,7 @@ export const POS: React.FC = () => {
                   placeholder="Nombre de cliente sin registro"
                   value={nombreCliente}
                   onChange={(e) => setNombreCliente(e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full rounded-lg border border-line bg-bg px-3 py-2 text-sm text-ink outline-none focus:ring-2 focus:ring-brand"
                 />
               </div>
             )}
@@ -734,10 +734,10 @@ export const POS: React.FC = () => {
             {/* Descuento */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                <label className="text-xs font-bold text-muted uppercase tracking-wider">
                   Descuento
                 </label>
-                <div className="flex overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-bold">
+                <div className="flex overflow-hidden rounded-lg border border-line text-xs font-bold">
                   {(["MONTO", "PORCENTAJE"] as TipoDescuento[]).map((t) => (
                     <button
                       key={t}
@@ -746,8 +746,8 @@ export const POS: React.FC = () => {
                       className={cn(
                         "px-3 py-1 transition-colors",
                         tipoDescuento === t
-                          ? "bg-primary text-slate-900"
-                          : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300",
+                          ? "bg-brand text-white"
+                          : "text-muted hover:text-ink",
                       )}
                     >
                       {t === "MONTO" ? "Bs." : "%"}
@@ -766,10 +766,10 @@ export const POS: React.FC = () => {
                   tipoDescuento === "PORCENTAJE" ? "0 – 100 %" : "Bs. 0.00"
                 }
                 className={cn(
-                  "w-full rounded-lg border bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-primary",
+                  "w-full rounded-lg border bg-bg px-3 py-2 text-sm text-ink outline-none focus:ring-2 focus:ring-brand",
                   descInvalido
                     ? "border-red-400"
-                    : "border-slate-200 dark:border-slate-700",
+                    : "border-line",
                 )}
               />
               {descInvalido && (
@@ -782,8 +782,8 @@ export const POS: React.FC = () => {
             </div>
 
             {/* Resumen del total */}
-            <div className="space-y-1 py-2 border-b border-dashed border-slate-200 dark:border-slate-700">
-              <div className="flex justify-between text-sm text-slate-500">
+            <div className="space-y-1 py-2 border-b border-dashed border-line">
+              <div className="flex justify-between text-sm text-muted">
                 <span>Subtotal</span>
                 <span>Bs.{total.toFixed(2)}</span>
               </div>
@@ -797,10 +797,10 @@ export const POS: React.FC = () => {
                 </div>
               )}
               <div className="flex justify-between items-end pt-1">
-                <span className="text-base font-bold text-slate-900 dark:text-white">
+                <span className="text-base font-bold text-ink">
                   Total a Pagar
                 </span>
-                <span className="text-2xl font-extrabold text-slate-900 dark:text-white">
+                <span className="text-2xl font-extrabold text-ink">
                   Bs.{totalNeto.toFixed(2)}
                 </span>
               </div>
@@ -815,8 +815,8 @@ export const POS: React.FC = () => {
                   className={cn(
                     "flex flex-col items-center justify-center p-3 rounded-lg border-2 text-xs font-bold transition-all",
                     metodo === m
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "border-slate-200 dark:border-slate-700 text-slate-500 hover:border-primary/40",
+                      ? "border-brand bg-brand/10 text-brand"
+                      : "border-line text-muted hover:border-brand/40",
                   )}
                 >
                   {m === "EFECTIVO" && <Icons.POS size={18} className="mb-1" />}
@@ -838,10 +838,10 @@ export const POS: React.FC = () => {
             <button
               onClick={handleCobrar}
               disabled={procesando || descInvalido}
-              className="w-full bg-primary hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed text-slate-900 font-bold text-base py-3.5 rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2"
+              className="w-full bg-brand hover:bg-brand-strong disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-base py-3.5 rounded-xl shadow-lg shadow-brand/20 transition-all flex items-center justify-center gap-2"
             >
               {procesando ? (
-                <div className="h-5 w-5 border-2 border-slate-900 border-t-transparent rounded-full animate-spin" />
+                <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
               ) : (
                 <>
                   <span>Procesar Pago</span>

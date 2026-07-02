@@ -222,20 +222,20 @@ export const WaitingRoom: React.FC<{ onClose?: () => void }> = ({
       className="flex h-full w-full flex-col bg-slate-950 text-white overflow-hidden font-sans"
     >
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-primary/10 rounded-full blur-[120px]" />
+        <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-brand/15 rounded-full blur-[120px]" />
       </div>
 
       {/* Header */}
       <header className="relative flex h-24 items-center justify-between px-12 border-b border-white/5 bg-slate-900/50 backdrop-blur-md flex-shrink-0">
         <div className="flex items-center gap-6">
-          <div className="h-14 w-14 bg-primary rounded-2xl flex items-center justify-center text-slate-900 shadow-[0_0_30px_rgba(163,230,53,0.4)]">
+          <div className="h-14 w-14 bg-brand rounded-2xl flex items-center justify-center text-white">
             <Icons.WaitingRoom size={32} />
           </div>
           <div>
             <h1 className="text-3xl font-black tracking-tighter uppercase italic text-white">
               SALA DE ESPERA
             </h1>
-            <p className="text-primary font-bold text-xs uppercase tracking-[0.3em]">
+            <p className="text-brand-soft font-bold text-xs uppercase tracking-[0.3em]">
               Hospital Veterinario Integral
             </p>
           </div>
@@ -275,7 +275,7 @@ export const WaitingRoom: React.FC<{ onClose?: () => void }> = ({
             Consultorios
           </h2>
           <span className="text-xs font-bold text-slate-400">
-            <span className="text-primary">{salasLibres.length}</span> de{" "}
+            <span className="text-emerald-400">{salasLibres.length}</span> de{" "}
             {consultorios.length} libres
           </span>
         </div>
@@ -327,7 +327,7 @@ export const WaitingRoom: React.FC<{ onClose?: () => void }> = ({
         <div className="lg:col-span-7 p-12 overflow-y-auto">
           <h2 className="text-xl font-black uppercase tracking-widest text-slate-500 mb-8">
             Próximos Turnos
-            <span className="ml-3 text-base text-primary">
+            <span className="ml-3 text-base text-brand-soft">
               ({enEspera.length})
             </span>
           </h2>
@@ -383,7 +383,7 @@ export const WaitingRoom: React.FC<{ onClose?: () => void }> = ({
                     <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => setIniciarId(ficha.id)}
-                        className="px-3 py-2 bg-primary text-slate-900 rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-1 hover:bg-primary/80 transition-colors"
+                        className="px-3 py-2 bg-brand text-white rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-1 hover:bg-brand-strong transition-colors"
                         title="Asignar sala e iniciar atención"
                       >
                         <Icons.ChevronRight size={14} /> Iniciar
@@ -444,7 +444,7 @@ export const WaitingRoom: React.FC<{ onClose?: () => void }> = ({
             {enCurso.map((ficha) => (
               <div
                 key={ficha.id}
-                className="p-8 rounded-[40px] bg-gradient-to-br from-primary to-emerald-500 text-slate-950"
+                className="p-8 rounded-[40px] bg-brand text-white"
               >
                 <h3 className="text-5xl font-black uppercase tracking-tighter mb-2">
                   {ficha.mascota.nombre}
@@ -481,7 +481,7 @@ export const WaitingRoom: React.FC<{ onClose?: () => void }> = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[200] bg-primary flex flex-col items-center justify-center text-slate-950 text-center cursor-pointer"
+            className="fixed inset-0 z-[200] bg-brand flex flex-col items-center justify-center text-white text-center cursor-pointer"
             onClick={() => setCalling(null)}
           >
             <p className="text-2xl font-black uppercase tracking-[0.5em] opacity-60 mb-4">
@@ -522,7 +522,7 @@ export const WaitingRoom: React.FC<{ onClose?: () => void }> = ({
                   <h3 className="text-lg font-black uppercase tracking-widest text-white">
                     Iniciar Atención
                   </h3>
-                  <p className="text-primary font-bold text-sm mt-0.5">
+                  <p className="text-brand-soft font-bold text-sm mt-0.5">
                     {fichaModal.mascota.nombre} · {fichaModal.cod_ficha}
                   </p>
                 </div>
@@ -548,7 +548,7 @@ export const WaitingRoom: React.FC<{ onClose?: () => void }> = ({
                         doctor_id: e.target.value,
                       }))
                     }
-                    className="w-full h-12 px-4 rounded-xl bg-slate-800 border border-white/10 text-white outline-none focus:border-primary transition-colors"
+                    className="w-full h-12 px-4 rounded-xl bg-slate-800 border border-white/10 text-white outline-none focus:border-brand transition-colors"
                   >
                     <option value="">— Seleccionar doctor —</option>
                     {doctores.map((d) => (
@@ -581,7 +581,7 @@ export const WaitingRoom: React.FC<{ onClose?: () => void }> = ({
                         doctor_id: doctorDeSala(consultorio_id) || f.doctor_id,
                       }));
                     }}
-                    className="w-full h-12 px-4 rounded-xl bg-slate-800 border border-white/10 text-white outline-none focus:border-primary transition-colors"
+                    className="w-full h-12 px-4 rounded-xl bg-slate-800 border border-white/10 text-white outline-none focus:border-brand transition-colors"
                   >
                     <option value="">— Seleccionar sala libre —</option>
                     {salas.map((s) => (
@@ -604,7 +604,7 @@ export const WaitingRoom: React.FC<{ onClose?: () => void }> = ({
                     !iniciarForm.doctor_id ||
                     !iniciarForm.consultorio_id
                   }
-                  className="w-full py-4 rounded-2xl bg-primary text-slate-900 font-black uppercase tracking-widest hover:bg-primary/90 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-primary/20"
+                  className="w-full py-4 rounded-2xl bg-brand text-white font-black uppercase tracking-widest hover:bg-brand-strong transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   {isSaving ? "Iniciando..." : "▶  Llamar y Asignar Sala"}
                 </button>
@@ -618,7 +618,7 @@ export const WaitingRoom: React.FC<{ onClose?: () => void }> = ({
       <footer className="h-16 bg-slate-900 border-t border-white/5 flex items-center overflow-hidden flex-shrink-0">
         <div className="whitespace-nowrap animate-marquee flex items-center gap-20">
           <span className="flex items-center gap-3 text-sm font-bold uppercase tracking-widest text-slate-400">
-            <Icons.Activity className="text-primary" size={16} /> Bienvenido al
+            <Icons.Activity className="text-brand-soft" size={16} /> Bienvenido al
             Hospital Veterinario Integral
           </span>
           <span className="flex items-center gap-3 text-sm font-bold uppercase tracking-widest text-slate-400">
@@ -626,7 +626,7 @@ export const WaitingRoom: React.FC<{ onClose?: () => void }> = ({
             emergencias 24 horas
           </span>
           <span className="flex items-center gap-3 text-sm font-bold uppercase tracking-widest text-slate-400">
-            <Icons.Clinical className="text-primary" size={16} /> Atención
+            <Icons.Clinical className="text-brand-soft" size={16} /> Atención
             veterinaria profesional y cercana
           </span>
         </div>

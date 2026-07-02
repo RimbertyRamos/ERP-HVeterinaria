@@ -54,9 +54,9 @@ export const LeadModal: React.FC<{
   };
 
   const inputCls =
-    "w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition-shadow text-slate-900 dark:text-white";
+    "w-full px-4 py-3 rounded-xl bg-bg border border-line text-sm outline-none focus:ring-2 focus:ring-brand transition-shadow text-ink";
   const labelCls =
-    "text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 block";
+    "text-xs font-bold text-muted uppercase tracking-wider mb-1 block";
 
   return (
     <div
@@ -65,10 +65,10 @@ export const LeadModal: React.FC<{
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="relative w-full max-w-md my-8 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl p-6">
+      <div className="relative w-full max-w-md my-8 bg-surface rounded-card border border-line shadow-2xl p-6">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+          className="absolute top-4 right-4 text-muted hover:text-ink"
           aria-label="Cerrar"
         >
           <X size={20} />
@@ -79,27 +79,27 @@ export const LeadModal: React.FC<{
             <div className="h-14 w-14 mx-auto rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mb-4">
               <Check size={28} className="text-emerald-600" />
             </div>
-            <h3 className="text-lg font-black text-slate-900 dark:text-white">
+            <h3 className="text-lg font-black text-ink">
               ¡Solicitud enviada!
             </h3>
-            <p className="text-sm text-slate-500 mt-2">
+            <p className="text-sm text-muted mt-2">
               Gracias por tu interés{plan ? ` en el plan ${plan}` : ""}. Nuestro
               equipo te contactará muy pronto.
             </p>
             <button
               onClick={onClose}
-              className="mt-6 px-6 py-2.5 rounded-xl bg-gradient-to-r from-yellow-400 to-amber-500 text-slate-900 font-bold"
+              className="mt-6 px-6 py-2.5 rounded-xl bg-brand text-white font-bold hover:bg-brand-strong transition-colors"
             >
               Cerrar
             </button>
           </div>
         ) : (
           <>
-            <h3 className="text-xl font-black text-slate-900 dark:text-white pr-8">
+            <h3 className="text-xl font-black text-ink pr-8">
               {titulo ?? (plan ? `Solicitar plan ${plan}` : "Solicita información")}
             </h3>
             {subtitulo && (
-              <p className="text-sm text-slate-500 mt-1">{subtitulo}</p>
+              <p className="text-sm text-muted mt-1">{subtitulo}</p>
             )}
 
             <form onSubmit={submit} className="space-y-3 mt-5" autoComplete="off">
@@ -172,7 +172,7 @@ export const LeadModal: React.FC<{
               <button
                 type="submit"
                 disabled={enviando}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-yellow-400 to-amber-500 text-slate-900 font-bold disabled:opacity-60 flex items-center justify-center gap-2"
+                className="w-full py-3 rounded-xl bg-brand text-white font-bold hover:bg-brand-strong disabled:opacity-60 flex items-center justify-center gap-2 transition-colors"
               >
                 {enviando ? (
                   <>

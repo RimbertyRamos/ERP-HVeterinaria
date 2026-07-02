@@ -54,9 +54,9 @@ const tipoColor = (tipo_item?: string) => {
 };
 
 const inputCls =
-  "w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary text-slate-900 dark:text-slate-100";
+  "w-full rounded-lg border border-line bg-bg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand text-ink";
 const labelCls =
-  "block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1";
+  "block text-xs font-bold text-muted mb-1";
 
 export const Inventory: React.FC = () => {
   const [productos, setProductos] = useState<Producto[]>([]);
@@ -242,13 +242,13 @@ export const Inventory: React.FC = () => {
           </p>
         </div>
         <div className="flex gap-3">
-          <button className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+          <button className="flex items-center gap-2 rounded-lg border border-line bg-surface px-4 py-2 text-sm font-bold text-ink hover:bg-surface-2 transition-colors">
             <Icons.Download size={18} />
             <span>Exportar CSV</span>
           </button>
           <button
             onClick={openCreate}
-            className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-slate-900 hover:bg-primary-dark transition-colors shadow-sm"
+            className="flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-strong transition-colors"
           >
             <Icons.Plus size={20} />
             <span>Nuevo Producto</span>
@@ -277,48 +277,48 @@ export const Inventory: React.FC = () => {
           </p>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div className="bg-surface p-6 rounded-card border border-line">
           <div className="flex justify-between items-start mb-4">
-            <div className="p-2 bg-primary/20 text-primary rounded-lg">
+            <div className="p-2 bg-brand-soft text-brand-ink rounded-lg">
               <Icons.POS size={18} />
             </div>
           </div>
-          <p className="text-slate-500 text-sm font-medium">Valor Inventario</p>
-          <p className="text-2xl font-bold mt-1">
+          <p className="text-muted text-sm font-medium">Valor Inventario</p>
+          <p className="text-2xl font-bold mt-1 text-ink">
             {loading ? "—" : `Bs.${valorInventario.toFixed(0)}`}
           </p>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div className="bg-surface p-6 rounded-card border border-line">
           <div className="flex justify-between items-start mb-4">
             <div className="p-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 rounded-lg">
               <Icons.FileText size={18} />
             </div>
           </div>
-          <p className="text-slate-500 text-sm font-medium">Total Productos</p>
-          <p className="text-2xl font-bold mt-1">
+          <p className="text-muted text-sm font-medium">Total Productos</p>
+          <p className="text-2xl font-bold mt-1 text-ink">
             {loading ? "—" : productos.length}
           </p>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div className="bg-surface p-6 rounded-card border border-line">
           <div className="flex justify-between items-start mb-4">
-            <div className="p-2 bg-purple-100 dark:bg-purple-900/30 text-purple-600 rounded-lg">
+            <div className="p-2 bg-surface-2 text-brand-ink rounded-lg">
               <Icons.History size={18} />
             </div>
           </div>
-          <p className="text-slate-500 text-sm font-medium">Categorías</p>
-          <p className="text-2xl font-bold mt-1">
+          <p className="text-muted text-sm font-medium">Categorías</p>
+          <p className="text-2xl font-bold mt-1 text-ink">
             {loading ? "—" : categorias.length}
           </p>
         </div>
       </div>
 
       {/* Tabla */}
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+      <div className="bg-surface rounded-card border border-line overflow-hidden">
+        <div className="p-6 border-b border-line flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
           <h3 className="font-bold flex items-center gap-2">
-            <Icons.FileText className="text-primary" size={18} />
+            <Icons.FileText className="text-brand-ink" size={18} />
             Stock Detallado
           </h3>
           <div className="flex gap-3 flex-wrap">
@@ -332,10 +332,10 @@ export const Inventory: React.FC = () => {
                 placeholder="Buscar producto..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-8 pr-3 py-1.5 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 outline-none focus:ring-2 focus:ring-primary"
+                className="pl-8 pr-3 py-1.5 text-sm rounded-lg border border-line bg-bg outline-none focus:ring-2 focus:ring-brand text-ink"
               />
             </div>
-            <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
+            <div className="flex bg-surface-2 p-1 rounded-lg">
               {categoriasNombres.map((cat) => (
                 <button
                   key={cat}
@@ -343,8 +343,8 @@ export const Inventory: React.FC = () => {
                   className={cn(
                     "px-3 py-1.5 text-xs font-bold rounded-md transition-all",
                     filtro === cat
-                      ? "bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-100"
-                      : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-300",
+                      ? "bg-surface text-ink shadow-sm"
+                      : "text-muted hover:text-ink",
                   )}
                 >
                   {cat}
@@ -360,14 +360,14 @@ export const Inventory: React.FC = () => {
               {[...Array(4)].map((_, i) => (
                 <div
                   key={i}
-                  className="h-10 bg-slate-100 dark:bg-slate-800 rounded animate-pulse"
+                  className="h-10 bg-surface-2 rounded animate-pulse"
                 />
               ))}
             </div>
           ) : (
             <table className="w-full text-left">
               <thead>
-                <tr className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 text-xs uppercase tracking-wider">
+                <tr className="bg-surface-2/50 text-muted text-xs uppercase tracking-wider">
                   <th className="px-6 py-4 font-bold">Producto</th>
                   <th className="px-6 py-4 font-bold">Categoría</th>
                   <th className="px-6 py-4 font-bold">Tipo</th>
@@ -377,12 +377,12 @@ export const Inventory: React.FC = () => {
                   <th className="px-6 py-4 font-bold text-center">Acciones</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              <tbody className="divide-y divide-line">
                 {filtrados.length === 0 ? (
                   <tr>
                     <td
                       colSpan={7}
-                      className="px-6 py-12 text-center text-slate-400 text-sm"
+                      className="px-6 py-12 text-center text-muted text-sm"
                     >
                       No se encontraron productos
                     </td>
@@ -393,10 +393,10 @@ export const Inventory: React.FC = () => {
                     return (
                       <tr
                         key={p.id}
-                        className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors"
+                        className="hover:bg-surface-2/30 transition-colors"
                       >
                         <td className="px-6 py-4">
-                          <span className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                          <span className="text-sm font-bold text-ink">
                             {p.nombre}
                           </span>
                           {p.descripcion && (
@@ -406,7 +406,7 @@ export const Inventory: React.FC = () => {
                           )}
                         </td>
                         <td className="px-6 py-4">
-                          <span className="px-2 py-1 text-[10px] font-bold rounded uppercase bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                          <span className="px-2 py-1 text-[10px] font-bold rounded uppercase bg-surface-2 text-muted">
                             {p.categoria?.nombre ?? "Sin categoría"}
                           </span>
                         </td>
@@ -432,11 +432,11 @@ export const Inventory: React.FC = () => {
                             >
                               {p.stock_actual}
                             </span>
-                            <div className="w-14 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                            <div className="w-14 h-1.5 bg-surface-2 rounded-full overflow-hidden">
                               <div
                                 className={cn(
                                   "h-full rounded-full",
-                                  critico ? "bg-red-500" : "bg-primary",
+                                  critico ? "bg-red-500" : "bg-brand",
                                 )}
                                 style={{
                                   width: `${Math.min((p.stock_actual / Math.max(p.stock_minimo * 2, 1)) * 100, 100)}%`,
@@ -466,7 +466,7 @@ export const Inventory: React.FC = () => {
                                 "p-1.5 rounded-lg text-xs font-bold transition-colors",
                                 critico
                                   ? "bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400"
-                                  : "bg-slate-100 text-slate-500 hover:bg-primary/10 hover:text-primary dark:bg-slate-800",
+                                  : "bg-surface-2 text-muted hover:bg-brand-soft hover:text-brand-ink",
                               )}
                             >
                               <Icons.History size={14} />
@@ -474,14 +474,14 @@ export const Inventory: React.FC = () => {
                             <button
                               onClick={() => openEdit(p)}
                               title="Editar producto"
-                              className="p-1.5 rounded-lg bg-slate-100 text-slate-500 hover:bg-blue-50 hover:text-blue-600 dark:bg-slate-800 transition-colors"
+                              className="p-1.5 rounded-lg bg-surface-2 text-muted hover:bg-blue-50 hover:text-blue-600 transition-colors"
                             >
                               <Icons.Edit size={14} />
                             </button>
                             <button
                               onClick={() => handleDelete(p)}
                               title="Eliminar producto"
-                              className="p-1.5 rounded-lg bg-slate-100 text-slate-500 hover:bg-red-50 hover:text-red-600 dark:bg-slate-800 transition-colors"
+                              className="p-1.5 rounded-lg bg-surface-2 text-muted hover:bg-red-50 hover:text-red-600 transition-colors"
                             >
                               <Icons.Trash2 size={14} />
                             </button>
@@ -501,7 +501,7 @@ export const Inventory: React.FC = () => {
       <AnimatePresence>
         {(modal === "create" || modal === "edit") && (
           <ModalOverlay onClose={closeModal}>
-            <h3 className="text-lg font-bold mb-6 text-slate-900 dark:text-slate-100">
+            <h3 className="text-lg font-bold mb-6 text-ink">
               {modal === "create" ? "Nuevo Producto" : "Editar Producto"}
             </h3>
 
@@ -592,14 +592,14 @@ export const Inventory: React.FC = () => {
             <div className="flex gap-3 justify-end mt-6">
               <button
                 onClick={closeModal}
-                className="px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                className="px-4 py-2 rounded-lg border border-line text-sm font-bold text-muted hover:bg-surface-2 transition-colors"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleSaveProducto}
                 disabled={saving}
-                className="flex items-center gap-2 px-5 py-2 rounded-lg bg-primary text-slate-900 text-sm font-bold hover:bg-primary-dark transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 px-5 py-2 rounded-lg bg-brand text-white text-sm font-bold hover:bg-brand-strong transition-colors disabled:opacity-50"
               >
                 <Icons.Save size={16} />
                 {saving
@@ -614,11 +614,11 @@ export const Inventory: React.FC = () => {
 
         {modal === "stock" && selected && (
           <ModalOverlay onClose={closeModal}>
-            <h3 className="text-lg font-bold mb-1 text-slate-900 dark:text-slate-100">
+            <h3 className="text-lg font-bold mb-1 text-ink">
               Ajustar Stock
             </h3>
-            <p className="text-sm text-slate-500 mb-6">
-              <span className="font-bold text-slate-700 dark:text-slate-300">
+            <p className="text-sm text-muted mb-6">
+              <span className="font-bold text-ink">
                 {selected.nombre}
               </span>
               {" · "}Stock actual:{" "}
@@ -724,7 +724,7 @@ export const Inventory: React.FC = () => {
             <div className="flex gap-3 justify-end mt-6">
               <button
                 onClick={closeModal}
-                className="px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                className="px-4 py-2 rounded-lg border border-line text-sm font-bold text-muted hover:bg-surface-2 transition-colors"
               >
                 Cancelar
               </button>
@@ -777,7 +777,7 @@ const ModalOverlay: React.FC<ModalOverlayProps> = ({ children, onClose }) => (
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95, y: 10 }}
       transition={{ type: "spring", duration: 0.3 }}
-      className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md p-6 border border-slate-200 dark:border-slate-800"
+      className="bg-surface rounded-card shadow-2xl w-full max-w-md p-6 border border-line"
     >
       {children}
     </motion.div>

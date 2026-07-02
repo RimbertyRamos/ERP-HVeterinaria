@@ -123,7 +123,7 @@ export const MascotaCarnet: React.FC<{ mascota: CarnetMascota }> = ({
       {/* Encabezado */}
       <div className="flex items-center justify-between border-b border-slate-200 pb-2">
         <div>
-          <p className="text-[12px] font-black uppercase tracking-wide text-primary">
+          <p className="text-[12px] font-black uppercase tracking-wide text-brand">
             Hospital Veterinario Integral
           </p>
           <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400">
@@ -214,7 +214,7 @@ export const MascotaCarnet: React.FC<{ mascota: CarnetMascota }> = ({
       <button
         type="button"
         onClick={handlePrint}
-        className="carnet-no-print inline-flex items-center gap-1.5 rounded-xl bg-slate-200 dark:bg-slate-700 px-3 py-2 text-xs font-black uppercase tracking-widest text-slate-700 dark:text-slate-100 hover:opacity-90 transition-opacity"
+        className="carnet-no-print inline-flex items-center gap-1.5 rounded-xl bg-surface-2 px-3 py-2 text-xs font-black uppercase tracking-widest text-muted hover:text-ink hover:opacity-90 transition-opacity"
       >
         <Icons.Printer size={14} />
         Imprimir carnet

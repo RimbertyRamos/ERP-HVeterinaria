@@ -17,7 +17,6 @@ function getStoredUser(): StoredUser {
   }
 }
 
-/** Modal "Mi Perfil": muestra al usuario y permite cambiar su contraseña. */
 export const ProfileModal: React.FC<{ onClose: () => void }> = ({
   onClose,
 }) => {
@@ -28,7 +27,6 @@ export const ProfileModal: React.FC<{ onClose: () => void }> = ({
   const [confirmar, setConfirmar] = useState("");
   const [saving, setSaving] = useState(false);
 
-  // Política de seguridad: 8+ con mayúscula, minúscula y número.
   const reglas = [
     { ok: nueva.length >= 8, label: "Al menos 8 caracteres" },
     { ok: /[A-Z]/.test(nueva), label: "Una letra mayúscula (A-Z)" },
@@ -55,7 +53,7 @@ export const ProfileModal: React.FC<{ onClose: () => void }> = ({
   };
 
   const inputCls =
-    "w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary outline-none text-slate-900 dark:text-white";
+    "w-full bg-bg border border-line rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-brand outline-none text-ink";
 
   return (
     <div
@@ -64,36 +62,30 @@ export const ProfileModal: React.FC<{ onClose: () => void }> = ({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="relative my-10 w-full max-w-md rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-2xl">
+      <div className="relative my-10 w-full max-w-md rounded-card border border-line bg-surface p-6 shadow-2xl">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+          className="absolute top-4 right-4 text-muted hover:text-ink"
           title="Cerrar"
         >
           <Icons.X size={20} />
         </button>
 
-        <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-          Mi Perfil
-        </h2>
+        <h2 className="text-lg font-bold text-ink">Mi Perfil</h2>
 
-        <div className="mt-3 mb-5 rounded-xl border border-slate-200 dark:border-slate-700 p-3 text-sm">
-          <p className="font-bold text-slate-900 dark:text-slate-100">
-            {user?.nombre || "Usuario"}
-          </p>
-          <p className="text-slate-500">{user?.email}</p>
-          <p className="mt-1 text-[10px] font-black uppercase tracking-widest text-slate-400">
+        <div className="mt-3 mb-5 rounded-lg border border-line p-3 text-sm">
+          <p className="font-bold text-ink">{user?.nombre || "Usuario"}</p>
+          <p className="text-muted">{user?.email}</p>
+          <p className="mt-1 text-[10px] font-black uppercase tracking-widest text-muted">
             {user?.rol?.nombre || "Personal"}
           </p>
         </div>
 
-        <h3 className="mb-2 text-sm font-bold text-slate-700 dark:text-slate-300">
-          Cambiar contraseña
-        </h3>
+        <h3 className="mb-2 text-sm font-bold text-ink">Cambiar contraseña</h3>
 
         <form onSubmit={submit} autoComplete="off" className="space-y-3">
           <div>
-            <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">
+            <label className="mb-1 block text-xs font-medium text-muted">
               Contraseña actual
             </label>
             <input
@@ -105,7 +97,7 @@ export const ProfileModal: React.FC<{ onClose: () => void }> = ({
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">
+            <label className="mb-1 block text-xs font-medium text-muted">
               Nueva contraseña
             </label>
             <input
@@ -117,7 +109,7 @@ export const ProfileModal: React.FC<{ onClose: () => void }> = ({
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">
+            <label className="mb-1 block text-xs font-medium text-muted">
               Repetir nueva contraseña
             </label>
             <input
@@ -136,7 +128,7 @@ export const ProfileModal: React.FC<{ onClose: () => void }> = ({
                 className={
                   r.ok
                     ? "text-emerald-600 dark:text-emerald-400"
-                    : "text-slate-400"
+                    : "text-muted"
                 }
               >
                 {r.ok ? "✓" : "○"} {r.label}
@@ -146,7 +138,7 @@ export const ProfileModal: React.FC<{ onClose: () => void }> = ({
               className={
                 coinciden
                   ? "text-emerald-600 dark:text-emerald-400"
-                  : "text-slate-400"
+                  : "text-muted"
               }
             >
               {coinciden ? "✓" : "○"} Las contraseñas coinciden
@@ -156,7 +148,7 @@ export const ProfileModal: React.FC<{ onClose: () => void }> = ({
           <button
             type="submit"
             disabled={!puedeEnviar}
-            className="mt-2 w-full rounded-lg bg-primary px-4 py-2 text-sm font-bold text-slate-900 disabled:opacity-50"
+            className="mt-2 w-full rounded-lg bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-strong disabled:opacity-50 transition-colors"
           >
             {saving ? "Guardando…" : "Actualizar contraseña"}
           </button>

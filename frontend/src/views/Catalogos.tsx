@@ -14,11 +14,6 @@ interface Raza {
   especie?: { nombre: string };
 }
 
-/**
- * Gestión de catálogos base (especies y razas). Vista SOLO admin: el ítem de menú
- * y esta ruta se gatean por el permiso "gestionar_catalogos" (mismo mecanismo que
- * la Bitácora con "bitacora.ver").
- */
 export const Catalogos: React.FC = () => {
   const [especies, setEspecies] = useState<Especie[]>([]);
   const [razas, setRazas] = useState<Raza[]>([]);
@@ -47,7 +42,6 @@ export const Catalogos: React.FC = () => {
     cargar();
   }, [cargar]);
 
-  // ── Especies ──────────────────────────────────────────────────────────────
   const addEspecie = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!nuevaEspecie.trim()) return;
@@ -84,7 +78,6 @@ export const Catalogos: React.FC = () => {
     }
   };
 
-  // ── Razas ─────────────────────────────────────────────────────────────────
   const addRaza = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!razaForm.nombre.trim() || !razaForm.especie_id) {
@@ -132,25 +125,20 @@ export const Catalogos: React.FC = () => {
     : razas;
 
   const inputCls =
-    "h-10 px-3 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-primary transition-colors";
-  const btnIcon =
-    "p-2 text-slate-400 hover:text-primary transition-colors";
+    "h-10 px-3 rounded-lg bg-bg border border-line text-sm text-ink outline-none focus:border-brand transition-colors";
+  const btnIcon = "p-2 text-muted hover:text-brand-ink transition-colors";
 
   return (
     <div className="p-4 lg:p-8 space-y-6">
       <div>
-        <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100">
-          Catálogos base
-        </h1>
-        <p className="text-sm text-slate-500">
-          Gestiona especies y razas del sistema
-        </p>
+        <h1 className="text-2xl font-black text-ink">Catálogos base</h1>
+        <p className="text-sm text-muted">Gestiona especies y razas del sistema</p>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
         {/* ESPECIES */}
-        <section className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
-          <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-3">
+        <section className="rounded-card border border-line bg-surface p-5">
+          <h2 className="text-lg font-bold text-ink mb-3">
             Especies ({especies.length})
           </h2>
           <form onSubmit={addEspecie} className="flex gap-2 mb-4">
@@ -162,25 +150,23 @@ export const Catalogos: React.FC = () => {
             />
             <button
               type="submit"
-              className="h-10 px-4 rounded-lg bg-primary text-sm font-black text-slate-900 hover:opacity-90 transition-opacity"
+              className="h-10 px-4 rounded-lg bg-brand text-sm font-black text-white hover:bg-brand-strong transition-colors"
             >
               Agregar
             </button>
           </form>
-          <div className="divide-y divide-slate-100 dark:divide-slate-800 max-h-[420px] overflow-y-auto">
+          <div className="divide-y divide-line max-h-[420px] overflow-y-auto">
             {loading ? (
-              <p className="py-6 text-center text-slate-400 text-sm">Cargando…</p>
+              <p className="py-6 text-center text-muted text-sm">Cargando…</p>
             ) : especies.length === 0 ? (
-              <p className="py-6 text-center text-slate-400 text-sm">
-                Sin especies.
-              </p>
+              <p className="py-6 text-center text-muted text-sm">Sin especies.</p>
             ) : (
               especies.map((esp) => (
                 <div
                   key={esp.id}
                   className="flex items-center justify-between py-2"
                 >
-                  <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                  <span className="text-sm font-medium text-ink">
                     {esp.nombre}
                   </span>
                   <div className="flex items-center gap-1">
@@ -193,7 +179,7 @@ export const Catalogos: React.FC = () => {
                     </button>
                     <button
                       onClick={() => delEspecie(esp)}
-                      className="p-2 text-slate-400 hover:text-red-500 transition-colors"
+                      className="p-2 text-muted hover:text-red-500 transition-colors"
                       title="Eliminar"
                     >
                       <Icons.Trash2 size={16} />
@@ -206,8 +192,8 @@ export const Catalogos: React.FC = () => {
         </section>
 
         {/* RAZAS */}
-        <section className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
-          <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-3">
+        <section className="rounded-card border border-line bg-surface p-5">
+          <h2 className="text-lg font-bold text-ink mb-3">
             Razas ({razasVisibles.length})
           </h2>
           <form onSubmit={addRaza} className="flex flex-wrap gap-2 mb-3">
@@ -235,7 +221,7 @@ export const Catalogos: React.FC = () => {
             </select>
             <button
               type="submit"
-              className="h-10 px-4 rounded-lg bg-primary text-sm font-black text-slate-900 hover:opacity-90 transition-opacity"
+              className="h-10 px-4 rounded-lg bg-brand text-sm font-black text-white hover:bg-brand-strong transition-colors"
             >
               Agregar
             </button>
@@ -256,22 +242,20 @@ export const Catalogos: React.FC = () => {
             </select>
           </div>
 
-          <div className="divide-y divide-slate-100 dark:divide-slate-800 max-h-[360px] overflow-y-auto">
+          <div className="divide-y divide-line max-h-[360px] overflow-y-auto">
             {loading ? (
-              <p className="py-6 text-center text-slate-400 text-sm">Cargando…</p>
+              <p className="py-6 text-center text-muted text-sm">Cargando…</p>
             ) : razasVisibles.length === 0 ? (
-              <p className="py-6 text-center text-slate-400 text-sm">
-                Sin razas.
-              </p>
+              <p className="py-6 text-center text-muted text-sm">Sin razas.</p>
             ) : (
               razasVisibles.map((r) => (
                 <div
                   key={r.id}
                   className="flex items-center justify-between py-2"
                 >
-                  <span className="text-sm text-slate-700 dark:text-slate-200">
+                  <span className="text-sm text-ink">
                     {r.nombre}
-                    <span className="text-xs text-slate-400 ml-2">
+                    <span className="text-xs text-muted ml-2">
                       {r.especie?.nombre ??
                         especies.find((e) => e.id === r.especie_id)?.nombre ??
                         ""}
@@ -287,7 +271,7 @@ export const Catalogos: React.FC = () => {
                     </button>
                     <button
                       onClick={() => delRaza(r)}
-                      className="p-2 text-slate-400 hover:text-red-500 transition-colors"
+                      className="p-2 text-muted hover:text-red-500 transition-colors"
                       title="Eliminar"
                     >
                       <Icons.Trash2 size={16} />

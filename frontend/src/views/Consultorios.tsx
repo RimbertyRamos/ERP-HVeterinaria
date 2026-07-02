@@ -86,7 +86,6 @@ export const Consultorios: React.FC = () => {
     try {
       const payload = {
         ...form,
-        // "" → null para poder quitar el responsable; un id para asignarlo
         responsable_id: form.responsable_id || null,
       };
 
@@ -125,16 +124,16 @@ export const Consultorios: React.FC = () => {
     >
       <header className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+          <h2 className="text-2xl font-bold text-ink">
             Infraestructura y Salas
           </h2>
-          <p className="text-slate-500 dark:text-slate-400">
+          <p className="text-muted">
             Gestión de consultorios, laboratorios y quirófanos
           </p>
         </div>
         <button
           onClick={() => openModal()}
-          className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-slate-900 hover:bg-primary-dark transition-all shadow-lg shadow-primary/20"
+          className="flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-strong transition-all"
         >
           <Icons.Plus size={20} />
           Registrar Nueva Sala
@@ -146,7 +145,7 @@ export const Consultorios: React.FC = () => {
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="h-48 bg-white dark:bg-slate-900 rounded-2xl animate-pulse border border-slate-200 dark:border-slate-800"
+              className="h-48 bg-surface rounded-card animate-pulse border border-line"
             />
           ))}
         </div>
@@ -157,7 +156,7 @@ export const Consultorios: React.FC = () => {
             return (
               <div
                 key={room.id}
-                className="group bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm hover:shadow-xl hover:border-primary/30 transition-all"
+                className="group bg-surface rounded-card border border-line p-6 hover:border-brand/30 transition-all"
               >
                 <div className="flex justify-between items-start mb-6">
                   <div
@@ -174,36 +173,36 @@ export const Consultorios: React.FC = () => {
                     <span
                       className={cn(
                         "h-2.5 w-2.5 rounded-full",
-                        ESTADO_COLORS[room.estado] || "bg-slate-400",
+                        ESTADO_COLORS[room.estado] || "bg-surface-2",
                       )}
                     />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-muted">
                       {room.estado}
                     </span>
                   </div>
                 </div>
 
                 <div className="space-y-1 mb-6">
-                  <h3 className="font-black text-slate-900 dark:text-white uppercase truncate text-lg tracking-tight">
+                  <h3 className="font-black text-ink uppercase truncate text-lg tracking-tight">
                     {room.nombre}
                   </h3>
-                  <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">
+                  <p className="text-xs text-muted font-bold uppercase tracking-wider">
                     {room.tipo}
                   </p>
                 </div>
 
-                <div className="space-y-3 pt-4 border-t border-slate-50 dark:border-slate-800">
+                <div className="space-y-3 pt-4 border-t border-line">
                   <div className="flex items-center gap-2 text-xs">
-                    <Icons.User size={14} className="text-slate-400" />
-                    <span className="text-slate-500">Encargado:</span>
-                    <span className="font-bold text-slate-700 dark:text-slate-300">
+                    <Icons.User size={14} className="text-muted" />
+                    <span className="text-muted">Encargado:</span>
+                    <span className="font-bold text-ink">
                       {room.responsable?.nombre || "Sin asignar"}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 text-xs">
-                    <Icons.Activity size={14} className="text-slate-400" />
-                    <span className="text-slate-500">Especialidad:</span>
-                    <span className="font-bold text-slate-700 dark:text-slate-300 truncate">
+                    <Icons.Activity size={14} className="text-muted" />
+                    <span className="text-muted">Especialidad:</span>
+                    <span className="font-bold text-ink truncate">
                       {room.especialidad || "General"}
                     </span>
                   </div>
@@ -212,7 +211,7 @@ export const Consultorios: React.FC = () => {
                 <div className="mt-6 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
                     onClick={() => openModal(room)}
-                    className="flex-1 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold hover:bg-primary hover:text-slate-900 transition-colors"
+                    className="flex-1 py-2 rounded-lg bg-surface-2 text-muted text-xs font-bold hover:bg-brand hover:text-white transition-colors"
                   >
                     Configurar
                   </button>
@@ -244,9 +243,9 @@ export const Consultorios: React.FC = () => {
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden"
+              className="relative w-full max-w-lg bg-surface rounded-3xl shadow-2xl overflow-hidden"
             >
-              <header className="p-6 bg-slate-900 text-white flex items-center justify-between">
+              <header className="p-6 bg-brand text-white flex items-center justify-between">
                 <h3 className="text-xl font-bold">
                   {editTarget
                     ? "Editar Configuración"
@@ -254,7 +253,7 @@ export const Consultorios: React.FC = () => {
                 </h3>
                 <button
                   onClick={() => setIsModalOpen(false)}
-                  className="text-slate-400 hover:text-white transition-colors"
+                  className="text-white/60 hover:text-white transition-colors"
                 >
                   <Icons.X size={24} />
                 </button>
@@ -263,7 +262,7 @@ export const Consultorios: React.FC = () => {
               <form onSubmit={handleSave} className="p-8 space-y-6">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2 col-span-2">
-                    <label className="text-xs font-black text-slate-500 uppercase tracking-widest">
+                    <label className="text-xs font-black text-muted uppercase tracking-widest">
                       Nombre de la Sala *
                     </label>
                     <input
@@ -273,13 +272,13 @@ export const Consultorios: React.FC = () => {
                         setForm({ ...form, nombre: e.target.value })
                       }
                       required
-                      className="w-full h-12 px-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 outline-none focus:ring-2 focus:ring-primary"
+                      className="w-full h-12 px-4 rounded-xl bg-bg border border-line outline-none focus:ring-2 focus:ring-brand text-ink"
                       placeholder="Ej: Consultorio 10 - Felinos"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs font-black text-slate-500 uppercase tracking-widest">
+                    <label className="text-xs font-black text-muted uppercase tracking-widest">
                       Tipo de Recurso
                     </label>
                     <select
@@ -287,7 +286,7 @@ export const Consultorios: React.FC = () => {
                       onChange={(e) =>
                         setForm({ ...form, tipo: e.target.value as TipoSala })
                       }
-                      className="w-full h-12 px-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 outline-none"
+                      className="w-full h-12 px-4 rounded-xl bg-bg border border-line outline-none text-ink"
                     >
                       <option value="CONSULTORIO">Consultorio Médico</option>
                       <option value="LABORATORIO">Laboratorio</option>
@@ -298,7 +297,7 @@ export const Consultorios: React.FC = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs font-black text-slate-500 uppercase tracking-widest">
+                    <label className="text-xs font-black text-muted uppercase tracking-widest">
                       Estado Actual
                     </label>
                     <select
@@ -306,7 +305,7 @@ export const Consultorios: React.FC = () => {
                       onChange={(e) =>
                         setForm({ ...form, estado: e.target.value as any })
                       }
-                      className="w-full h-12 px-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 outline-none"
+                      className="w-full h-12 px-4 rounded-xl bg-bg border border-line outline-none text-ink"
                     >
                       <option value="LIBRE">Libre</option>
                       <option value="OCUPADO">Ocupado</option>
@@ -316,7 +315,7 @@ export const Consultorios: React.FC = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-slate-500 uppercase tracking-widest">
+                  <label className="text-xs font-black text-muted uppercase tracking-widest">
                     Veterinario Responsable
                   </label>
                   <select
@@ -324,7 +323,7 @@ export const Consultorios: React.FC = () => {
                     onChange={(e) =>
                       setForm({ ...form, responsable_id: e.target.value })
                     }
-                    className="w-full h-12 px-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 outline-none"
+                    className="w-full h-12 px-4 rounded-xl bg-bg border border-line outline-none text-ink"
                   >
                     <option value="">— Sin responsable fijo —</option>
                     {users.map((u) => (
@@ -336,7 +335,7 @@ export const Consultorios: React.FC = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-slate-500 uppercase tracking-widest">
+                  <label className="text-xs font-black text-muted uppercase tracking-widest">
                     Especialidad / Nota
                   </label>
                   <input
@@ -345,7 +344,7 @@ export const Consultorios: React.FC = () => {
                     onChange={(e) =>
                       setForm({ ...form, especialidad: e.target.value })
                     }
-                    className="w-full h-12 px-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 outline-none"
+                    className="w-full h-12 px-4 rounded-xl bg-bg border border-line outline-none text-ink"
                     placeholder="Ej: Traumatología, Cirugía Mayor..."
                   />
                 </div>
@@ -353,7 +352,7 @@ export const Consultorios: React.FC = () => {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="w-full py-4 rounded-2xl bg-primary text-slate-900 font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-[1.02] transition-all disabled:opacity-50"
+                  className="w-full py-4 rounded-2xl bg-brand text-white font-black uppercase tracking-widest hover:scale-[1.02] transition-all disabled:opacity-50"
                 >
                   {saving
                     ? "Guardando..."

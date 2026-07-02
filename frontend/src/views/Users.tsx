@@ -139,26 +139,26 @@ export const Users: React.FC = () => {
     >
       <header className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+          <h2 className="text-2xl font-bold text-ink">
             Gestión de Personal
           </h2>
-          <p className="text-slate-500 dark:text-slate-400">
+          <p className="text-muted">
             Administra usuarios, accesos y roles del sistema
           </p>
         </div>
         <button
           onClick={() => openModal()}
-          className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-slate-900 hover:bg-primary-dark transition-all shadow-lg shadow-primary/20"
+          className="flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-strong transition-all"
         >
           <Icons.Plus size={20} />
           Registrar Nuevo Empleado
         </button>
       </header>
 
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-x-auto">
+      <div className="bg-surface rounded-card border border-line overflow-x-auto">
         <table className="w-full min-w-[640px] text-left border-collapse">
-          <thead className="bg-slate-50 dark:bg-slate-800/50">
-            <tr className="text-[10px] font-black uppercase tracking-widest text-slate-500 border-b border-slate-100 dark:border-slate-800">
+          <thead className="bg-surface-2">
+            <tr className="text-[10px] font-black uppercase tracking-widest text-muted border-b border-line">
               <th className="px-6 py-4">Usuario</th>
               <th className="px-6 py-4">CI / Identidad</th>
               <th className="px-6 py-4">Cargo / Rol</th>
@@ -166,34 +166,34 @@ export const Users: React.FC = () => {
               <th className="px-6 py-4 text-center">Acciones</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+          <tbody className="divide-y divide-line">
             {loading
               ? [1, 2, 3].map((i) => (
                   <tr key={i}>
                     <td colSpan={5} className="px-6 py-4 animate-pulse">
-                      <div className="h-4 bg-slate-100 dark:bg-slate-800 rounded w-full" />
+                      <div className="h-4 bg-surface-2 rounded w-full" />
                     </td>
                   </tr>
                 ))
               : users.map((u) => (
                   <tr
                     key={u.id}
-                    className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors"
+                    className="hover:bg-surface-2/30 transition-colors"
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-slate-400">
+                        <div className="h-10 w-10 rounded-full bg-surface-2 flex items-center justify-center font-bold text-muted">
                           {u.nombre.charAt(0).toUpperCase()}
                         </div>
                         <div>
-                          <p className="text-sm font-bold text-slate-900 dark:text-white">
+                          <p className="text-sm font-bold text-ink">
                             {u.nombre}
                           </p>
-                          <p className="text-xs text-slate-500">{u.email}</p>
+                          <p className="text-xs text-muted">{u.email}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm font-medium text-slate-600 dark:text-slate-400">
+                    <td className="px-6 py-4 text-sm font-medium text-muted">
                       {u.ci || "—"}
                     </td>
                     <td className="px-6 py-4">
@@ -201,18 +201,16 @@ export const Users: React.FC = () => {
                         className={cn(
                           "px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest",
                           u.rol.nombre === "ADMIN"
-                            ? "bg-red-100 text-red-700"
+                            ? "bg-brand-soft text-brand-strong"
                             : u.rol.nombre === "VETERINARIO"
-                              ? "bg-blue-100 text-blue-700"
-                              : u.rol.nombre === "RECEPCIONISTA"
-                                ? "bg-emerald-100 text-emerald-700"
-                                : "bg-slate-100 text-slate-600",
+                              ? "bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400"
+                              : "bg-surface-2 text-muted",
                         )}
                       >
                         {u.rol.nombre}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
+                    <td className="px-6 py-4 text-sm text-muted">
                       {u.telefono || "—"}
                     </td>
                     <td className="px-6 py-4">
@@ -235,13 +233,13 @@ export const Users: React.FC = () => {
                         </button>
                         <button
                           onClick={() => openModal(u)}
-                          className="p-2 text-slate-400 hover:text-primary transition-colors"
+                          className="p-2 text-muted hover:text-brand-ink transition-colors"
                         >
                           <Icons.Edit size={16} />
                         </button>
                         <button
                           onClick={() => handleDelete(u.id)}
-                          className="p-2 text-slate-400 hover:text-red-500 transition-colors"
+                          className="p-2 text-muted hover:text-red-500 transition-colors"
                         >
                           <Icons.Trash2 size={16} />
                         </button>
@@ -268,15 +266,15 @@ export const Users: React.FC = () => {
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden font-sans"
+              className="relative w-full max-w-lg bg-surface rounded-3xl shadow-2xl overflow-hidden font-sans"
             >
-              <header className="p-6 bg-slate-900 text-white flex items-center justify-between">
+              <header className="p-6 bg-brand text-white flex items-center justify-between">
                 <h3 className="text-xl font-bold uppercase tracking-tight">
                   {editTarget ? "Actualizar Datos" : "Nuevo Acceso al Sistema"}
                 </h3>
                 <button
                   onClick={() => setIsModalOpen(false)}
-                  className="text-slate-400 hover:text-white transition-colors"
+                  className="text-white/60 hover:text-white transition-colors"
                 >
                   <Icons.X size={24} />
                 </button>
@@ -284,7 +282,7 @@ export const Users: React.FC = () => {
 
               <form onSubmit={handleSave} className="p-8 space-y-5">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
+                  <label className="text-[10px] font-black text-muted uppercase tracking-[0.2em]">
                     Nombre Completo *
                   </label>
                   <input
@@ -294,14 +292,14 @@ export const Users: React.FC = () => {
                       setForm({ ...form, nombre: e.target.value })
                     }
                     required
-                    className="w-full h-12 px-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 outline-none focus:ring-2 focus:ring-primary"
+                    className="w-full h-12 px-4 rounded-xl bg-bg border border-line outline-none focus:ring-2 focus:ring-brand text-ink"
                     placeholder="Ej: Dr. Ricardo López"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
+                    <label className="text-[10px] font-black text-muted uppercase tracking-[0.2em]">
                       Email / Login *
                     </label>
                     <input
@@ -311,12 +309,12 @@ export const Users: React.FC = () => {
                         setForm({ ...form, email: e.target.value })
                       }
                       required
-                      className="w-full h-12 px-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 outline-none focus:ring-2 focus:ring-primary"
+                      className="w-full h-12 px-4 rounded-xl bg-bg border border-line outline-none focus:ring-2 focus:ring-brand text-ink"
                       placeholder="ricardo@vet-erp.com"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
+                    <label className="text-[10px] font-black text-muted uppercase tracking-[0.2em]">
                       Password {!editTarget && "*"}
                     </label>
                     <input
@@ -326,7 +324,7 @@ export const Users: React.FC = () => {
                         setForm({ ...form, password: e.target.value })
                       }
                       required={!editTarget}
-                      className="w-full h-12 px-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 outline-none focus:ring-2 focus:ring-primary"
+                      className="w-full h-12 px-4 rounded-xl bg-bg border border-line outline-none focus:ring-2 focus:ring-brand text-ink"
                       placeholder={
                         editTarget ? "••••••••" : "Password temporal"
                       }
@@ -336,18 +334,18 @@ export const Users: React.FC = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
+                    <label className="text-[10px] font-black text-muted uppercase tracking-[0.2em]">
                       CI / Carnet
                     </label>
                     <input
                       type="text"
                       value={form.ci}
                       onChange={(e) => setForm({ ...form, ci: e.target.value })}
-                      className="w-full h-12 px-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 outline-none focus:ring-2 focus:ring-primary"
+                      className="w-full h-12 px-4 rounded-xl bg-bg border border-line outline-none focus:ring-2 focus:ring-brand text-ink"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
+                    <label className="text-[10px] font-black text-muted uppercase tracking-[0.2em]">
                       Cargo / Rol *
                     </label>
                     <select
@@ -356,7 +354,7 @@ export const Users: React.FC = () => {
                         setForm({ ...form, rol_id: e.target.value })
                       }
                       required
-                      className="w-full h-12 px-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 outline-none font-bold text-sm"
+                      className="w-full h-12 px-4 rounded-xl bg-bg border border-line outline-none font-bold text-sm text-ink"
                     >
                       <option value="">— Elegir Rol —</option>
                       {roles.map((r) => (
@@ -369,7 +367,7 @@ export const Users: React.FC = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
+                  <label className="text-[10px] font-black text-muted uppercase tracking-[0.2em]">
                     Teléfono de Contacto
                   </label>
                   <input
@@ -378,7 +376,7 @@ export const Users: React.FC = () => {
                     onChange={(e) =>
                       setForm({ ...form, telefono: e.target.value })
                     }
-                    className="w-full h-12 px-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 outline-none focus:ring-2 focus:ring-primary"
+                    className="w-full h-12 px-4 rounded-xl bg-bg border border-line outline-none focus:ring-2 focus:ring-brand text-ink"
                     placeholder="+591 ..."
                   />
                 </div>
@@ -386,7 +384,7 @@ export const Users: React.FC = () => {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="w-full py-4 rounded-2xl bg-primary text-slate-900 font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-[1.02] transition-all disabled:opacity-50 mt-4"
+                  className="w-full py-4 rounded-2xl bg-brand text-white font-black uppercase tracking-widest hover:scale-[1.02] transition-all disabled:opacity-50 mt-4"
                 >
                   {saving
                     ? "Procesando..."

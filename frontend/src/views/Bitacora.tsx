@@ -58,11 +58,10 @@ const FILTROS_INI: Filtros = {
 
 const PAGE_SIZE = 25;
 
-// Construye el querystring desde los filtros activos (omite vacíos).
 function buildQS(f: Filtros, page: number): string {
   const p = new URLSearchParams();
   if (f.desde) p.set("desde", f.desde);
-  if (f.hasta) p.set("hasta", `${f.hasta}T23:59:59`); // incluye el día completo
+  if (f.hasta) p.set("hasta", `${f.hasta}T23:59:59`);
   if (f.usuario_id) p.set("usuario_id", f.usuario_id);
   if (f.accion) p.set("accion", f.accion);
   if (f.entidad) p.set("entidad", f.entidad);
@@ -142,7 +141,6 @@ export const Bitacora: React.FC = () => {
   const exportar = async (formato: "csv" | "pdf") => {
     setDescargando(true);
     try {
-      // Se exporta con los MISMOS filtros activos (sin paginación).
       const p = new URLSearchParams(buildQS(filtros, 1));
       p.delete("page");
       p.delete("pageSize");
@@ -159,16 +157,16 @@ export const Bitacora: React.FC = () => {
     setFiltros((f) => ({ ...f, [k]: v }));
 
   const inputCls =
-    "h-10 px-3 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-primary transition-colors";
+    "h-10 px-3 rounded-lg bg-bg border border-line text-sm text-ink outline-none focus:border-brand transition-colors";
 
   return (
     <div className="p-4 lg:p-8 space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 dark:text-slate-100">
+          <h1 className="text-2xl font-black text-ink">
             Bitácora de Auditoría
           </h1>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-muted">
             Registro de eventos del sistema · {total} registro(s)
           </p>
         </div>
@@ -176,26 +174,25 @@ export const Bitacora: React.FC = () => {
           <button
             onClick={() => exportar("csv")}
             disabled={descargando}
-            className="h-10 px-4 rounded-lg bg-slate-200 dark:bg-slate-700 text-sm font-bold text-slate-800 dark:text-slate-100 hover:opacity-90 disabled:opacity-50 transition-opacity"
+            className="h-10 px-4 rounded-lg bg-surface-2 border border-line text-sm font-bold text-ink hover:opacity-90 disabled:opacity-50 transition-opacity"
           >
             Exportar CSV
           </button>
           <button
             onClick={() => exportar("pdf")}
             disabled={descargando}
-            className="h-10 px-4 rounded-lg bg-primary text-sm font-bold text-slate-900 hover:opacity-90 disabled:opacity-50 transition-opacity"
+            className="h-10 px-4 rounded-lg bg-brand text-sm font-bold text-white hover:bg-brand-strong disabled:opacity-50 transition-colors"
           >
             Exportar PDF
           </button>
         </div>
       </div>
 
-      {/* Filtros */}
       <form
         onSubmit={aplicar}
-        className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-3 items-end bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800"
+        className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-3 items-end bg-surface p-4 rounded-card border border-line"
       >
-        <label className="flex flex-col gap-1 text-xs font-bold text-slate-500">
+        <label className="flex flex-col gap-1 text-xs font-bold text-muted">
           Desde
           <input
             type="date"
@@ -204,7 +201,7 @@ export const Bitacora: React.FC = () => {
             className={inputCls}
           />
         </label>
-        <label className="flex flex-col gap-1 text-xs font-bold text-slate-500">
+        <label className="flex flex-col gap-1 text-xs font-bold text-muted">
           Hasta
           <input
             type="date"
@@ -213,7 +210,7 @@ export const Bitacora: React.FC = () => {
             className={inputCls}
           />
         </label>
-        <label className="flex flex-col gap-1 text-xs font-bold text-slate-500">
+        <label className="flex flex-col gap-1 text-xs font-bold text-muted">
           Acción
           <select
             value={filtros.accion}
@@ -228,7 +225,7 @@ export const Bitacora: React.FC = () => {
             ))}
           </select>
         </label>
-        <label className="flex flex-col gap-1 text-xs font-bold text-slate-500">
+        <label className="flex flex-col gap-1 text-xs font-bold text-muted">
           Entidad
           <input
             type="text"
@@ -238,7 +235,7 @@ export const Bitacora: React.FC = () => {
             className={inputCls}
           />
         </label>
-        <label className="flex flex-col gap-1 text-xs font-bold text-slate-500">
+        <label className="flex flex-col gap-1 text-xs font-bold text-muted">
           Éxito
           <select
             value={filtros.exito}
@@ -250,7 +247,7 @@ export const Bitacora: React.FC = () => {
             <option value="false">Solo fallos</option>
           </select>
         </label>
-        <label className="flex flex-col gap-1 text-xs font-bold text-slate-500">
+        <label className="flex flex-col gap-1 text-xs font-bold text-muted">
           Buscar
           <input
             type="text"
@@ -263,14 +260,14 @@ export const Bitacora: React.FC = () => {
         <div className="flex gap-2">
           <button
             type="submit"
-            className="h-10 flex-1 px-4 rounded-lg bg-primary text-sm font-black text-slate-900 hover:opacity-90 transition-opacity"
+            className="h-10 flex-1 px-4 rounded-lg bg-brand text-sm font-black text-white hover:bg-brand-strong transition-colors"
           >
             Filtrar
           </button>
           <button
             type="button"
             onClick={limpiar}
-            className="h-10 px-3 rounded-lg bg-slate-200 dark:bg-slate-700 text-sm font-bold text-slate-700 dark:text-slate-200 hover:opacity-90 transition-opacity"
+            className="h-10 px-3 rounded-lg bg-surface-2 border border-line text-sm font-bold text-ink hover:opacity-90 transition-opacity"
           >
             Limpiar
           </button>
@@ -278,10 +275,10 @@ export const Bitacora: React.FC = () => {
       </form>
 
       {/* Tabla */}
-      <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+      <div className="overflow-x-auto rounded-card border border-line bg-surface">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-left text-xs uppercase tracking-wider text-slate-500 border-b border-slate-200 dark:border-slate-800">
+            <tr className="text-left text-xs uppercase tracking-wider text-muted border-b border-line">
               <th className="p-3 font-bold">Fecha / Hora</th>
               <th className="p-3 font-bold">Usuario</th>
               <th className="p-3 font-bold">Rol</th>
@@ -294,13 +291,13 @@ export const Bitacora: React.FC = () => {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={7} className="p-8 text-center text-slate-400">
+                <td colSpan={7} className="p-8 text-center text-muted">
                   Cargando…
                 </td>
               </tr>
             ) : items.length === 0 ? (
               <tr>
-                <td colSpan={7} className="p-8 text-center text-slate-400">
+                <td colSpan={7} className="p-8 text-center text-muted">
                   Sin registros para el filtro seleccionado.
                 </td>
               </tr>
@@ -311,40 +308,36 @@ export const Bitacora: React.FC = () => {
                     onClick={() =>
                       setExpandido((id) => (id === r.id ? null : r.id))
                     }
-                    className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer"
+                    className="border-b border-line hover:bg-surface-2/30 cursor-pointer"
                   >
-                    <td className="p-3 whitespace-nowrap text-slate-600 dark:text-slate-300">
+                    <td className="p-3 whitespace-nowrap text-ink">
                       {fmtFecha(r.fecha_hora)}
                     </td>
                     <td className="p-3">
                       {r.actor_nombre ?? (
-                        <span className="text-slate-400 italic">
-                          sistema/anónimo
-                        </span>
+                        <span className="text-muted italic">sistema/anónimo</span>
                       )}
                       {r.actor_email && (
-                        <span className="block text-xs text-slate-400">
+                        <span className="block text-xs text-muted">
                           {r.actor_email}
                         </span>
                       )}
                     </td>
-                    <td className="p-3 text-slate-500">{r.actor_rol ?? "—"}</td>
+                    <td className="p-3 text-muted">{r.actor_rol ?? "—"}</td>
                     <td className="p-3">
-                      <span className="inline-block rounded-md bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-xs font-bold text-slate-700 dark:text-slate-200">
+                      <span className="inline-block rounded-md bg-surface-2 px-2 py-0.5 text-xs font-bold text-ink">
                         {r.accion}
                       </span>
                     </td>
-                    <td className="p-3 text-slate-500">
+                    <td className="p-3 text-muted">
                       {r.entidad ?? "—"}
                       {r.entidad_id && (
-                        <span className="block text-[10px] text-slate-400 truncate max-w-[120px]">
+                        <span className="block text-[10px] text-muted/70 truncate max-w-[120px]">
                           {r.entidad_id}
                         </span>
                       )}
                     </td>
-                    <td className="p-3 text-slate-700 dark:text-slate-300 max-w-md">
-                      {r.descripcion}
-                    </td>
+                    <td className="p-3 text-ink max-w-md">{r.descripcion}</td>
                     <td className="p-3 text-center">
                       {r.exito ? (
                         <span className="text-emerald-500 font-bold">✓</span>
@@ -354,27 +347,27 @@ export const Bitacora: React.FC = () => {
                     </td>
                   </tr>
                   {expandido === r.id && (
-                    <tr className="bg-slate-50 dark:bg-slate-950/40">
+                    <tr className="bg-bg">
                       <td colSpan={7} className="p-4">
                         <div className="grid md:grid-cols-2 gap-4">
                           <div>
-                            <p className="text-xs font-black uppercase tracking-wider text-slate-500 mb-1">
+                            <p className="text-xs font-black uppercase tracking-wider text-muted mb-1">
                               Datos antes
                             </p>
-                            <pre className="text-xs bg-white dark:bg-slate-900 p-3 rounded-lg border border-slate-200 dark:border-slate-800 overflow-x-auto max-h-64">
+                            <pre className="text-xs bg-surface p-3 rounded-lg border border-line overflow-x-auto max-h-64">
                               {pretty(r.datos_antes)}
                             </pre>
                           </div>
                           <div>
-                            <p className="text-xs font-black uppercase tracking-wider text-slate-500 mb-1">
+                            <p className="text-xs font-black uppercase tracking-wider text-muted mb-1">
                               Datos después
                             </p>
-                            <pre className="text-xs bg-white dark:bg-slate-900 p-3 rounded-lg border border-slate-200 dark:border-slate-800 overflow-x-auto max-h-64">
+                            <pre className="text-xs bg-surface p-3 rounded-lg border border-line overflow-x-auto max-h-64">
                               {pretty(r.datos_despues)}
                             </pre>
                           </div>
                         </div>
-                        <p className="text-xs text-slate-400 mt-3">
+                        <p className="text-xs text-muted mt-3">
                           IP: {r.ip ?? "—"} · Ruta: {r.ruta ?? "—"}
                         </p>
                       </td>
@@ -389,21 +382,21 @@ export const Bitacora: React.FC = () => {
 
       {/* Paginación */}
       <div className="flex items-center justify-between">
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-muted">
           Página {page} de {totalPages}
         </p>
         <div className="flex gap-2">
           <button
             onClick={() => irA(page - 1)}
             disabled={page <= 1 || loading}
-            className="h-9 px-4 rounded-lg bg-slate-200 dark:bg-slate-700 text-sm font-bold disabled:opacity-40 hover:opacity-90 transition-opacity"
+            className="h-9 px-4 rounded-lg bg-surface-2 border border-line text-sm font-bold disabled:opacity-40 hover:opacity-90 transition-opacity"
           >
             Anterior
           </button>
           <button
             onClick={() => irA(page + 1)}
             disabled={page >= totalPages || loading}
-            className="h-9 px-4 rounded-lg bg-slate-200 dark:bg-slate-700 text-sm font-bold disabled:opacity-40 hover:opacity-90 transition-opacity"
+            className="h-9 px-4 rounded-lg bg-surface-2 border border-line text-sm font-bold disabled:opacity-40 hover:opacity-90 transition-opacity"
           >
             Siguiente
           </button>

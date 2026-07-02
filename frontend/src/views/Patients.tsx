@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Icons } from "../constants";
 import { cn } from "../utils/cn";
@@ -130,7 +130,7 @@ export const Patients: React.FC = () => {
   const [isSavingSoap, setIsSavingSoap] = useState(false);
 
   useEffect(() => {
-    loadPatients();
+    // La carga inicial del listado la dispara el efecto de búsqueda (debounce).
     api.getEspecies().then(setEspecies).catch(console.error);
   }, []);
 
@@ -143,26 +143,43 @@ export const Patients: React.FC = () => {
     setForm((f) => ({ ...f, raza_id: "" }));
   }, [form.especie_id]);
 
-  const loadPatients = async () => {
+  const PAGE_SIZE = 20;
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+
+  // Consulta server-side (paginada + liviana). El detalle sigue usando su propio
+  // endpoint con datos completos (selectPatient → api.getMascota).
+  const fetchList = useCallback(async (q: string, pg: number) => {
     setLoading(true);
     try {
-      const data = await api.getMascotas();
-      setPatients(data);
+      const res: any = await api.buscarMascotas({
+        q: q.trim() || undefined,
+        page: pg,
+        pageSize: PAGE_SIZE,
+      });
+      setPatients(res.items ?? []);
+      setTotal(res.total ?? 0);
+      setPage(res.page ?? pg);
     } catch (err: any) {
       toast.error(err.message ?? "Error cargando pacientes");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-  };
+  }, []);
 
-  const handleSearch = async () => {
-    setLoading(true);
-    try {
-      const data = await api.getMascotas(searchQuery.trim() || undefined);
-      setPatients(data);
-    } catch (err: any) {
-      toast.error(err.message ?? "Error buscando pacientes");
-    }
-    setLoading(false);
+  // Refresca la vista actual (misma búsqueda y página) tras crear/emitir/eliminar.
+  const loadPatients = () => fetchList(searchQuery, page);
+
+  // Búsqueda con debounce (~350ms); al escribir vuelve a la página 1.
+  useEffect(() => {
+    const t = setTimeout(() => fetchList(searchQuery, 1), 350);
+    return () => clearTimeout(t);
+  }, [searchQuery, fetchList]);
+
+  const irAPagina = (pg: number) => {
+    const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+    if (pg < 1 || pg > totalPages) return;
+    fetchList(searchQuery, pg);
   };
 
   const selectPatient = async (id: string) => {
@@ -355,19 +372,19 @@ export const Patients: React.FC = () => {
         <div className="flex items-center gap-4">
           <button
             onClick={() => setView("list")}
-            className="text-slate-500 hover:text-primary transition-colors"
+            className="text-muted hover:text-brand-ink transition-colors"
           >
             <Icons.ArrowRight className="rotate-180" size={20} />
           </button>
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+          <h2 className="text-2xl font-bold text-ink">
             Registrar Nuevo Paciente
           </h2>
         </div>
 
         <form onSubmit={handleCreatePatient} className="space-y-6">
           {/* Datos de la mascota */}
-          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 space-y-4">
-            <h3 className="font-bold text-slate-700 dark:text-slate-200 border-b border-slate-100 dark:border-slate-800 pb-2">
+          <div className="bg-surface rounded-card border border-line p-6 space-y-4">
+            <h3 className="font-bold text-ink border-b border-line pb-2">
               Datos de la Mascota
             </h3>
             <div className="grid grid-cols-2 gap-4">
@@ -379,7 +396,7 @@ export const Patients: React.FC = () => {
                   required
                   value={form.nombre}
                   onChange={(e) => setForm({ ...form, nombre: e.target.value })}
-                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary outline-none"
+                  className="w-full bg-bg border border-line rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-brand outline-none"
                 />
               </div>
               <div>
@@ -392,7 +409,7 @@ export const Patients: React.FC = () => {
                   onChange={(e) =>
                     setForm({ ...form, especie_id: e.target.value })
                   }
-                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary outline-none"
+                  className="w-full bg-bg border border-line rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-brand outline-none"
                 >
                   <option value="">— Seleccionar —</option>
                   {especies.map((e) => (
@@ -410,7 +427,7 @@ export const Patients: React.FC = () => {
                     setForm({ ...form, raza_id: e.target.value })
                   }
                   disabled={razas.length === 0}
-                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary outline-none disabled:opacity-50"
+                  className="w-full bg-bg border border-line rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-brand outline-none disabled:opacity-50"
                 >
                   <option value="">— Sin especificar —</option>
                   {razas.map((r) => (
@@ -425,7 +442,7 @@ export const Patients: React.FC = () => {
                 <select
                   value={form.sexo}
                   onChange={(e) => setForm({ ...form, sexo: e.target.value })}
-                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary outline-none"
+                  className="w-full bg-bg border border-line rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-brand outline-none"
                 >
                   <option value="M">Macho</option>
                   <option value="H">Hembra</option>
@@ -441,7 +458,7 @@ export const Patients: React.FC = () => {
                   onChange={(e) =>
                     setForm({ ...form, fecha_nacimiento: e.target.value })
                   }
-                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary outline-none"
+                  className="w-full bg-bg border border-line rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-brand outline-none"
                 />
               </div>
               <div>
@@ -456,20 +473,20 @@ export const Patients: React.FC = () => {
                   onChange={(e) =>
                     setForm({ ...form, peso_actual: e.target.value })
                   }
-                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary outline-none"
+                  className="w-full bg-bg border border-line rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-brand outline-none"
                 />
               </div>
             </div>
           </div>
 
           {/* Propietario */}
-          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 space-y-4">
-            <h3 className="font-bold text-slate-700 dark:text-slate-200 border-b border-slate-100 dark:border-slate-800 pb-2">
+          <div className="bg-surface rounded-card border border-line p-6 space-y-4">
+            <h3 className="font-bold text-ink border-b border-line pb-2">
               Propietario
             </h3>
 
             {/* Toggle modo */}
-            <div className="flex rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 w-fit">
+            <div className="flex rounded-lg overflow-hidden border border-line w-fit">
               <button
                 type="button"
                 onClick={() => {
@@ -480,8 +497,8 @@ export const Patients: React.FC = () => {
                 className={cn(
                   "px-4 py-2 text-sm font-bold transition-colors",
                   propietarioMode === "nuevo"
-                    ? "bg-primary text-slate-900"
-                    : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800",
+                    ? "bg-brand text-white"
+                    : "bg-surface text-muted hover:bg-surface-2",
                 )}
               >
                 Crear nuevo propietario
@@ -494,8 +511,8 @@ export const Patients: React.FC = () => {
                 className={cn(
                   "px-4 py-2 text-sm font-bold transition-colors",
                   propietarioMode === "existente"
-                    ? "bg-primary text-slate-900"
-                    : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800",
+                    ? "bg-brand text-white"
+                    : "bg-surface text-muted hover:bg-surface-2",
                 )}
               >
                 Propietario ya registrado
@@ -514,7 +531,7 @@ export const Patients: React.FC = () => {
                     onChange={(e) =>
                       setForm({ ...form, propietario_nombre: e.target.value })
                     }
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary outline-none"
+                    className="w-full bg-bg border border-line rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-brand outline-none"
                   />
                 </div>
                 <div>
@@ -529,7 +546,7 @@ export const Patients: React.FC = () => {
                     onChange={(e) =>
                       setForm({ ...form, propietario_email: e.target.value })
                     }
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary outline-none"
+                    className="w-full bg-bg border border-line rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-brand outline-none"
                   />
                 </div>
                 <div>
@@ -541,7 +558,7 @@ export const Patients: React.FC = () => {
                     onChange={(e) =>
                       setForm({ ...form, propietario_telefono: e.target.value })
                     }
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary outline-none"
+                    className="w-full bg-bg border border-line rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-brand outline-none"
                   />
                 </div>
                 <div>
@@ -554,11 +571,11 @@ export const Patients: React.FC = () => {
                     onChange={(e) =>
                       setForm({ ...form, propietario_ci: e.target.value })
                     }
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary outline-none"
+                    className="w-full bg-bg border border-line rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-brand outline-none"
                   />
                 </div>
                 <div className="col-span-2">
-                  <p className="text-[11px] text-slate-500">
+                  <p className="text-[11px] text-muted">
                     Se creará una cuenta de acceso para el propietario con la
                     contraseña temporal <strong>123456</strong>. El propietario
                     podrá cambiarla desde <strong>Mi Perfil</strong> cuando
@@ -578,19 +595,19 @@ export const Patients: React.FC = () => {
                       e.key === "Enter" &&
                       (e.preventDefault(), handleSearchPropietario())
                     }
-                    className="flex-1 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary outline-none"
+                    className="flex-1 bg-bg border border-line rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-brand outline-none"
                   />
                   <button
                     type="button"
                     onClick={handleSearchPropietario}
-                    className="px-4 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-primary hover:text-slate-900 transition-colors"
+                    className="px-4 py-2 bg-surface-2 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-brand hover:text-white transition-colors"
                   >
                     <Icons.Search size={16} /> Buscar
                   </button>
                 </div>
 
                 {propietarioResults.length > 0 && (
-                  <div className="border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
+                  <div className="border border-line rounded-lg overflow-hidden">
                     {propietarioResults.map((p) => (
                       <button
                         key={p.id}
@@ -601,19 +618,19 @@ export const Patients: React.FC = () => {
                           setPropietarioResults([]);
                         }}
                         className={cn(
-                          "w-full text-left px-4 py-3 border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-primary/5 transition-colors",
+                          "w-full text-left px-4 py-3 border-b border-line last:border-0 hover:bg-brand-soft/30 transition-colors",
                           selectedPropietarioId === p.id
-                            ? "bg-primary/10"
-                            : "bg-white dark:bg-slate-900",
+                            ? "bg-brand-soft"
+                            : "bg-surface",
                         )}
                       >
                         <p className="font-bold text-sm">{p.nombre}</p>
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-muted">
                           {p.email}
                           {p.ci ? ` · CI: ${p.ci}` : ""}
                         </p>
                         {p._count && (
-                          <p className="text-xs text-primary font-bold mt-0.5">
+                          <p className="text-xs text-brand-ink font-bold mt-0.5">
                             {p._count.mascotas} mascota
                             {p._count.mascotas !== 1 ? "s" : ""} registrada
                             {p._count.mascotas !== 1 ? "s" : ""}
@@ -625,16 +642,16 @@ export const Patients: React.FC = () => {
                 )}
 
                 {selectedPropietario && (
-                  <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg flex items-center justify-between">
+                  <div className="p-4 bg-brand-soft/30 border border-brand/20 rounded-lg flex items-center justify-between">
                     <div>
-                      <p className="font-bold text-sm text-primary">
+                      <p className="font-bold text-sm text-brand-ink">
                         {selectedPropietario.nombre}
                       </p>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-muted">
                         {selectedPropietario.email}
                       </p>
                       {selectedPropietario._count && (
-                        <p className="text-xs text-slate-500 mt-0.5">
+                        <p className="text-xs text-muted mt-0.5">
                           {selectedPropietario._count.mascotas} mascota
                           {selectedPropietario._count.mascotas !== 1 ? "s" : ""}{" "}
                           registrada
@@ -668,13 +685,13 @@ export const Patients: React.FC = () => {
             <button
               type="button"
               onClick={() => setView("list")}
-              className="px-6 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 font-bold hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              className="px-6 py-2 rounded-lg border border-line text-muted font-bold hover:bg-surface-2 transition-colors"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-6 py-2 rounded-lg bg-primary text-slate-900 font-bold hover:bg-primary/90 shadow-lg shadow-primary/20 transition-colors"
+              className="px-6 py-2 rounded-lg bg-brand text-white font-bold hover:bg-brand-strong transition-colors"
             >
               Registrar y Dar Turno
             </button>
@@ -697,23 +714,23 @@ export const Patients: React.FC = () => {
         className="flex flex-col h-full overflow-hidden"
       >
         {/* Info del paciente */}
-        <div className="flex-shrink-0 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-8 py-6">
+        <div className="flex-shrink-0 bg-surface border-b border-line px-8 py-6">
           <div className="flex items-start justify-between gap-6">
             <div className="flex items-center gap-5">
               <button
                 onClick={() => setView("list")}
-                className="text-slate-500 hover:text-primary transition-colors flex-shrink-0"
+                className="text-muted hover:text-brand-ink transition-colors flex-shrink-0"
               >
                 <Icons.ArrowRight className="rotate-180" size={20} />
               </button>
-              <div className="h-16 w-16 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-3xl flex-shrink-0">
+              <div className="h-16 w-16 rounded-2xl bg-surface-2 flex items-center justify-center text-3xl flex-shrink-0">
                 {speciesEmojis[especieNombre(selectedPatient.especie)] ?? "🐾"}
               </div>
               <div>
-                <h2 className="text-2xl font-black text-slate-900 dark:text-white">
+                <h2 className="text-2xl font-black text-ink">
                   {selectedPatient.nombre}
                 </h2>
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-muted">
                   {especieNombre(selectedPatient.especie)}
                   {razaNombre(selectedPatient.raza)
                     ? ` · ${razaNombre(selectedPatient.raza)}`
@@ -731,17 +748,17 @@ export const Patients: React.FC = () => {
             <div className="text-right">
               <div className="flex items-center gap-2 justify-end mb-1">
                 <Icons.User size={14} className="text-slate-400" />
-                <span className="font-bold text-slate-900 dark:text-white text-sm">
+                <span className="font-bold text-ink text-sm">
                   {selectedPatient.propietario.nombre}
                 </span>
               </div>
               {selectedPatient.propietario.email && (
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-muted">
                   {selectedPatient.propietario.email}
                 </p>
               )}
               {selectedPatient.propietario.telefono && (
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-muted">
                   {selectedPatient.propietario.telefono}
                 </p>
               )}
@@ -767,14 +784,14 @@ export const Patients: React.FC = () => {
           </div>
 
           {/* Tabs */}
-          <div className="flex gap-1 mt-6 border-b border-slate-200 dark:border-slate-800 -mb-[1px]">
+          <div className="flex gap-1 mt-6 border-b border-line -mb-[1px]">
             <button
               onClick={() => setDetailTab("history")}
               className={cn(
                 "px-5 py-2.5 text-sm font-bold border-b-2 transition-colors",
                 detailTab === "history"
-                  ? "border-primary text-primary"
-                  : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white",
+                  ? "border-brand text-brand-ink"
+                  : "border-transparent text-muted hover:text-ink",
               )}
             >
               <Icons.History size={14} className="inline mr-1.5" />
@@ -785,8 +802,8 @@ export const Patients: React.FC = () => {
               className={cn(
                 "px-5 py-2.5 text-sm font-bold border-b-2 transition-colors",
                 detailTab === "soap"
-                  ? "border-primary text-primary"
-                  : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white",
+                  ? "border-brand text-brand-ink"
+                  : "border-transparent text-muted hover:text-ink",
               )}
             >
               <Icons.FileText size={14} className="inline mr-1.5" />
@@ -796,7 +813,7 @@ export const Patients: React.FC = () => {
         </div>
 
         {/* Contenido del tab */}
-        <div className="flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-950 p-8">
+        <div className="flex-1 overflow-y-auto bg-bg p-8">
           <AnimatePresence mode="wait">
             {detailTab === "history" ? (
               <motion.div
@@ -806,7 +823,7 @@ export const Patients: React.FC = () => {
                 exit={{ opacity: 0 }}
                 className="max-w-3xl mx-auto space-y-4"
               >
-                <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-6">
+                <h3 className="text-sm font-black text-muted uppercase tracking-widest mb-6">
                   Historias Clínicas · {historias.length} registro
                   {historias.length === 1 ? "" : "s"}
                 </h3>
@@ -824,19 +841,19 @@ export const Patients: React.FC = () => {
                     <button
                       key={h.id}
                       onClick={() => openHistoria(h.id)}
-                      className="w-full text-left bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm hover:border-primary/50 transition-colors"
+                      className="w-full text-left bg-surface rounded-card border border-line p-5 hover:border-brand/50 transition-colors"
                     >
                       <div className="flex items-start justify-between mb-2">
                         <div>
-                          <span className="text-xs font-black text-primary block">
+                          <span className="text-xs font-black text-brand-ink block">
                             {formatDate(h.fecha)} · Nº{" "}
                             {String(h.folio).padStart(6, "0")}
                           </span>
-                          <h4 className="font-bold text-slate-900 dark:text-white">
+                          <h4 className="font-bold text-ink">
                             {h.motivo_consulta || "Consulta"}
                           </h4>
                           {h.atendido_por?.nombre && (
-                            <p className="text-xs text-slate-500 mt-0.5">
+                            <p className="text-xs text-muted mt-0.5">
                               {h.atendido_por.nombre}
                             </p>
                           )}
@@ -854,7 +871,7 @@ export const Patients: React.FC = () => {
                       </div>
                       {(h.diagnostico_confirmativo ||
                         h.diagnostico_presuntivo) && (
-                        <p className="text-sm text-slate-700 dark:text-slate-300 mt-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                        <p className="text-sm text-ink mt-2 pt-2 border-t border-line">
                           <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mr-2">
                             Diagnóstico
                           </span>
@@ -874,11 +891,11 @@ export const Patients: React.FC = () => {
                 exit={{ opacity: 0 }}
                 className="max-w-3xl mx-auto"
               >
-                <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-6">
+                <h3 className="text-sm font-black text-muted uppercase tracking-widest mb-6">
                   Nueva Atención Clínica para {selectedPatient.nombre}
                 </h3>
                 <form onSubmit={handleSaveSoap} className="space-y-5">
-                  <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 space-y-4">
+                  <div className="bg-surface rounded-card border border-line p-6 space-y-4">
                     <div>
                       <label className="block text-sm font-bold mb-1">
                         Motivo de consulta *
@@ -890,13 +907,13 @@ export const Patients: React.FC = () => {
                           setSoapForm({ ...soapForm, motivo: e.target.value })
                         }
                         placeholder="Ej: Control de rutina, vacunación, malestar general..."
-                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary outline-none"
+                        className="w-full bg-bg border border-line rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-brand outline-none"
                       />
                     </div>
 
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                       <div>
-                        <label className="block text-xs font-bold mb-1 text-slate-500">
+                        <label className="block text-xs font-bold mb-1 text-muted">
                           Peso (kg)
                         </label>
                         <input
@@ -906,11 +923,11 @@ export const Patients: React.FC = () => {
                           onChange={(e) =>
                             setSoapForm({ ...soapForm, peso: e.target.value })
                           }
-                          className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
+                          className="w-full bg-bg border border-line rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold mb-1 text-slate-500">
+                        <label className="block text-xs font-bold mb-1 text-muted">
                           Temp (°C)
                         </label>
                         <input
@@ -920,11 +937,11 @@ export const Patients: React.FC = () => {
                           onChange={(e) =>
                             setSoapForm({ ...soapForm, temp: e.target.value })
                           }
-                          className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
+                          className="w-full bg-bg border border-line rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold mb-1 text-slate-500">
+                        <label className="block text-xs font-bold mb-1 text-muted">
                           FC (lpm)
                         </label>
                         <input
@@ -933,11 +950,11 @@ export const Patients: React.FC = () => {
                           onChange={(e) =>
                             setSoapForm({ ...soapForm, fc: e.target.value })
                           }
-                          className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
+                          className="w-full bg-bg border border-line rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold mb-1 text-slate-500">
+                        <label className="block text-xs font-bold mb-1 text-muted">
                           FR (rpm)
                         </label>
                         <input
@@ -946,7 +963,7 @@ export const Patients: React.FC = () => {
                           onChange={(e) =>
                             setSoapForm({ ...soapForm, fr: e.target.value })
                           }
-                          className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
+                          className="w-full bg-bg border border-line rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand"
                         />
                       </div>
                     </div>
@@ -964,7 +981,7 @@ export const Patients: React.FC = () => {
                           })
                         }
                         rows={2}
-                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary outline-none resize-none"
+                        className="w-full bg-bg border border-line rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-brand outline-none resize-none"
                       />
                     </div>
 
@@ -981,7 +998,7 @@ export const Patients: React.FC = () => {
                           })
                         }
                         rows={2}
-                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary outline-none resize-none"
+                        className="w-full bg-bg border border-line rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-brand outline-none resize-none"
                       />
                     </div>
 
@@ -998,7 +1015,7 @@ export const Patients: React.FC = () => {
                           })
                         }
                         rows={3}
-                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary outline-none resize-none"
+                        className="w-full bg-bg border border-line rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-brand outline-none resize-none"
                       />
                     </div>
 
@@ -1008,14 +1025,14 @@ export const Patients: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setDetailTab("history")}
-                      className="px-6 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 font-bold hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                      className="px-6 py-2 rounded-lg border border-line text-muted font-bold hover:bg-surface-2 transition-colors"
                     >
                       Cancelar
                     </button>
                     <button
                       type="submit"
                       disabled={isSavingSoap}
-                      className="px-8 py-3 bg-primary text-slate-900 font-black rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-colors disabled:opacity-50"
+                      className="px-8 py-3 bg-brand text-white font-black rounded-xl hover:bg-brand-strong transition-colors disabled:opacity-50"
                     >
                       {isSavingSoap ? "Guardando..." : "Finalizar Atención"}
                     </button>
@@ -1057,43 +1074,39 @@ export const Patients: React.FC = () => {
     >
       <header className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+          <h2 className="text-2xl font-bold text-ink">
             Pacientes
           </h2>
-          <p className="text-slate-500 dark:text-slate-400">
+          <p className="text-muted">
             Listado general de pacientes y propietarios
           </p>
         </div>
         <button
           onClick={() => setView("new")}
-          className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-slate-900 hover:bg-primary/90 shadow-sm transition-colors"
+          className="flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-strong shadow-sm transition-colors"
         >
           <Icons.Plus size={18} />
           Nuevo Paciente
         </button>
       </header>
 
-      <div className="flex gap-2">
-        <div className="flex-1 relative">
-          <Icons.Search
-            size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-          />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-            placeholder="Buscar por nombre de mascota, dueño o CI..."
-            className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-sm focus:ring-2 focus:ring-primary outline-none"
-          />
-        </div>
-        <button
-          onClick={handleSearch}
-          className="px-6 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg font-bold text-sm hover:bg-primary hover:text-slate-900 transition-colors"
-        >
-          Buscar
-        </button>
+      <div className="relative">
+        <Icons.Search
+          size={16}
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+        />
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Buscar por nombre de mascota, dueño o CI..."
+          className="w-full pl-9 pr-4 py-2 bg-surface border border-line rounded-lg text-sm focus:ring-2 focus:ring-brand outline-none"
+        />
+        {loading && (
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">
+            Buscando…
+          </span>
+        )}
       </div>
 
       {loading ? (
@@ -1114,27 +1127,27 @@ export const Patients: React.FC = () => {
             return (
               <div
                 key={p.id}
-                className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm hover:shadow-md transition-all"
+                className="bg-surface rounded-card border border-line p-5 transition-all"
               >
                 <div
                   onClick={() => selectPatient(p.id)}
                   className="cursor-pointer"
                 >
                   <div className="flex items-center gap-4 mb-3">
-                    <div className="h-14 w-14 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-3xl flex-shrink-0">
+                    <div className="h-14 w-14 rounded-full bg-surface-2 flex items-center justify-center text-3xl flex-shrink-0">
                       {speciesEmojis[especieNombre(p.especie)] ?? "🐾"}
                     </div>
                     <div className="min-w-0">
-                      <h3 className="font-black text-slate-900 dark:text-white truncate">
+                      <h3 className="font-black text-ink truncate">
                         {p.nombre}
                       </h3>
-                      <p className="text-xs text-slate-500 truncate">
+                      <p className="text-xs text-muted truncate">
                         {especieNombre(p.especie)}
                         {razaNombre(p.raza) ? ` · ${razaNombre(p.raza)}` : ""}
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-1">
+                  <div className="flex items-center gap-1.5 text-xs text-muted mb-1">
                     <Icons.User
                       size={11}
                       className="text-slate-400 flex-shrink-0"
@@ -1157,7 +1170,7 @@ export const Patients: React.FC = () => {
                 ) : (
                   <button
                     onClick={() => emitTicket(p.id, p.nombre)}
-                    className="w-full mt-4 py-2 bg-primary/10 text-primary border border-primary/20 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-primary hover:text-slate-900 transition-all"
+                    className="w-full mt-4 py-2 bg-brand-soft text-brand-ink border border-brand/20 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-brand hover:text-white transition-all"
                   >
                     Emitir Turno
                   </button>
@@ -1165,6 +1178,31 @@ export const Patients: React.FC = () => {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {!loading && total > 0 && (
+        <div className="flex items-center justify-between pt-1">
+          <p className="text-sm text-muted">
+            {total} paciente{total === 1 ? "" : "s"} · página {page} de{" "}
+            {Math.max(1, Math.ceil(total / PAGE_SIZE))}
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => irAPagina(page - 1)}
+              disabled={loading || page <= 1}
+              className="px-4 py-1.5 rounded-lg bg-surface-2 text-sm font-bold disabled:opacity-40 hover:opacity-90 transition-opacity"
+            >
+              Anterior
+            </button>
+            <button
+              onClick={() => irAPagina(page + 1)}
+              disabled={loading || page >= Math.ceil(total / PAGE_SIZE)}
+              className="px-4 py-1.5 rounded-lg bg-surface-2 text-sm font-bold disabled:opacity-40 hover:opacity-90 transition-opacity"
+            >
+              Siguiente
+            </button>
+          </div>
         </div>
       )}
     </motion.div>

@@ -16,9 +16,8 @@ interface ServicioForm {
 const EMPTY_FORM: ServicioForm = { nombre: "", precio_base: "" };
 
 const inputCls =
-  "w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary text-slate-900 dark:text-slate-100";
-const labelCls =
-  "block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1";
+  "w-full rounded-lg border border-line bg-bg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand text-ink";
+const labelCls = "block text-xs font-bold text-muted mb-1";
 
 export const Services: React.FC = () => {
   const [servicios, setServicios] = useState<CatalogoServicio[]>([]);
@@ -124,31 +123,27 @@ export const Services: React.FC = () => {
     >
       <header className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-            Servicios
-          </h2>
-          <p className="text-slate-500 dark:text-slate-400">
-            Catálogo de servicios y sus tarifas
-          </p>
+          <h2 className="text-2xl font-bold text-ink">Servicios</h2>
+          <p className="text-muted">Catálogo de servicios y sus tarifas</p>
         </div>
         <button
           onClick={openCreate}
-          className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-slate-900 hover:bg-primary-dark transition-colors shadow-sm"
+          className="flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-bold text-white hover:bg-brand-strong transition-colors"
         >
           <Icons.Plus size={20} />
           <span>Nuevo Servicio</span>
         </button>
       </header>
 
-      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center gap-4">
-          <h3 className="font-bold flex items-center gap-2">
-            <Icons.FileText className="text-primary" size={18} />
+      <div className="bg-surface rounded-card border border-line overflow-hidden">
+        <div className="p-6 border-b border-line flex justify-between items-center gap-4">
+          <h3 className="font-bold flex items-center gap-2 text-ink">
+            <Icons.FileText className="text-brand-ink" size={18} />
             Lista de Servicios
           </h3>
           <div className="relative">
             <Icons.Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted"
               size={14}
             />
             <input
@@ -156,7 +151,7 @@ export const Services: React.FC = () => {
               placeholder="Buscar servicio..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-8 pr-3 py-1.5 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 outline-none focus:ring-2 focus:ring-primary"
+              className="pl-8 pr-3 py-1.5 text-sm rounded-lg border border-line bg-bg outline-none focus:ring-2 focus:ring-brand text-ink"
             />
           </div>
         </div>
@@ -165,28 +160,25 @@ export const Services: React.FC = () => {
           {loading ? (
             <div className="p-8 space-y-3">
               {[...Array(4)].map((_, i) => (
-                <div
-                  key={i}
-                  className="h-10 bg-slate-100 dark:bg-slate-800 rounded animate-pulse"
-                />
+                <div key={i} className="h-10 bg-surface-2 rounded animate-pulse" />
               ))}
             </div>
           ) : (
             <table className="w-full text-left">
               <thead>
-                <tr className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 text-xs uppercase tracking-wider">
+                <tr className="bg-surface-2/50 text-muted text-xs uppercase tracking-wider">
                   <th className="px-6 py-4 font-bold">Servicio</th>
                   <th className="px-6 py-4 font-bold">Precio (Bs.)</th>
                   <th className="px-6 py-4 font-bold">Estado</th>
                   <th className="px-6 py-4 font-bold text-center">Acciones</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              <tbody className="divide-y divide-line">
                 {filtrados.length === 0 ? (
                   <tr>
                     <td
                       colSpan={4}
-                      className="px-6 py-12 text-center text-slate-400 text-sm"
+                      className="px-6 py-12 text-center text-muted text-sm"
                     >
                       No se encontraron servicios
                     </td>
@@ -195,14 +187,14 @@ export const Services: React.FC = () => {
                   filtrados.map((s) => (
                     <tr
                       key={s.id}
-                      className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors"
+                      className="hover:bg-surface-2/30 transition-colors"
                     >
                       <td className="px-6 py-4">
-                        <span className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                        <span className="text-sm font-bold text-ink">
                           {s.nombre}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm font-bold text-slate-900 dark:text-slate-100">
+                      <td className="px-6 py-4 text-sm font-bold text-ink tnum">
                         Bs.{Number(s.precio_base).toFixed(2)}
                       </td>
                       <td className="px-6 py-4">
@@ -211,7 +203,7 @@ export const Services: React.FC = () => {
                           className={cn(
                             "px-2 py-1 text-[10px] font-bold rounded uppercase transition-colors",
                             s.activo === false
-                              ? "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
+                              ? "bg-surface-2 text-muted"
                               : "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400",
                           )}
                           title="Clic para activar/desactivar"
@@ -224,14 +216,14 @@ export const Services: React.FC = () => {
                           <button
                             onClick={() => openEdit(s)}
                             title="Editar servicio"
-                            className="p-1.5 rounded-lg bg-slate-100 text-slate-500 hover:bg-blue-50 hover:text-blue-600 dark:bg-slate-800 transition-colors"
+                            className="p-1.5 rounded-lg bg-surface-2 text-muted hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/20 transition-colors"
                           >
                             <Icons.Edit size={14} />
                           </button>
                           <button
                             onClick={() => handleDelete(s)}
                             title="Eliminar servicio"
-                            className="p-1.5 rounded-lg bg-slate-100 text-slate-500 hover:bg-red-50 hover:text-red-600 dark:bg-slate-800 transition-colors"
+                            className="p-1.5 rounded-lg bg-surface-2 text-muted hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 transition-colors"
                           >
                             <Icons.Trash2 size={14} />
                           </button>
@@ -262,9 +254,9 @@ export const Services: React.FC = () => {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
               transition={{ type: "spring", duration: 0.3 }}
-              className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md p-6 border border-slate-200 dark:border-slate-800"
+              className="bg-surface rounded-card shadow-2xl w-full max-w-md p-6 border border-line"
             >
-              <h3 className="text-lg font-bold mb-6 text-slate-900 dark:text-slate-100">
+              <h3 className="text-lg font-bold mb-6 text-ink">
                 {modal === "create" ? "Nuevo Servicio" : "Editar Servicio"}
               </h3>
 
@@ -305,14 +297,14 @@ export const Services: React.FC = () => {
               <div className="flex gap-3 justify-end mt-6">
                 <button
                   onClick={closeModal}
-                  className="px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                  className="px-4 py-2 rounded-lg border border-line text-sm font-bold text-muted hover:bg-surface-2 transition-colors"
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={handleSave}
                   disabled={saving}
-                  className="flex items-center gap-2 px-5 py-2 rounded-lg bg-primary text-slate-900 text-sm font-bold hover:bg-primary-dark transition-colors disabled:opacity-50"
+                  className="flex items-center gap-2 px-5 py-2 rounded-lg bg-brand text-white text-sm font-bold hover:bg-brand-strong transition-colors disabled:opacity-50"
                 >
                   <Icons.Save size={16} />
                   {saving ? "Guardando..." : "Guardar"}

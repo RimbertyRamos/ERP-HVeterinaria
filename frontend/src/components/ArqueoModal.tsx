@@ -29,7 +29,6 @@ interface Cierre {
 
 const money = (n: unknown) => `Bs. ${Number(n ?? 0).toFixed(2)}`;
 
-/** Modal de Arqueo y Cierre de caja del cajero (resumen del día por método). */
 export const ArqueoModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const [arqueo, setArqueo] = useState<Arqueo | null>(null);
   const [cierres, setCierres] = useState<Cierre[]>([]);
@@ -77,7 +76,7 @@ export const ArqueoModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   };
 
   const inputCls =
-    "w-full mt-1 h-10 px-3 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm outline-none focus:ring-2 focus:ring-primary";
+    "w-full mt-1 h-10 px-3 rounded-lg bg-bg border border-line text-sm outline-none focus:ring-2 focus:ring-brand text-ink";
 
   return (
     <div
@@ -86,46 +85,46 @@ export const ArqueoModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="relative my-8 w-full max-w-lg rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-2xl">
+      <div className="relative my-8 w-full max-w-lg rounded-card border border-line bg-surface p-6 shadow-2xl">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+          className="absolute top-4 right-4 text-muted hover:text-ink"
           title="Cerrar"
         >
           <Icons.X size={20} />
         </button>
 
-        <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+        <h2 className="text-lg font-bold text-ink">
           Arqueo y cierre de caja
         </h2>
-        <p className="text-xs text-slate-500 mb-4">
+        <p className="text-xs text-muted mb-4">
           Resumen de tus cobros de hoy, desglosado por método de pago.
         </p>
 
         {loading ? (
-          <p className="text-slate-400 italic">Cargando…</p>
+          <p className="text-muted italic">Cargando…</p>
         ) : arqueo ? (
           <>
-            <div className="rounded-xl border border-slate-200 dark:border-slate-700 divide-y divide-slate-100 dark:divide-slate-800 text-sm overflow-hidden">
+            <div className="rounded-lg border border-line divide-y divide-line text-sm overflow-hidden">
               {(["EFECTIVO", "TARJETA", "QR"] as const).map((m) => (
                 <div
                   key={m}
                   className="grid grid-cols-3 items-center px-4 py-2.5"
                 >
-                  <span className="font-bold">{m}</span>
-                  <span className="text-center text-xs text-slate-500">
+                  <span className="font-bold text-ink">{m}</span>
+                  <span className="text-center text-xs text-muted">
                     {arqueo.por_metodo[m]?.cantidad ?? 0} cobros
                   </span>
-                  <span className="text-right font-black">
+                  <span className="text-right font-black text-ink">
                     {money(arqueo.por_metodo[m]?.total)}
                   </span>
                 </div>
               ))}
-              <div className="grid grid-cols-3 items-center px-4 py-2.5 bg-slate-50 dark:bg-slate-800/50">
-                <span className="font-black uppercase text-xs tracking-widest">
+              <div className="grid grid-cols-3 items-center px-4 py-2.5 bg-surface-2/50">
+                <span className="font-black uppercase text-xs tracking-widest text-ink">
                   Total
                 </span>
-                <span className="text-center text-xs text-slate-500">
+                <span className="text-center text-xs text-muted">
                   {arqueo.cantidad_recibos} recibos
                 </span>
                 <span className="text-right font-black text-emerald-600">
@@ -136,7 +135,7 @@ export const ArqueoModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
             <div className="mt-4 grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-bold text-slate-500">
+                <label className="text-xs font-bold text-muted">
                   Efectivo contado (Bs.)
                 </label>
                 <input
@@ -150,14 +149,14 @@ export const ArqueoModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 />
               </div>
               <div>
-                <label className="text-xs font-bold text-slate-500">
+                <label className="text-xs font-bold text-muted">
                   Diferencia
                 </label>
                 <div
                   className={cn(
                     "mt-1 h-10 flex items-center px-3 rounded-lg font-black text-sm",
                     diferencia == null
-                      ? "text-slate-400 bg-slate-50 dark:bg-slate-950"
+                      ? "text-muted bg-bg"
                       : Math.abs(diferencia) < 0.005
                         ? "text-emerald-600 bg-emerald-50 dark:bg-emerald-900/15"
                         : diferencia > 0
@@ -171,44 +170,44 @@ export const ArqueoModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 </div>
               </div>
             </div>
-            <p className="text-[11px] text-slate-400 mt-1">
+            <p className="text-[11px] text-muted mt-1">
               Compara lo contado con el efectivo esperado ({money(totalEfectivo)}
               ).
             </p>
 
             <div className="mt-3">
-              <label className="text-xs font-bold text-slate-500">
+              <label className="text-xs font-bold text-muted">
                 Observaciones (opcional)
               </label>
               <textarea
                 value={obs}
                 onChange={(e) => setObs(e.target.value)}
                 rows={2}
-                className="w-full mt-1 px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm outline-none focus:ring-2 focus:ring-primary resize-none"
+                className="w-full mt-1 px-3 py-2 rounded-lg bg-bg border border-line text-sm outline-none focus:ring-2 focus:ring-brand text-ink resize-none"
               />
             </div>
 
             <button
               onClick={registrar}
               disabled={saving}
-              className="w-full mt-3 py-2.5 rounded-lg bg-primary text-slate-900 font-bold disabled:opacity-50"
+              className="w-full mt-3 py-2.5 rounded-lg bg-brand text-white font-bold hover:bg-brand-strong disabled:opacity-50 transition-colors"
             >
               {saving ? "Registrando…" : "Registrar cierre de caja"}
             </button>
 
             {cierres.length > 0 && (
               <div className="mt-5">
-                <h3 className="text-xs font-black uppercase tracking-widest text-slate-500 mb-2">
+                <h3 className="text-xs font-black uppercase tracking-widest text-muted mb-2">
                   Cierres recientes
                 </h3>
                 <div className="space-y-1.5 max-h-40 overflow-y-auto">
                   {cierres.map((c) => (
                     <div
                       key={c.id}
-                      className="flex items-center justify-between text-xs rounded-lg border border-slate-100 dark:border-slate-800 px-3 py-2"
+                      className="flex items-center justify-between text-xs rounded-lg border border-line px-3 py-2"
                     >
                       <div className="min-w-0">
-                        <p className="font-bold">
+                        <p className="font-bold text-ink">
                           {new Date(c.created_at).toLocaleString("es-ES", {
                             day: "2-digit",
                             month: "short",
@@ -216,12 +215,14 @@ export const ArqueoModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                             minute: "2-digit",
                           })}
                         </p>
-                        <p className="text-slate-400 truncate">
+                        <p className="text-muted truncate">
                           {c.cantidad_recibos} recibos · {c.cajero?.nombre}
                         </p>
                       </div>
                       <div className="text-right shrink-0">
-                        <p className="font-black">{money(c.total_general)}</p>
+                        <p className="font-black text-ink">
+                          {money(c.total_general)}
+                        </p>
                         {c.diferencia != null &&
                           Math.abs(Number(c.diferencia)) >= 0.005 && (
                             <p
@@ -242,7 +243,7 @@ export const ArqueoModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             )}
           </>
         ) : (
-          <p className="text-slate-400 italic">No se pudo cargar el arqueo.</p>
+          <p className="text-muted italic">No se pudo cargar el arqueo.</p>
         )}
       </div>
     </div>
