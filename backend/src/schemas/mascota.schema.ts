@@ -7,6 +7,16 @@ import {
   numeroNoNegativoOpcional,
 } from "./common";
 
+// Query del listado paginado (GET /mascotas?q&page&pageSize). Se valida con
+// .safeParse en el controller (el middleware validate() opera sobre req.body).
+// El clamp de pageSize a 100 lo hace el service ("se limita", no rechaza).
+const vacioUndef = (v: unknown) => (v === "" || v == null ? undefined : v);
+export const mascotaListQuerySchema = z.object({
+  q: z.preprocess(vacioUndef, z.string().max(200).optional()),
+  page: z.preprocess(vacioUndef, z.coerce.number().int().optional()),
+  pageSize: z.preprocess(vacioUndef, z.coerce.number().int().optional()),
+});
+
 // Datos del propietario embebido (CreatePropietarioDto). Solo se usa cuando no se
 // envía propietario_id; la regla "propietario_id O propietario" la sigue
 // validando MascotaService.

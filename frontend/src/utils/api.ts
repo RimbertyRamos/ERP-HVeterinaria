@@ -90,6 +90,15 @@ export const api = {
     const qs = p.toString();
     return get(`/mascotas${qs ? `?${qs}` : ""}`);
   },
+  // Listado paginado + liviano con búsqueda server-side (para la pantalla de
+  // Pacientes). Devuelve { items, total, page, pageSize }.
+  buscarMascotas: (params: { q?: string; page?: number; pageSize?: number }) => {
+    const p = new URLSearchParams();
+    if (params.q) p.set("q", params.q);
+    p.set("page", String(params.page ?? 1));
+    p.set("pageSize", String(params.pageSize ?? 20));
+    return get(`/mascotas?${p.toString()}`);
+  },
   getMascota: (id: string) => get(`/mascotas/${id}`),
   createMascota: (data: unknown) => post("/mascotas", data),
   updateMascota: (id: string, data: unknown) => put(`/mascotas/${id}`, data),

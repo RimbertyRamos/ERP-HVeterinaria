@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { MascotaService } from "../services/mascota.service";
 import { ErrorHandler } from "../middlewares/error.middleware";
+import { mascotaListQuerySchema } from "../schemas/mascota.schema";
 
 export class MascotaController {
   constructor(
@@ -10,6 +11,18 @@ export class MascotaController {
 
   getMascotas = async (req: Request, res: Response) => {
     try {
+      // Modo NUEVO (paginado + liviano) cuando llega q/page/pageSize → devuelve
+      // { items, total, page, pageSize }. COMPATIBLE: sin esos params responde el
+      // listado legado (array con includes completos) que usan Agenda/Dashboard.
+      const { q, page, pageSize } = req.query;
+      if (q !== undefined || page !== undefined || pageSize !== undefined) {
+        const parsed = mascotaListQuerySchema.safeParse(req.query);
+        if (!parsed.success) {
+          return res.status(400).json({ error: "Filtros no válidos" });
+        }
+        return res.json(await this.mascotaService.listarPaginado(parsed.data));
+      }
+
       const search = req.query.search as string | undefined;
       const propietario_id = req.query.propietario_id as string | undefined;
       const mascotas = await this.mascotaService.getMascotas(

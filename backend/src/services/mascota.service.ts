@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma, EstadoFicha } from "@prisma/client";
 import { UsuariosService } from "./usuarios.service";
 import { CreateMascotaConPropietarioDto, UpdateMascotaDto } from "../types";
 
@@ -72,6 +72,61 @@ export class MascotaService {
         include: MascotaService.MASCOTA_INCLUDE,
         orderBy: { nombre: "asc" },
       });
+    } catch (err) {
+      throw { status: 500, message: "Error al obtener las mascotas" };
+    }
+  }
+
+  // Select LIVIANO para el listado: solo lo que la tabla necesita. NO trae
+  // historias/vacunas/recibos ni todas las fichas; solo un indicador de si hay
+  // una ficha activa (para el badge "En cola de espera"). El detalle usa su
+  // propio endpoint (getMascotaById) con los includes completos.
+  private static readonly LISTA_SELECT = {
+    id: true,
+    nombre: true,
+    sexo: true,
+    especie: { select: { nombre: true } },
+    raza: { select: { nombre: true } },
+    propietario: { select: { nombre: true, telefono: true } },
+    fichas: {
+      where: {
+        estado: { in: [EstadoFicha.ESPERA, EstadoFicha.EN_CURSO] },
+      },
+      select: { estado: true },
+      take: 1,
+    },
+  };
+
+  /**
+   * Listado paginado y liviano de mascotas con búsqueda server-side. `q` filtra
+   * por nombre de la mascota o nombre/CI del propietario (insensible). Paginación
+   * real con skip/take (mismo patrón que bitacora). pageSize se limita a 100.
+   */
+  async listarPaginado(f: { q?: string; page?: number; pageSize?: number }) {
+    try {
+      const page = Math.max(1, f.page ?? 1);
+      const pageSize = Math.min(100, Math.max(1, f.pageSize ?? 20));
+      const q = f.q?.trim();
+      const where: Prisma.MascotaWhereInput = q
+        ? {
+            OR: [
+              { nombre: { contains: q, mode: "insensitive" } },
+              { propietario: { nombre: { contains: q, mode: "insensitive" } } },
+              { propietario: { ci: { contains: q, mode: "insensitive" } } },
+            ],
+          }
+        : {};
+      const [items, total] = await Promise.all([
+        this.prisma.mascota.findMany({
+          where,
+          orderBy: { nombre: "asc" },
+          skip: (page - 1) * pageSize,
+          take: pageSize,
+          select: MascotaService.LISTA_SELECT,
+        }),
+        this.prisma.mascota.count({ where }),
+      ]);
+      return { items, total, page, pageSize };
     } catch (err) {
       throw { status: 500, message: "Error al obtener las mascotas" };
     }
