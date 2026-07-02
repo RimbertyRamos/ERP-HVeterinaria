@@ -6,8 +6,8 @@ interface LoginProps {
 }
 
 export const Login: React.FC<LoginProps> = ({ onLogin }) => {
-  const [email, setEmail] = useState("admin@vetcare.com");
-  const [password, setPassword] = useState("admin123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -84,7 +84,7 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 bg-bg border border-line rounded-lg text-ink focus:ring-2 focus:ring-brand outline-none transition-shadow"
-                  placeholder="admin@vetcare.com"
+                  placeholder="correo@ejemplo.com"
                   required
                 />
               </div>
