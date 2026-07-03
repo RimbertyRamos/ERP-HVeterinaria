@@ -1,5 +1,6 @@
 import prisma from "./config/db";
 import * as bcrypt from "bcryptjs";
+import { seedTransaccional } from "./seedTransaccional";
 
 async function main() {
   console.log("🌱 Iniciando seed...");
@@ -745,13 +746,20 @@ async function main() {
     console.log("↪️  Mascotas de prueba ya existen — se omiten");
   }
 
+  await seedTransaccional(prisma);
+
   console.log("\n🎉 Seed completado exitosamente!");
   console.log("\n📋 Credenciales de acceso:");
-  console.log("   Admin:        admin@vetcare.com        / admin123");
+  console.log("   Admin:        admin@vetcare.com         / admin123");
   console.log("   Veterinario:  carlos.mamani@vetcare.com / vet123");
   console.log("   Veterinario:  paola.rios@vetcare.com    / vet123");
   console.log("   Recepción:    maria.gomez@vetcare.com   / recep123");
   console.log("   Cajero:       luis.roca@vetcare.com     / caja123");
+  console.log("   Cliente 1:    juan.vaca@gmail.com       / cliente123");
+  console.log("   Cliente 2:    ana.torrico@gmail.com     / cliente123");
+  console.log("   Cliente 3:    roberto.diaz@gmail.com    / cliente123");
+  console.log("   Cliente 4:    patricia.colque@gmail.com / cliente123");
+  console.log("   Cliente 5:    fernando.pinto@gmail.com  / cliente123");
 }
 
 main()
