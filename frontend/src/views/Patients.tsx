@@ -60,6 +60,31 @@ const especieNombre = (e: EspecieObj | string | null | undefined): string =>
 const razaNombre = (r: RazaObj | string | null | undefined): string =>
   !r ? "" : typeof r === "string" ? r : r.nombre;
 
+// Valor centinela de la opción "Otra…" en los selects de especie/raza.
+const OTRA = "__otra__";
+
+// Arma el payload de especie/raza según lo elegido: con "Otra…" se envía el
+// NOMBRE y el backend la crea en el catálogo al vuelo (connectOrCreate).
+// `vaciarRaza` (solo update): sin raza elegida se envía null para quitarla.
+const especieRazaPayload = (
+  f: {
+    especie_id: string;
+    especie_otra: string;
+    raza_id: string;
+    raza_otra: string;
+  },
+  vaciarRaza = false,
+): Record<string, unknown> => {
+  const out: Record<string, unknown> = {};
+  if (f.especie_id === OTRA) out.especie_nombre = f.especie_otra.trim();
+  else out.especie_id = f.especie_id;
+  const razaLibre = f.especie_id === OTRA || f.raza_id === OTRA;
+  if (razaLibre && f.raza_otra.trim()) out.raza_nombre = f.raza_otra.trim();
+  else if (!razaLibre && f.raza_id) out.raza_id = f.raza_id;
+  else if (vaciarRaza) out.raza_id = null;
+  return out;
+};
+
 const speciesEmojis: Record<string, string> = {
   Perro: "🐕",
   Gato: "🐈",
@@ -106,7 +131,9 @@ export const Patients: React.FC = () => {
   const [form, setForm] = useState({
     nombre: "",
     especie_id: "",
+    especie_otra: "",
     raza_id: "",
+    raza_otra: "",
     sexo: "M",
     fecha_nacimiento: "",
     peso_actual: "",
@@ -115,6 +142,21 @@ export const Patients: React.FC = () => {
     propietario_email: "",
     propietario_telefono: "",
     propietario_ci: "",
+  });
+
+  // Modal de edición de la mascota seleccionada (vista detalle)
+  const [editOpen, setEditOpen] = useState(false);
+  const [editRazas, setEditRazas] = useState<RazaObj[]>([]);
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [editForm, setEditForm] = useState({
+    nombre: "",
+    especie_id: "",
+    especie_otra: "",
+    raza_id: "",
+    raza_otra: "",
+    sexo: "M",
+    fecha_nacimiento: "",
+    peso_actual: "",
   });
 
   const [soapForm, setSoapForm] = useState({
@@ -135,13 +177,25 @@ export const Patients: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (!form.especie_id) {
+    if (!form.especie_id || form.especie_id === OTRA) {
       setRazas([]);
+      setForm((f) => ({ ...f, raza_id: "" }));
       return;
     }
     api.getRazas(form.especie_id).then(setRazas).catch(console.error);
     setForm((f) => ({ ...f, raza_id: "" }));
   }, [form.especie_id]);
+
+  // Razas del modal de edición. A diferencia del alta, aquí NO se resetea
+  // raza_id al cargar: al abrir el modal la especie y la raza actuales llegan
+  // juntas; el reset solo ocurre cuando el usuario cambia la especie (onChange).
+  useEffect(() => {
+    if (!editForm.especie_id || editForm.especie_id === OTRA) {
+      setEditRazas([]);
+      return;
+    }
+    api.getRazas(editForm.especie_id).then(setEditRazas).catch(console.error);
+  }, [editForm.especie_id]);
 
   const PAGE_SIZE = 20;
   const [total, setTotal] = useState(0);
@@ -205,6 +259,54 @@ export const Patients: React.FC = () => {
     }
   };
 
+  const openEdit = () => {
+    if (!selectedPatient) return;
+    const esp = selectedPatient.especie;
+    const raza = selectedPatient.raza;
+    setEditForm({
+      nombre: selectedPatient.nombre,
+      especie_id: typeof esp === "object" && esp ? esp.id : "",
+      especie_otra: "",
+      raza_id: typeof raza === "object" && raza ? raza.id : "",
+      raza_otra: "",
+      sexo: selectedPatient.sexo || "M",
+      fecha_nacimiento: selectedPatient.fecha_nacimiento
+        ? selectedPatient.fecha_nacimiento.slice(0, 10)
+        : "",
+      peso_actual:
+        selectedPatient.peso_actual != null
+          ? String(selectedPatient.peso_actual)
+          : "",
+    });
+    setEditOpen(true);
+  };
+
+  const handleUpdatePatient = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedPatient) return;
+    setSavingEdit(true);
+    try {
+      await api.updateMascota(selectedPatient.id, {
+        nombre: editForm.nombre,
+        // "Otra…" → envía el nombre y el backend la crea; sin raza → null (quitar)
+        ...especieRazaPayload(editForm, true),
+        sexo: editForm.sexo,
+        fecha_nacimiento: editForm.fecha_nacimiento || undefined,
+        peso_actual: editForm.peso_actual
+          ? parseFloat(editForm.peso_actual)
+          : undefined,
+      });
+      toast.success("Datos del paciente actualizados");
+      setEditOpen(false);
+      await selectPatient(selectedPatient.id);
+      loadPatients();
+    } catch (err: any) {
+      toast.error(err.message ?? "Error al actualizar el paciente");
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
   const emitTicket = async (mascotaId: string, mascotaNombre: string) => {
     try {
       const servicios = await api.getServicios();
@@ -257,8 +359,7 @@ export const Patients: React.FC = () => {
       const payload: Record<string, unknown> = {
         mascota: {
           nombre: form.nombre,
-          especie_id: form.especie_id,
-          raza_id: form.raza_id || undefined,
+          ...especieRazaPayload(form),
           sexo: form.sexo,
           fecha_nacimiento: form.fecha_nacimiento || undefined,
           peso_actual: form.peso_actual
@@ -286,7 +387,9 @@ export const Patients: React.FC = () => {
       setForm({
         nombre: "",
         especie_id: "",
+        especie_otra: "",
         raza_id: "",
+        raza_otra: "",
         sexo: "M",
         fecha_nacimiento: "",
         peso_actual: "",
@@ -407,7 +510,12 @@ export const Patients: React.FC = () => {
                   required
                   value={form.especie_id}
                   onChange={(e) =>
-                    setForm({ ...form, especie_id: e.target.value })
+                    setForm({
+                      ...form,
+                      especie_id: e.target.value,
+                      especie_otra: "",
+                      raza_otra: "",
+                    })
                   }
                   className="w-full bg-bg border border-line rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-brand outline-none"
                 >
@@ -417,25 +525,70 @@ export const Patients: React.FC = () => {
                       {e.nombre}
                     </option>
                   ))}
+                  <option value={OTRA}>➕ Otra especie…</option>
                 </select>
+                {form.especie_id === OTRA && (
+                  <input
+                    required
+                    autoFocus
+                    placeholder="Escribe la nueva especie"
+                    value={form.especie_otra}
+                    onChange={(e) =>
+                      setForm({ ...form, especie_otra: e.target.value })
+                    }
+                    className="mt-2 w-full bg-bg border border-brand/40 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-brand outline-none"
+                  />
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Raza</label>
-                <select
-                  value={form.raza_id}
-                  onChange={(e) =>
-                    setForm({ ...form, raza_id: e.target.value })
-                  }
-                  disabled={razas.length === 0}
-                  className="w-full bg-bg border border-line rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-brand outline-none disabled:opacity-50"
-                >
-                  <option value="">— Sin especificar —</option>
-                  {razas.map((r) => (
-                    <option key={r.id} value={r.id}>
-                      {r.nombre}
-                    </option>
-                  ))}
-                </select>
+                {form.especie_id === OTRA ? (
+                  <input
+                    placeholder="Raza (opcional)"
+                    value={form.raza_otra}
+                    onChange={(e) =>
+                      setForm({ ...form, raza_otra: e.target.value })
+                    }
+                    className="w-full bg-bg border border-line rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-brand outline-none"
+                  />
+                ) : (
+                  <>
+                    <select
+                      value={form.raza_id}
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          raza_id: e.target.value,
+                          raza_otra: "",
+                        })
+                      }
+                      disabled={!form.especie_id}
+                      className="w-full bg-bg border border-line rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-brand outline-none disabled:opacity-50"
+                    >
+                      <option value="">— Sin especificar —</option>
+                      {razas.map((r) => (
+                        <option key={r.id} value={r.id}>
+                          {r.nombre}
+                        </option>
+                      ))}
+                      {form.especie_id && (
+                        <option value={OTRA}>➕ Otra raza…</option>
+                      )}
+                    </select>
+                    {form.raza_id === OTRA && (
+                      <input
+                        required
+                        autoFocus
+                        placeholder="Escribe la nueva raza"
+                        value={form.raza_otra}
+                        onChange={(e) =>
+                          setForm({ ...form, raza_otra: e.target.value })
+                        }
+                        className="mt-2 w-full bg-bg border border-brand/40 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-brand outline-none"
+                      />
+                    )}
+                  </>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Sexo *</label>
@@ -713,6 +866,208 @@ export const Patients: React.FC = () => {
         animate={{ opacity: 1 }}
         className="flex flex-col h-full overflow-hidden"
       >
+        {/* Modal: editar datos del paciente */}
+        {editOpen && (
+          <div
+            className="fixed inset-0 z-[120] flex items-start justify-center bg-slate-900/80 p-4 overflow-y-auto"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setEditOpen(false);
+            }}
+          >
+            <div className="relative my-10 w-full max-w-md rounded-card border border-line bg-surface p-6 shadow-2xl">
+              <button
+                onClick={() => setEditOpen(false)}
+                className="absolute top-4 right-4 text-muted hover:text-ink"
+                title="Cerrar"
+              >
+                <Icons.X size={20} />
+              </button>
+
+              <h2 className="text-lg font-bold text-ink mb-4">
+                Editar paciente
+              </h2>
+
+              <form onSubmit={handleUpdatePatient} className="space-y-3">
+                <div>
+                  <label className="block text-xs font-bold text-muted mb-1">
+                    Nombre *
+                  </label>
+                  <input
+                    required
+                    value={editForm.nombre}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, nombre: e.target.value })
+                    }
+                    className="w-full bg-bg border border-line rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-brand outline-none text-ink"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-muted mb-1">
+                      Especie *
+                    </label>
+                    <select
+                      required
+                      value={editForm.especie_id}
+                      onChange={(e) =>
+                        setEditForm({
+                          ...editForm,
+                          especie_id: e.target.value,
+                          especie_otra: "",
+                          raza_id: "",
+                          raza_otra: "",
+                        })
+                      }
+                      className="w-full bg-bg border border-line rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-brand outline-none text-ink"
+                    >
+                      <option value="">— Seleccionar —</option>
+                      {especies.map((esp) => (
+                        <option key={esp.id} value={esp.id}>
+                          {esp.nombre}
+                        </option>
+                      ))}
+                      <option value={OTRA}>➕ Otra especie…</option>
+                    </select>
+                    {editForm.especie_id === OTRA && (
+                      <input
+                        required
+                        autoFocus
+                        placeholder="Nueva especie"
+                        value={editForm.especie_otra}
+                        onChange={(e) =>
+                          setEditForm({
+                            ...editForm,
+                            especie_otra: e.target.value,
+                          })
+                        }
+                        className="mt-2 w-full bg-bg border border-brand/40 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-brand outline-none text-ink"
+                      />
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-muted mb-1">
+                      Raza
+                    </label>
+                    {editForm.especie_id === OTRA ? (
+                      <input
+                        placeholder="Raza (opcional)"
+                        value={editForm.raza_otra}
+                        onChange={(e) =>
+                          setEditForm({ ...editForm, raza_otra: e.target.value })
+                        }
+                        className="w-full bg-bg border border-line rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-brand outline-none text-ink"
+                      />
+                    ) : (
+                      <>
+                        <select
+                          value={editForm.raza_id}
+                          onChange={(e) =>
+                            setEditForm({
+                              ...editForm,
+                              raza_id: e.target.value,
+                              raza_otra: "",
+                            })
+                          }
+                          disabled={!editForm.especie_id}
+                          className="w-full bg-bg border border-line rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-brand outline-none text-ink disabled:opacity-50"
+                        >
+                          <option value="">— Sin especificar —</option>
+                          {editRazas.map((r) => (
+                            <option key={r.id} value={r.id}>
+                              {r.nombre}
+                            </option>
+                          ))}
+                          {editForm.especie_id && (
+                            <option value={OTRA}>➕ Otra raza…</option>
+                          )}
+                        </select>
+                        {editForm.raza_id === OTRA && (
+                          <input
+                            required
+                            autoFocus
+                            placeholder="Nueva raza"
+                            value={editForm.raza_otra}
+                            onChange={(e) =>
+                              setEditForm({
+                                ...editForm,
+                                raza_otra: e.target.value,
+                              })
+                            }
+                            className="mt-2 w-full bg-bg border border-brand/40 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-brand outline-none text-ink"
+                          />
+                        )}
+                      </>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-muted mb-1">
+                      Sexo
+                    </label>
+                    <select
+                      value={editForm.sexo}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, sexo: e.target.value })
+                      }
+                      className="w-full bg-bg border border-line rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-brand outline-none text-ink"
+                    >
+                      <option value="M">Macho</option>
+                      <option value="H">Hembra</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-muted mb-1">
+                      Peso (kg)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      value={editForm.peso_actual}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, peso_actual: e.target.value })
+                      }
+                      className="w-full bg-bg border border-line rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-brand outline-none text-ink"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-muted mb-1">
+                    Fecha de nacimiento
+                  </label>
+                  <input
+                    type="date"
+                    value={editForm.fecha_nacimiento}
+                    onChange={(e) =>
+                      setEditForm({
+                        ...editForm,
+                        fecha_nacimiento: e.target.value,
+                      })
+                    }
+                    className="w-full bg-bg border border-line rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-brand outline-none text-ink"
+                  />
+                </div>
+
+                <div className="flex justify-end gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setEditOpen(false)}
+                    className="px-4 py-2 rounded-lg border border-line text-sm font-bold text-muted hover:bg-surface-2 transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={savingEdit}
+                    className="px-5 py-2 rounded-lg bg-brand text-white text-sm font-bold hover:bg-brand-strong disabled:opacity-50 transition-colors"
+                  >
+                    {savingEdit ? "Guardando…" : "Guardar cambios"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
         {/* Info del paciente */}
         <div className="flex-shrink-0 bg-surface border-b border-line px-8 py-6">
           <div className="flex items-start justify-between gap-6">
@@ -763,6 +1118,14 @@ export const Patients: React.FC = () => {
                 </p>
               )}
               <div className="mt-3 flex items-center justify-end gap-2">
+                <button
+                  onClick={openEdit}
+                  title="Editar datos del paciente"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-surface-2 px-3 py-2 text-xs font-black uppercase tracking-widest text-muted hover:bg-brand-soft hover:text-brand-ink transition-colors"
+                >
+                  <Icons.Edit size={14} />
+                  Editar
+                </button>
                 <MascotaCarnet mascota={selectedPatient} />
                 {isInQueue ? (
                   <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 text-xs font-black uppercase tracking-widest">

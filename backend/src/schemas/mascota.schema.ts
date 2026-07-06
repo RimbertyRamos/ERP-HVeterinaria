@@ -34,19 +34,28 @@ const alergiaSchema = z.object({
   severidad: textoCorto(),
 });
 
-// CreateMascotaDto.
-const mascotaSchema = z.object({
-  nombre: textoCorto().min(1, "El nombre de la mascota es obligatorio"),
-  especie_id: z.string().min(1, "La especie es obligatoria"),
-  raza_id: z.string().optional(),
-  color_id: z.string().optional(),
-  // Mascota.sexo es CHAR(1) en la BD.
-  sexo: z.string().max(1, "El sexo debe ser un solo carácter").optional(),
-  esterilizado: z.boolean().optional(),
-  peso_actual: numeroNoNegativoOpcional(),
-  fecha_nacimiento: fechaOpcional(),
-  alergias: z.array(alergiaSchema).optional(),
-});
+// CreateMascotaDto. La especie puede llegar por id (catálogo) o por nombre
+// (opción "Otra…" del formulario: el service la crea en el catálogo al vuelo,
+// mismo patrón connectOrCreate que las vacunas de la historia clínica).
+const mascotaSchema = z
+  .object({
+    nombre: textoCorto().min(1, "El nombre de la mascota es obligatorio"),
+    especie_id: z.string().optional(),
+    especie_nombre: textoCorto().optional(),
+    raza_id: z.string().optional(),
+    raza_nombre: textoCorto().optional(),
+    color_id: z.string().optional(),
+    // Mascota.sexo es CHAR(1) en la BD.
+    sexo: z.string().max(1, "El sexo debe ser un solo carácter").optional(),
+    esterilizado: z.boolean().optional(),
+    peso_actual: numeroNoNegativoOpcional(),
+    fecha_nacimiento: fechaOpcional(),
+    alergias: z.array(alergiaSchema).optional(),
+  })
+  .refine((m) => m.especie_id?.trim() || m.especie_nombre?.trim(), {
+    message: "La especie es obligatoria",
+    path: ["especie_id"],
+  });
 
 /**
  * POST /mascotas — MascotaService.createMascotaConPropietario:
@@ -65,8 +74,11 @@ export const updateMascotaSchema = z
   .object({
     nombre: textoCorto().min(1),
     especie_id: z.string().min(1),
-    raza_id: z.string(),
-    color_id: z.string(),
+    especie_nombre: textoCorto(),
+    raza_nombre: textoCorto(),
+    // null = quitar la raza/color (p. ej. al cambiar de especie).
+    raza_id: z.string().nullable(),
+    color_id: z.string().nullable(),
     sexo: z.string().max(1, "El sexo debe ser un solo carácter"),
     esterilizado: z.boolean(),
     peso_actual: numeroNoNegativoOpcional(),

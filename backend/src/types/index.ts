@@ -108,8 +108,11 @@ export interface AddConsumoDto {
 
 export interface CreateMascotaDto {
   nombre: string;
-  especie_id: string;
+  // especie_id O especie_nombre (opción "Otra…": se crea en el catálogo al vuelo)
+  especie_id?: string;
+  especie_nombre?: string;
   raza_id?: string;
+  raza_nombre?: string;
   color_id?: string;
   fecha_nacimiento?: string;
   sexo?: string;
@@ -121,8 +124,11 @@ export interface CreateMascotaDto {
 export interface UpdateMascotaDto {
   nombre?: string;
   especie_id?: string;
-  raza_id?: string;
-  color_id?: string;
+  especie_nombre?: string;
+  // null = quitar la raza/color
+  raza_id?: string | null;
+  raza_nombre?: string;
+  color_id?: string | null;
   sexo?: string;
   esterilizado?: boolean;
   peso_actual?: number;

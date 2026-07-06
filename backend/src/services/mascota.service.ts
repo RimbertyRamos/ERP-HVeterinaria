@@ -144,6 +144,51 @@ export class MascotaService {
   }
 
   /**
+   * Resuelve especie/raza cuando llegan por NOMBRE (opción "Otra…" del
+   * formulario): busca en el catálogo sin distinguir mayúsculas y, si no
+   * existe, la crea al vuelo — mismo patrón que las vacunas de la historia
+   * clínica. Los ids explícitos tienen prioridad sobre los nombres.
+   */
+  private async resolverEspecieRaza(data: {
+    especie_id?: string;
+    especie_nombre?: string;
+    raza_id?: string | null;
+    raza_nombre?: string;
+  }): Promise<{ especie_id?: string; raza_id?: string | null }> {
+    let especieId = data.especie_id || undefined;
+    const espNombre = data.especie_nombre?.trim();
+    if (!especieId && espNombre) {
+      const existente = await this.prisma.especie.findFirst({
+        where: { nombre: { equals: espNombre, mode: "insensitive" } },
+      });
+      especieId = existente
+        ? existente.id
+        : (await this.prisma.especie.create({ data: { nombre: espNombre } }))
+            .id;
+    }
+
+    let razaId = data.raza_id;
+    const razaNombre = data.raza_nombre?.trim();
+    if (!razaId && razaNombre && especieId) {
+      const existente = await this.prisma.raza.findFirst({
+        where: {
+          especie_id: especieId,
+          nombre: { equals: razaNombre, mode: "insensitive" },
+        },
+      });
+      razaId = existente
+        ? existente.id
+        : (
+            await this.prisma.raza.create({
+              data: { nombre: razaNombre, especie_id: especieId },
+            })
+          ).id;
+    }
+
+    return { especie_id: especieId, raza_id: razaId };
+  }
+
+  /**
    * Crea una mascota vinculándola a un propietario existente o creando uno nuevo.
    * La lógica de creación del propietario (usuario) se delega completamente a
    * usuariosService.findOrCreateCliente() — alta cohesión, bajo acoplamiento.
@@ -171,11 +216,24 @@ export class MascotaService {
         propietarioId = propietario.id;
       }
 
-      const { alergias, ...mascotaData } = data.mascota;
+      const { alergias, especie_nombre, raza_nombre, ...mascotaData } =
+        data.mascota;
+
+      const resuelto = await this.resolverEspecieRaza({
+        especie_id: mascotaData.especie_id,
+        especie_nombre,
+        raza_id: mascotaData.raza_id,
+        raza_nombre,
+      });
+      if (!resuelto.especie_id) {
+        throw { status: 400, message: "La especie es obligatoria" };
+      }
 
       return await this.prisma.mascota.create({
         data: {
           ...mascotaData,
+          especie_id: resuelto.especie_id,
+          raza_id: resuelto.raza_id ?? undefined,
           peso_actual: mascotaData.peso_actual ?? undefined,
           fecha_nacimiento: mascotaData.fecha_nacimiento
             ? new Date(mascotaData.fecha_nacimiento)
@@ -202,12 +260,13 @@ export class MascotaService {
 
   async updateMascota(id: string, data: UpdateMascotaDto) {
     try {
+      const resuelto = await this.resolverEspecieRaza(data);
       return await this.prisma.mascota.update({
         where: { id },
         data: {
           nombre: data.nombre,
-          especie_id: data.especie_id,
-          raza_id: data.raza_id,
+          especie_id: resuelto.especie_id,
+          raza_id: resuelto.raza_id,
           color_id: data.color_id,
           sexo: data.sexo,
           esterilizado: data.esterilizado,
