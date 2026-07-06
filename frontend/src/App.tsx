@@ -521,14 +521,6 @@ const App: React.FC = () => {
             >
               <Icons.Menu size={22} />
             </button>
-            <div className="hidden md:flex items-center gap-2 rounded-lg bg-surface-2 px-3 py-1.5">
-              <Icons.Search size={18} className="text-muted" />
-              <input
-                type="text"
-                placeholder="Buscar en el sistema..."
-                className="bg-transparent text-sm outline-none text-ink w-40 lg:w-64"
-              />
-            </div>
           </div>
 
           <div className="flex items-center gap-4">
