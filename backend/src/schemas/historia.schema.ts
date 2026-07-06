@@ -39,37 +39,43 @@ const evolucionItem = z
   })
   .passthrough();
 
-// Los ~28 campos editables (HistoriaService.CAMPOS_EDITABLES): TODOS opcionales.
+// Los ~28 campos editables (HistoriaService.CAMPOS_EDITABLES): TODOS opcionales
+// y NULLABLE — las columnas son nullable y el front reenvía la historia completa
+// (`...form`), por lo que los campos sin llenar llegan como null. Rechazar null
+// hacía imposible guardar/finalizar cualquier historia con campos vacíos (400).
 // El service hace whitelisting con pickCampos, así que el .strip por defecto basta.
+const textoNullable = (max: number) =>
+  z.string().max(max).nullable().optional();
+
 const camposEditables = {
-  propietario_nombre: textoCorto().optional(),
-  domicilio: z.string().max(LEN.medio).optional(),
-  telefono: textoCorto().optional(),
-  celular: textoCorto().optional(),
-  edad: textoCorto().optional(),
+  propietario_nombre: textoNullable(LEN.corto),
+  domicilio: textoNullable(LEN.medio),
+  telefono: textoNullable(LEN.corto),
+  celular: textoNullable(LEN.corto),
+  edad: textoNullable(LEN.corto),
   peso: numeroNullableOpcional(),
-  motivo_consulta: z.string().max(LEN.medio).optional(),
-  vacunas_otras: z.string().max(LEN.medio).optional(),
-  desparasitacion: z.boolean().optional(),
-  desparasitacion_cuando: z.string().max(LEN.medio).optional(),
-  enfermedades_previas: z.string().max(LEN.largo).optional(),
-  intervenciones_previas: z.string().max(LEN.largo).optional(),
-  estado_general: z.string().max(LEN.medio).optional(),
-  apetito: z.string().max(LEN.medio).optional(),
-  hidratacion: z.string().max(LEN.medio).optional(),
-  mucosa: z.string().max(LEN.medio).optional(),
-  ap_digestivo: z.string().max(LEN.largo).optional(),
-  ap_genitourinario: z.string().max(LEN.largo).optional(),
-  ap_respiratorio: z.string().max(LEN.largo).optional(),
+  motivo_consulta: textoNullable(LEN.medio),
+  vacunas_otras: textoNullable(LEN.medio),
+  desparasitacion: z.boolean().nullable().optional(),
+  desparasitacion_cuando: textoNullable(LEN.medio),
+  enfermedades_previas: textoNullable(LEN.largo),
+  intervenciones_previas: textoNullable(LEN.largo),
+  estado_general: textoNullable(LEN.medio),
+  apetito: textoNullable(LEN.medio),
+  hidratacion: textoNullable(LEN.medio),
+  mucosa: textoNullable(LEN.medio),
+  ap_digestivo: textoNullable(LEN.largo),
+  ap_genitourinario: textoNullable(LEN.largo),
+  ap_respiratorio: textoNullable(LEN.largo),
   temperatura: numeroNullableOpcional(),
   fc: numeroNullableOpcional(),
   fr: numeroNullableOpcional(),
-  observacion_clinica: z.string().max(LEN.largo).optional(),
-  pruebas_complementarias: z.string().max(LEN.largo).optional(),
-  diagnostico_presuntivo: z.string().max(LEN.largo).optional(),
-  diagnostico_confirmativo: z.string().max(LEN.largo).optional(),
-  pronostico: z.string().max(LEN.medio).optional(),
-  tratamiento: z.string().max(LEN.largo).optional(),
+  observacion_clinica: textoNullable(LEN.largo),
+  pruebas_complementarias: textoNullable(LEN.largo),
+  diagnostico_presuntivo: textoNullable(LEN.largo),
+  diagnostico_confirmativo: textoNullable(LEN.largo),
+  pronostico: textoNullable(LEN.medio),
+  tratamiento: textoNullable(LEN.largo),
   vacunas: z.array(vacunaItem).optional(),
   evoluciones: z.array(evolucionItem).optional(),
   // RF14: próxima dosis "de lote" aplicada a las vacunas registradas en esta
