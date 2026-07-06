@@ -10,7 +10,10 @@ import { api } from "../utils/api";
 import { toast } from "sonner";
 import type { HistoriaClinica, EvolucionTratamiento, Mascota } from "../types";
 
-const VACUNAS = ["Parvovirus", "Múltiple", "Antirrábica", "Bordetella"];
+// Nombres alineados con el catálogo Vacuna del seed/migración: el backend hace
+// connectOrCreate por nombre y usar variantes ("Múltiple", "Antirrábica")
+// duplicaría el catálogo con entradas casi idénticas.
+const VACUNAS = ["Parvovirus", "Quíntuple / Polivalente", "Rabia", "Bordetella"];
 const ESTADO_GENERAL = ["Bueno", "Malo", "Regular", "Sobrepeso"];
 const APETITO = ["Normal", "Anorexia", "Disminuido", "Polifagia"];
 const HIDRATACION = ["Normal", "D. moderada", "Desh. leve", "Desh. grave"];
@@ -24,7 +27,70 @@ interface Props {
   onSaved?: (h: HistoriaClinica) => void;
 }
 
+/**
+ * Textarea que crece con el contenido: `rows` define la altura MÍNIMA (la ficha
+ * en blanco conserva su tamaño de formulario) y si el texto la excede, la caja
+ * se expande en vez de recortar/scrollear — clave para leer e imprimir completo.
+ */
+const AutoTextarea: React.FC<
+  React.TextareaHTMLAttributes<HTMLTextAreaElement>
+> = (props) => {
+  const ref = React.useRef<HTMLTextAreaElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.height = "auto"; // vuelve a la altura de `rows`…
+    if (el.scrollHeight > el.clientHeight) {
+      el.style.height = `${el.scrollHeight}px`; // …y crece si el texto no cabe
+    }
+  }, [props.value]);
+  return <textarea ref={ref} {...props} style={{ overflow: "hidden" }} />;
+};
+
 const v = (x: any) => (x === null || x === undefined ? "" : x);
+
+// Una vacuna previa/externa (aplicada en otro centro) se distingue de las
+// aplicadas EN esta consulta por tener fecha_aplicacion (las de checkbox se
+// guardan sin fecha: la fecha de la historia ya las ubica en el tiempo).
+interface VacunaPrevia {
+  nombre: string;
+  fecha_aplicacion: string;
+  proxima_dosis: string;
+}
+
+const previasDe = (h: HistoriaClinica): VacunaPrevia[] =>
+  ((h as any).vacunas ?? [])
+    .filter((x: any) => x && typeof x === "object" && x.fecha_aplicacion)
+    .map((x: any) => ({
+      nombre: x?.vacuna?.nombre ?? x?.nombre ?? "",
+      fecha_aplicacion: String(x.fecha_aplicacion).slice(0, 10),
+      proxima_dosis: x.proxima_dosis ? String(x.proxima_dosis).slice(0, 10) : "",
+    }))
+    .filter((x: VacunaPrevia) => x.nombre);
+
+// El backend devuelve `vacunas` como relación (HistoriaVacuna[]) y además
+// `vacunas_nombres: string[]`. El formulario trabaja con nombres planos: sin
+// esta normalización los checkboxes no se re-marcan al reabrir y un guardado
+// posterior borraría las vacunas ya registradas (el update reemplaza el set).
+// Las previas (con fecha_aplicacion) se excluyen: viven en su propia sección.
+const conVacunasPlanas = (h: HistoriaClinica): any => {
+  const rel = (h as any).vacunas;
+  if (Array.isArray(rel) && rel.some((x: any) => x && typeof x === "object")) {
+    return {
+      ...h,
+      vacunas: rel
+        .filter((x: any) => x && typeof x === "object" && !x.fecha_aplicacion)
+        .map((x: any) => x?.vacuna?.nombre ?? x?.nombre)
+        .filter(Boolean),
+    };
+  }
+  return {
+    ...h,
+    vacunas: Array.isArray((h as any).vacunas_nombres)
+      ? (h as any).vacunas_nombres.filter(Boolean)
+      : (rel ?? []).filter((x: any) => typeof x === "string"),
+  };
+};
 
 export interface HistoriaFichaHandle {
   commit: (finalize: boolean) => Promise<HistoriaClinica>;
@@ -32,15 +98,19 @@ export interface HistoriaFichaHandle {
 
 export const HistoriaClinicaFicha = forwardRef<HistoriaFichaHandle, Props>(
   ({ historia, mascota, readOnly, onSaved }, ref) => {
-  const [form, setForm] = useState<any>(historia);
+  const [form, setForm] = useState<any>(() => conVacunasPlanas(historia));
   const [evoluciones, setEvoluciones] = useState<EvolucionTratamiento[]>(
     historia.evoluciones ?? [],
+  );
+  const [vacunasPrevias, setVacunasPrevias] = useState<VacunaPrevia[]>(() =>
+    previasDe(historia),
   );
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    setForm(historia);
+    setForm(conVacunasPlanas(historia));
     setEvoluciones(historia.evoluciones ?? []);
+    setVacunasPrevias(previasDe(historia));
   }, [historia]);
 
   const ro = readOnly || historia.estado === "FINALIZADA";
@@ -87,6 +157,19 @@ export const HistoriaClinicaFicha = forwardRef<HistoriaFichaHandle, Props>(
     fc: num(form.fc),
     fr: num(form.fr),
     evoluciones: evoluciones.filter((e) => e.descripcion?.trim()),
+    // Vacunas: las de checkbox (aplicadas en ESTA consulta) van como strings;
+    // las previas/externas como objetos con su fecha de aplicación — así el
+    // backend las distingue y no les aplica la próxima dosis de lote.
+    vacunas: [
+      ...((form.vacunas ?? []) as string[]),
+      ...vacunasPrevias
+        .filter((v) => v.nombre.trim() && v.fecha_aplicacion)
+        .map((v) => ({
+          nombre: v.nombre.trim(),
+          fecha_aplicacion: v.fecha_aplicacion,
+          ...(v.proxima_dosis ? { proxima_dosis: v.proxima_dosis } : {}),
+        })),
+    ],
     // Próxima dosis "de lote": se aplica a las vacunas registradas en esta historia.
     proxima_dosis_vacunas: proximaDosis || undefined,
   });
@@ -311,7 +394,7 @@ export const HistoriaClinicaFicha = forwardRef<HistoriaFichaHandle, Props>(
       {/* ANAMNESIS */}
       <Seccion titulo="ANAMNESIS" />
       <Bloque label="MOTIVO DE CONSULTA">
-        <textarea
+        <AutoTextarea
           rows={2}
           className={areaCls}
           value={v(form.motivo_consulta)}
@@ -396,9 +479,111 @@ export const HistoriaClinicaFicha = forwardRef<HistoriaFichaHandle, Props>(
         </div>
       </div>
 
+      {/* Vacunas previas (aplicadas en otro centro) — anamnesis. Se guardan con
+          su fecha de aplicación, lo que las distingue de las puestas hoy. */}
+      <div className="hc-block mt-3">
+        <div className="flex items-center justify-between mb-1">
+          <p className="font-bold text-[11px] uppercase">
+            Vacunas previas (otro centro)
+          </p>
+          {!ro && (
+            <button
+              className="hc-no-print text-xs font-bold text-emerald-700"
+              onClick={() =>
+                setVacunasPrevias((prev) => [
+                  ...prev,
+                  { nombre: "", fecha_aplicacion: "", proxima_dosis: "" },
+                ])
+              }
+            >
+              + Agregar vacuna previa
+            </button>
+          )}
+        </div>
+        {vacunasPrevias.length === 0 ? (
+          <p className="text-xs text-slate-400">
+            Sin vacunas previas reportadas.
+          </p>
+        ) : (
+          <div className="space-y-1">
+            {vacunasPrevias.map((vp, i) => (
+              <div key={i} className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                <input
+                  className={inputCls + " min-w-40 flex-1"}
+                  placeholder="Vacuna…"
+                  value={vp.nombre}
+                  disabled={ro}
+                  onChange={(e) =>
+                    setVacunasPrevias((prev) =>
+                      prev.map((x, j) =>
+                        j === i ? { ...x, nombre: e.target.value } : x,
+                      ),
+                    )
+                  }
+                />
+                <label className="flex items-center gap-1 text-[11px]">
+                  <span className="font-bold">Aplicada:</span>
+                  <input
+                    type="date"
+                    className={inputCls}
+                    value={vp.fecha_aplicacion}
+                    disabled={ro}
+                    onChange={(e) =>
+                      setVacunasPrevias((prev) =>
+                        prev.map((x, j) =>
+                          j === i
+                            ? { ...x, fecha_aplicacion: e.target.value }
+                            : x,
+                        ),
+                      )
+                    }
+                  />
+                </label>
+                <label className="flex items-center gap-1 text-[11px]">
+                  <span className="font-bold">Próx. dosis:</span>
+                  <input
+                    type="date"
+                    className={inputCls}
+                    value={vp.proxima_dosis}
+                    disabled={ro}
+                    onChange={(e) =>
+                      setVacunasPrevias((prev) =>
+                        prev.map((x, j) =>
+                          j === i ? { ...x, proxima_dosis: e.target.value } : x,
+                        ),
+                      )
+                    }
+                  />
+                </label>
+                {!ro && (
+                  <button
+                    className="hc-no-print text-red-500 text-xs"
+                    title="Quitar"
+                    onClick={() =>
+                      setVacunasPrevias((prev) =>
+                        prev.filter((_, j) => j !== i),
+                      )
+                    }
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+            ))}
+            {!ro && (
+              <p className="hc-no-print text-[10px] text-slate-400">
+                La fecha de aplicación es obligatoria para que la vacuna quede
+                registrada. La próxima dosis es opcional y genera recordatorio
+                al propietario.
+              </p>
+            )}
+          </div>
+        )}
+      </div>
+
       <div className="grid grid-cols-2 gap-4 mt-2">
         <Bloque label="ENFERMEDADES PREVIAS">
-          <textarea
+          <AutoTextarea
             rows={2}
             className={areaCls}
             value={v(form.enfermedades_previas)}
@@ -407,7 +592,7 @@ export const HistoriaClinicaFicha = forwardRef<HistoriaFichaHandle, Props>(
           />
         </Bloque>
         <Bloque label="INTERVENCIONES PREVIAS">
-          <textarea
+          <AutoTextarea
             rows={2}
             className={areaCls}
             value={v(form.intervenciones_previas)}
@@ -428,7 +613,7 @@ export const HistoriaClinicaFicha = forwardRef<HistoriaFichaHandle, Props>(
 
       <div className="grid grid-cols-1 gap-2 mt-3">
         <Bloque label="AP. DIGESTIVO">
-          <textarea
+          <AutoTextarea
             rows={2}
             className={areaCls}
             value={v(form.ap_digestivo)}
@@ -437,7 +622,7 @@ export const HistoriaClinicaFicha = forwardRef<HistoriaFichaHandle, Props>(
           />
         </Bloque>
         <Bloque label="AP. GENITOURINARIO">
-          <textarea
+          <AutoTextarea
             rows={2}
             className={areaCls}
             value={v(form.ap_genitourinario)}
@@ -446,7 +631,7 @@ export const HistoriaClinicaFicha = forwardRef<HistoriaFichaHandle, Props>(
           />
         </Bloque>
         <Bloque label="AP. RESPIRATORIO">
-          <textarea
+          <AutoTextarea
             rows={2}
             className={areaCls}
             value={v(form.ap_respiratorio)}
@@ -488,7 +673,7 @@ export const HistoriaClinicaFicha = forwardRef<HistoriaFichaHandle, Props>(
       </div>
 
       <Bloque label="OBSERVACIÓN CLÍNICA">
-        <textarea
+        <AutoTextarea
           rows={2}
           className={areaCls}
           value={v(form.observacion_clinica)}
@@ -499,7 +684,7 @@ export const HistoriaClinicaFicha = forwardRef<HistoriaFichaHandle, Props>(
 
       <div className="grid grid-cols-2 gap-4 mt-2">
         <Bloque label="PRUEBAS COMPLEMENTARIAS">
-          <textarea
+          <AutoTextarea
             rows={2}
             className={areaCls}
             value={v(form.pruebas_complementarias)}
@@ -508,7 +693,7 @@ export const HistoriaClinicaFicha = forwardRef<HistoriaFichaHandle, Props>(
           />
         </Bloque>
         <Bloque label="PRONÓSTICO">
-          <textarea
+          <AutoTextarea
             rows={2}
             className={areaCls}
             value={v(form.pronostico)}
@@ -517,7 +702,7 @@ export const HistoriaClinicaFicha = forwardRef<HistoriaFichaHandle, Props>(
           />
         </Bloque>
         <Bloque label="DIAGNÓSTICO PRESUNTIVO">
-          <textarea
+          <AutoTextarea
             rows={2}
             className={areaCls}
             value={v(form.diagnostico_presuntivo)}
@@ -526,7 +711,7 @@ export const HistoriaClinicaFicha = forwardRef<HistoriaFichaHandle, Props>(
           />
         </Bloque>
         <Bloque label="DIAGNÓSTICO CONFIRMATIVO">
-          <textarea
+          <AutoTextarea
             rows={2}
             className={areaCls}
             value={v(form.diagnostico_confirmativo)}
@@ -539,7 +724,7 @@ export const HistoriaClinicaFicha = forwardRef<HistoriaFichaHandle, Props>(
       {/* TRATAMIENTO Y EVOLUCIÓN */}
       <Seccion titulo="TRATAMIENTO Y EVOLUCIÓN" />
       <Bloque label="TRATAMIENTO">
-        <textarea
+        <AutoTextarea
           rows={3}
           className={areaCls}
           value={v(form.tratamiento)}
@@ -682,6 +867,9 @@ export const HistoriaClinicaFicha = forwardRef<HistoriaFichaHandle, Props>(
               .hc-print-portal { display: block !important; }
               .hc-print-portal .hc-sheet { border: none !important; border-radius: 0 !important; padding: 0 !important; max-width: none !important; margin: 0 auto !important; }
               .hc-no-print { display: none !important; }
+              /* Las cajas de texto crecen al contenido también en el papel (la
+                 altura medida por JS no aplica a esta copia oculta). */
+              .hc-print-portal textarea { field-sizing: content; height: auto !important; overflow: visible !important; }
               /* Nunca partir un bloque etiqueta+campo, ni una fila/grupo, entre páginas */
               .hc-print-portal .grid,
               .hc-print-portal .grid > *,

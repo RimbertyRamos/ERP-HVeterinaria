@@ -66,13 +66,19 @@ export class HistoriaService {
    */
   private static normalizarVacunas(
     data: any,
-  ): { nombre: string; fecha_aplicacion?: Date; proxima_dosis?: Date }[] {
+  ): {
+    nombre: string;
+    fecha_aplicacion?: Date;
+    proxima_dosis?: Date;
+    conDefault: boolean;
+  }[] {
     if (!Array.isArray(data?.vacunas)) return [];
     const vistos = new Set<string>();
     const out: {
       nombre: string;
       fecha_aplicacion?: Date;
       proxima_dosis?: Date;
+      conDefault: boolean;
     }[] = [];
     for (const item of data.vacunas) {
       const nombre =
@@ -88,14 +94,16 @@ export class HistoriaService {
         esObj && item.fecha_aplicacion
           ? new Date(item.fecha_aplicacion)
           : undefined;
-      // proxima_dosis por ítem (forma objeto); si no viene, la aplica el default
-      // de lote en buildVacunasCreate.
       const prox =
         esObj && item.proxima_dosis ? new Date(item.proxima_dosis) : undefined;
       out.push({
         nombre,
         ...(fecha ? { fecha_aplicacion: fecha } : {}),
         ...(prox ? { proxima_dosis: prox } : {}),
+        // La "próxima dosis de lote" (RF14) solo aplica a las vacunas puestas EN
+        // esta consulta (llegan como string). Las previas/externas (objeto con
+        // fecha_aplicacion) gestionan su propia próxima dosis — o ninguna.
+        conDefault: !esObj,
       });
     }
     return out;
@@ -108,11 +116,17 @@ export class HistoriaService {
    * aplica a las vacunas que no traen una propia.
    */
   private static buildVacunasCreate(
-    vacunas: { nombre: string; fecha_aplicacion?: Date; proxima_dosis?: Date }[],
+    vacunas: {
+      nombre: string;
+      fecha_aplicacion?: Date;
+      proxima_dosis?: Date;
+      conDefault?: boolean;
+    }[],
     proximaDefault?: Date,
   ) {
     return vacunas.map((v) => {
-      const proxima = v.proxima_dosis ?? proximaDefault;
+      const proxima =
+        v.proxima_dosis ?? (v.conDefault ? proximaDefault : undefined);
       return {
         ...(v.fecha_aplicacion ? { fecha_aplicacion: v.fecha_aplicacion } : {}),
         ...(proxima ? { proxima_dosis: proxima } : {}),
