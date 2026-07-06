@@ -133,7 +133,7 @@ async function main() {
   // ===========================
   const hash = (pw: string) => bcrypt.hash(pw, 10);
 
-  const [admin, vet1, vet2, recep1, cajero1] = await Promise.all([
+  await Promise.all([
     prisma.usuario.upsert({
       where: { email: "admin@vetcare.com" },
       update: {},
@@ -142,6 +142,7 @@ async function main() {
         email: "admin@vetcare.com",
         password_hash: await hash("admin123"),
         rol_id: roleAdmin.id,
+        debe_cambiar_password: true,
       },
     }),
     prisma.usuario.upsert({
@@ -152,6 +153,7 @@ async function main() {
         email: "carlos.mamani@vetcare.com",
         password_hash: await hash("vet123"),
         rol_id: roleVet.id,
+        debe_cambiar_password: true,
       },
     }),
     prisma.usuario.upsert({
@@ -162,6 +164,7 @@ async function main() {
         email: "paola.rios@vetcare.com",
         password_hash: await hash("vet123"),
         rol_id: roleVet.id,
+        debe_cambiar_password: true,
       },
     }),
     prisma.usuario.upsert({
@@ -172,6 +175,7 @@ async function main() {
         email: "maria.gomez@vetcare.com",
         password_hash: await hash("recep123"),
         rol_id: roleRecep.id,
+        debe_cambiar_password: true,
       },
     }),
     prisma.usuario.upsert({
@@ -182,6 +186,7 @@ async function main() {
         email: "luis.roca@vetcare.com",
         password_hash: await hash("caja123"),
         rol_id: roleCajero.id,
+        debe_cambiar_password: true,
       },
     }),
   ]);
@@ -201,6 +206,7 @@ async function main() {
         telefono: "76234512",
         ci: "7890123",
         rol_id: roleCliente.id,
+        debe_cambiar_password: true,
       },
     }),
     prisma.usuario.upsert({
@@ -213,6 +219,7 @@ async function main() {
         telefono: "71122334",
         ci: "4567891",
         rol_id: roleCliente.id,
+        debe_cambiar_password: true,
       },
     }),
     prisma.usuario.upsert({
@@ -225,6 +232,7 @@ async function main() {
         telefono: "77889900",
         ci: "3214567",
         rol_id: roleCliente.id,
+        debe_cambiar_password: true,
       },
     }),
   ]);
@@ -459,8 +467,7 @@ async function main() {
   // ===========================
   // CATÁLOGO: SERVICIOS (precios en Bs.)
   // ===========================
-  const [svcGeneral, svcEspecialista, svcCirugia, svcLab, svcVacuna] =
-    await Promise.all([
+  await Promise.all([
       prisma.catalogoServicio.upsert({
         where: { nombre: "Consulta General" },
         update: {},
@@ -526,7 +533,7 @@ async function main() {
       create: {
         id: "cons-lab",
         nombre: "Laboratorio Central",
-        especialidad: "Imagenología",
+        especialidad: "Laboratorio y Análisis Clínicos",
       },
     }),
   ]);
@@ -749,7 +756,8 @@ async function main() {
   await seedTransaccional(prisma);
 
   console.log("\n🎉 Seed completado exitosamente!");
-  console.log("\n📋 Credenciales de acceso:");
+  console.log("\n📋 Credenciales de acceso (TEMPORALES — el sistema exige");
+  console.log("   cambiarlas en el primer inicio de sesión):");
   console.log("   Admin:        admin@vetcare.com         / admin123");
   console.log("   Veterinario:  carlos.mamani@vetcare.com / vet123");
   console.log("   Veterinario:  paola.rios@vetcare.com    / vet123");
