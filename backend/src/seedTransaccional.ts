@@ -31,6 +31,7 @@ export async function seedTransaccional(prisma: PrismaClient) {
         telefono: "79988112",
         ci: "5566778",
         rol_id: roleCliente!.id,
+        debe_cambiar_password: true,
       },
     }),
     prisma.usuario.upsert({
@@ -43,6 +44,7 @@ export async function seedTransaccional(prisma: PrismaClient) {
         telefono: "71223344",
         ci: "9988776",
         rol_id: roleCliente!.id,
+        debe_cambiar_password: true,
       },
     }),
   ]);
