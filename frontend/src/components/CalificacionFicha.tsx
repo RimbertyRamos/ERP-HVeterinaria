@@ -53,7 +53,9 @@ export const CalificacionFicha: React.FC<{
       toast.success("¡Gracias por tu calificación!");
     } catch (e: any) {
       const msg = e?.message ?? "";
-      if (/calific/i.test(msg)) {
+      // Solo el 409 "ya fue calificada" cuenta como hecha; otros errores (403
+      // de permiso, red, etc.) deben dejar el formulario visible para reintentar.
+      if (/ya fue calificada/i.test(msg)) {
         setHecha({ puntaje: rating, comentario: comentario.trim() || null });
       }
       toast.error(msg || "No se pudo registrar la calificación");

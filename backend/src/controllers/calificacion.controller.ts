@@ -24,6 +24,16 @@ export class CalificacionController {
     }
   };
 
+  // Panel de satisfacción (ADMIN): promedio, total, por servicio y recientes.
+  resumen = async (req: Request, res: Response) => {
+    try {
+      const limit = Number(req.query.limit) || 50;
+      res.json(await this.calificacionService.resumen(limit));
+    } catch (err) {
+      this.errors.e500(req, res, err);
+    }
+  };
+
   promedioPorServicio = async (req: Request, res: Response) => {
     try {
       const promedio = await this.calificacionService.promedioPorServicio(

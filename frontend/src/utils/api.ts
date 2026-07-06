@@ -301,6 +301,8 @@ export const api = {
   }) => post("/calificaciones", data),
   getPromedioServicio: (servicioId: string) =>
     get(`/calificaciones/servicio/${servicioId}/promedio`),
+  // Panel de satisfacción del ADMIN (promedio, por servicio y recientes)
+  getCalificacionesResumen: () => get("/calificaciones/resumen"),
 
   // Programación horaria de consultorios (solo permiso gestionar_horarios)
   getHorarios: (qs = "") => get(`/horarios${qs ? `?${qs}` : ""}`),

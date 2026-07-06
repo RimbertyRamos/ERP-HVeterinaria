@@ -17,6 +17,26 @@ import { cn } from "../utils/cn";
 import { api } from "../utils/api";
 import { DashboardKpis, Consultorio } from "../types";
 import { CalificacionFicha } from "../components/CalificacionFicha";
+import { StarRating } from "../components/StarRating";
+
+// Resumen de satisfacción (GET /calificaciones/resumen — solo ADMIN)
+interface CalifResumen {
+  promedio: number;
+  total: number;
+  por_servicio: { servicio: string; total: number; promedio: number }[];
+  items: {
+    id: string;
+    puntaje: number;
+    comentario?: string | null;
+    fecha: string;
+    propietario?: { nombre: string } | null;
+    ficha?: {
+      cod_ficha: string;
+      servicio?: { nombre: string } | null;
+      mascota?: { nombre: string } | null;
+    } | null;
+  }[];
+}
 
 const estadoLabel: Record<Consultorio["estado"], string> = {
   LIBRE: "Libre",
@@ -154,6 +174,16 @@ export const Dashboard: React.FC = () => {
     const iv = setInterval(() => api.getKpis().then(setKpis), 30_000);
     return () => clearInterval(iv);
   }, [isCliente]);
+
+  // Feedback de clientes (CU20) — solo el ADMIN lo ve, para toma de decisiones.
+  const [califResumen, setCalifResumen] = useState<CalifResumen | null>(null);
+  useEffect(() => {
+    if (!isAdmin) return;
+    api
+      .getCalificacionesResumen()
+      .then(setCalifResumen)
+      .catch(() => setCalifResumen(null));
+  }, [isAdmin]);
 
   useEffect(() => {
     if (!isCliente) return;
@@ -990,6 +1020,80 @@ export const Dashboard: React.FC = () => {
                 <span className="font-bold text-emerald-600">
                   Bs.{Number(r.total).toFixed(2)}
                 </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Satisfacción de clientes (CU20) — feedback para la toma de decisiones */}
+      {isAdmin && califResumen && califResumen.total > 0 && (
+        <div className="rounded-card border border-line bg-surface overflow-hidden">
+          <div className="px-6 py-4 border-b border-line flex items-center justify-between">
+            <h3 className="font-bold text-ink flex items-center gap-2">
+              <span className="text-amber-400">★</span>
+              Satisfacción de clientes
+            </h3>
+            <div className="flex items-center gap-2">
+              <StarRating
+                value={Math.round(califResumen.promedio)}
+                readOnly
+                size={16}
+              />
+              <span className="text-sm font-black text-ink">
+                {Number(califResumen.promedio).toFixed(1)}
+              </span>
+              <span className="text-xs text-muted">
+                ({califResumen.total} calificacion
+                {califResumen.total === 1 ? "" : "es"})
+              </span>
+            </div>
+          </div>
+
+          {califResumen.por_servicio.length > 0 && (
+            <div className="px-6 py-3 border-b border-line flex flex-wrap gap-2">
+              {califResumen.por_servicio.map((s) => (
+                <span
+                  key={s.servicio}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-surface-2 px-3 py-1 text-xs font-bold text-ink"
+                >
+                  {s.servicio}
+                  <span className="text-amber-500">
+                    ★ {s.promedio.toFixed(1)}
+                  </span>
+                  <span className="text-muted font-medium">({s.total})</span>
+                </span>
+              ))}
+            </div>
+          )}
+
+          <div className="divide-y divide-line">
+            {califResumen.items.slice(0, 6).map((c) => (
+              <div key={c.id} className="px-6 py-3 text-sm">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <span className="font-bold text-ink mr-2">
+                      {c.propietario?.nombre ?? "Cliente"}
+                    </span>
+                    <span className="text-muted text-xs">
+                      {c.ficha?.mascota?.nombre ?? ""}
+                      {c.ficha?.servicio?.nombre
+                        ? ` · ${c.ficha.servicio.nombre}`
+                        : ""}
+                      {" · "}
+                      {new Date(c.fecha).toLocaleDateString("es-ES", {
+                        day: "2-digit",
+                        month: "short",
+                      })}
+                    </span>
+                  </div>
+                  <StarRating value={c.puntaje} readOnly size={14} />
+                </div>
+                {c.comentario && (
+                  <p className="text-xs italic text-muted mt-1 truncate">
+                    "{c.comentario}"
+                  </p>
+                )}
               </div>
             ))}
           </div>
